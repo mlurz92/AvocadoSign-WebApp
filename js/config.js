@@ -14,21 +14,23 @@ const APP_CONFIG = Object.freeze({
         PUBLICATION_SECTION: 'abstract',
         PUBLICATION_BRUTE_FORCE_METRIC: 'Balanced Accuracy',
         CHART_COLOR_SCHEME: 'default',
-        BRUTE_FORCE_METRIC: 'Balanced Accuracy'
+        BRUTE_FORCE_METRIC: 'Balanced Accuracy',
+        PUBLICATION_LANG: 'en'
     }),
     STORAGE_KEYS: Object.freeze({
         APPLIED_CRITERIA: 'appliedT2Criteria_v4.2_detailed',
         APPLIED_LOGIC: 'appliedT2Logic_v4.2_detailed',
         CURRENT_KOLLEKTIV: 'currentKollektiv_v4.2_detailed',
-        PUBLICATION_SECTION: 'currentPublicationSection_v4.2_detailed',
-        PUBLICATION_BRUTE_FORCE_METRIC: 'currentPublicationBfMetric_v4.2_detailed',
+        PUBLICATION_SECTION: 'currentPublicationSection_v4.4_detailed',
+        PUBLICATION_BRUTE_FORCE_METRIC: 'currentPublicationBfMetric_v4.4_detailed',
         STATS_LAYOUT: 'currentStatsLayout_v4.2_detailed',
         STATS_KOLLEKTIV1: 'currentStatsKollektiv1_v4.2_detailed',
         STATS_KOLLEKTIV2: 'currentStatsKollektiv2_v4.2_detailed',
         PRESENTATION_VIEW: 'currentPresentationView_v4.2_detailed',
         PRESENTATION_STUDY_ID: 'currentPresentationStudyId_v4.2_detailed',
         CHART_COLOR_SCHEME: 'chartColorScheme_v4.2_detailed',
-        FIRST_APP_START: 'appFirstStart_v3.0'
+        FIRST_APP_START: 'appFirstStart_v3.0',
+        PUBLICATION_LANG: 'publicationLang_v4.4_detailed'
     }),
     PATHS: Object.freeze({
         BRUTE_FORCE_WORKER: 'workers/brute_force_worker.js'
@@ -47,7 +49,7 @@ const APP_CONFIG = Object.freeze({
         ]),
         DEFAULT_CI_METHOD_PROPORTION: 'Wilson Score',
         DEFAULT_CI_METHOD_EFFECTSIZE: 'Bootstrap Percentile',
-        FISHER_EXACT_THRESHOLD: 5
+        FISHER_EXACT_THRESHOLD: 5 // Used in statistics_service.js for Fisher's Exact Test
     }),
     T2_CRITERIA_SETTINGS: Object.freeze({
         SIZE_RANGE: Object.freeze({ min: 0.1, max: 25.0, step: 0.1 }),
@@ -103,7 +105,13 @@ const APP_CONFIG = Object.freeze({
             PRAES_AS_VS_T2_COMP_MD: 'Pres_Metrics_ASvsT2_{StudyID}_MD',
             PRAES_AS_VS_T2_TESTS_MD: 'Pres_Tests_ASvsT2_{StudyID}_MD',
             CRITERIA_COMPARISON_MD: 'Criteria_Comparison_MD',
-            PUBLICATION_SECTION_MD: 'Publication_{SectionName}_MD',
+            PUBLICATION_ABSTRACT_MD: 'Publication_Abstract_MD',
+            PUBLICATION_INTRODUCTION_MD: 'Publication_Introduction_MD',
+            PUBLICATION_METHODS_MD: 'Publication_Methods_{SectionName}_MD',
+            PUBLICATION_RESULTS_MD: 'Publication_Results_{SectionName}_MD',
+            PUBLICATION_DISCUSSION_MD: 'Publication_Discussion_MD',
+            PUBLICATION_REFERENCES_MD: 'Publication_References_MD',
+            PUBLICATION_SECTION_MD: 'Publication_Section_{SectionName}_MD', // Generic fallback
             ALL_ZIP: 'Complete_Export_ZIP',
             CSV_ZIP: 'CSV_Package_ZIP',
             MD_ZIP: 'Markdown_Package_ZIP',
@@ -116,6 +124,26 @@ const APP_CONFIG = Object.freeze({
         APPLIED_CRITERIA_DISPLAY_NAME: 'Applied T2 Criteria',
         AVOCADO_SIGN_ID: 'avocado_sign',
         AVOCADO_SIGN_DISPLAY_NAME: 'Avocado Sign'
+    }),
+    REPORT_SETTINGS: Object.freeze({
+        REPORT_TITLE: "Comprehensive Rectal Cancer Nodal Staging Analysis Report",
+        REPORT_AUTHOR: "AvocadoSign WebApp",
+        INCLUDE_APP_VERSION: true,
+        INCLUDE_GENERATION_TIMESTAMP: true,
+        INCLUDE_KOLLEKTIV_INFO: true,
+        INCLUDE_T2_CRITERIA: true,
+        INCLUDE_DESCRIPTIVES_TABLE: true,
+        INCLUDE_DESCRIPTIVES_CHARTS: true,
+        INCLUDE_AS_PERFORMANCE_TABLE: true,
+        INCLUDE_T2_PERFORMANCE_TABLE: true,
+        INCLUDE_AS_VS_T2_COMPARISON_TABLE: true,
+        INCLUDE_AS_VS_T2_COMPARISON_CHART: true,
+        INCLUDE_ASSOCIATIONS_TABLE: true,
+        INCLUDE_BRUTEFORCE_BEST_RESULT: true
+    }),
+    REFERENCES_FOR_PUBLICATION: Object.freeze({
+        STUDY_PERIOD_2020_2023: "January 2020 and November 2023", //
+        // Add other specific references if needed for text generation, e.g., default ORCID, etc.
     })
 });
 
@@ -126,8 +154,8 @@ const UI_TEXTS = Object.freeze({
         'nRCT': 'nRCT'
     },
     t2LogicDisplayNames: {
-        'UND': 'AND',
-        'ODER': 'OR',
+        'AND': 'AND',
+        'OR': 'OR',
         'KOMBINIERT': 'COMBINED (ESGAR Logic)'
     },
     publicationTab: {
@@ -205,9 +233,9 @@ const UI_TEXTS = Object.freeze({
         headerStats: {
             cohort: "Currently selected patient cohort for analysis.",
             patientCount: "Total number of patients in the selected cohort.",
-            statusN: "Percentage of patients with positive (+) vs. negative (-) histopathological lymph node status (N-status, reference standard) in the selected cohort.",
-            statusAS: "Percentage of patients with positive (+) vs. negative (-) lymph node status according to the Avocado Sign (AS) prediction (based on T1-CE MRI) in the selected cohort.",
-            statusT2: "Percentage of patients with positive (+) vs. negative (-) lymph node status according to the currently **applied and saved** T2 criteria (see Analysis tab) for the selected cohort."
+            statusN: "Percentage of N+ patients (Pathology).",
+            statusAS: "Percentage of AS+ patients (Prediction).",
+            statusT2: "Percentage of T2+ patients (Applied Criteria)."
         },
         mainTabs: {
             data: "Display the list of all patient data in the selected cohort with basic information and status (N/AS/T2). Allows sorting and expanding details on T2 lymph node features.",
@@ -218,22 +246,22 @@ const UI_TEXTS = Object.freeze({
             export: "Offers extensive options for downloading raw data, analysis results, tables, and charts in various file formats."
         },
         dataTab: {
-            nr: "Patient's sequential number.",
+            nr: "Patient's sequential ID number.",
             name: "Patient's last name (anonymized/coded).",
             firstName: "Patient's first name (anonymized/coded).",
-            sex: "Patient's sex (m/f/unknown).",
+            sex: "Patient's sex (male/female/unknown).",
             age: "Patient's age in years at the time of MRI.",
             therapy: "Therapy administered before surgery (nRCT: neoadjuvant chemoradiotherapy, Upfront Surgery: no prior treatment).",
-            n_as_t2: "Direct status comparison: N (Pathology reference), AS (Avocado Sign), T2 (current criteria). Click N, AS, or T2 in the column header for sub-sorting.",
+            n_as_t2: "Direct status comparison: N (Histopathology reference), AS (Avocado Sign prediction), T2 (current criteria prediction). Click N, AS, or T2 in the column header for sub-sorting.",
             notes: "Additional clinical or radiological notes on the case, if available.",
             expandAll: "Expand or collapse the detail view of T2-weighted lymph node features for all patients in the current table view.",
             expandRow: "Click here or the arrow button to show/hide details on the morphological properties of this patient's T2-weighted lymph nodes. Only available if T2 node data exists."
         },
         analysisTab: {
-            nr: "Patient's sequential number.",
+            nr: "Patient's sequential ID number.",
             name: "Patient's last name (anonymized/coded).",
             therapy: "Therapy administered before surgery.",
-            n_as_t2: "Direct status comparison: N (Pathology reference), AS (Avocado Sign), T2 (current criteria). Click N, AS, or T2 in the column header for sub-sorting.",
+            n_as_t2: "Direct status comparison: N (Histopathology reference), AS (Avocado Sign prediction), T2 (current criteria prediction). Click N, AS, or T2 in the column header for sub-sorting.",
             n_counts: "Number of pathologically positive (N+) lymph nodes / Total number of histopathologically examined lymph nodes for this patient.",
             as_counts: "Number of Avocado Sign positive (AS+) lymph nodes / Total number of lymph nodes visible on T1-CE MRI for this patient.",
             t2_counts: "Number of T2-positive lymph nodes (based on current criteria) / Total number of lymph nodes visible on T2-MRI for this patient.",
@@ -244,7 +272,7 @@ const UI_TEXTS = Object.freeze({
         t2Size: { description: `Size criterion (short axis): Lymph nodes with a diameter <strong>greater than or equal to (≥)</strong> the set threshold are considered suspicious. Adjustable range: ${APP_CONFIG.T2_CRITERIA_SETTINGS.SIZE_RANGE.min} - ${APP_CONFIG.T2_CRITERIA_SETTINGS.SIZE_RANGE.max} mm (step: ${APP_CONFIG.T2_CRITERIA_SETTINGS.SIZE_RANGE.step} mm). Enable/disable with checkbox.` },
         t2Form: { description: "Shape criterion: Select which shape ('round' or 'oval') is considered suspicious. Enable/disable with checkbox." },
         t2Contour: { description: "Border criterion: Select which border ('smooth' or 'irregular') is considered suspicious. Enable/disable with checkbox." },
-        t2Homogeneity: { description: "Homogeneity criterion: Select whether 'homogeneous' or 'heterogeneous' internal signal on T2w is considered suspicious. Enable/disable with checkbox." },
+        t2Homogenitaet: { description: "Homogeneity criterion: Select whether 'homogeneous' or 'heterogeneous' internal signal on T2w is considered suspicious. Enable/disable with checkbox." },
         t2Signal: { description: "Signal criterion: Select which T2 signal intensity ('low', 'intermediate', or 'high') relative to surrounding muscle is considered suspicious. Nodes with non-assessable signal (value 'null') never fulfill this criterion. Enable/disable with checkbox." },
         t2Actions: {
             reset: "Resets the logic and all criteria to their default settings. The changes are not yet applied.",
@@ -278,7 +306,20 @@ const UI_TEXTS = Object.freeze({
         statisticsToggleComparison: { description: "Toggle between the detailed single view for the globally selected cohort and the comparison view of two specifically chosen cohorts." },
         descriptiveStatistics: {
             cardTitle: "Demographics, clinical data, and baseline lymph node counts for cohort <strong>[COHORT]</strong>.",
-            age: { name: "Age", description: "Patient age in years." }
+            age: { name: "Age", description: "Patient age in years." },
+            sex: { name: "Sex", description: "Patient's sex (male/female/unknown)." },
+            therapy: { name: "Therapy", description: "Therapy administered before surgery (nRCT: neoadjuvant chemoradiotherapy, Upfront Surgery: no prior treatment)." },
+            nStatus: { name: "N-Status", description: "Histopathological lymph node status (N+ / N-)." },
+            asStatus: { name: "AS-Status", description: "Avocado Sign status (AS+ / AS-)." },
+            t2Status: { name: "T2-Status", description: "T2-weighted MRI lymph node status (T2+ / T2-) based on applied criteria." },
+            lnCounts_n_total: { name: "LN N total", description: "Total number of histopathologically examined lymph nodes per patient." },
+            lnCounts_n_plus: { name: "LN N+", description: "Number of pathologically positive lymph nodes per patient, only in N+ patients (n=[n])." },
+            lnCounts_as_total: { name: "LN AS total", description: "Total number of lymph nodes visible on T1-CE MRI per patient." },
+            lnCounts_as_plus: { name: "LN AS+", description: "Number of Avocado Sign positive lymph nodes per patient, only in AS+ patients (n=[n])." },
+            lnCounts_t2_total: { name: "LN T2 total", description: "Total number of lymph nodes visible on T2-MRI per patient." },
+            lnCounts_t2_plus: { name: "LN T2+", description: "Number of T2-positive lymph nodes per patient (based on applied criteria), only in T2+ patients (n=[n])." },
+            chartAge: { name: "Age Distribution Chart", description: "Histogram showing the distribution of patient ages in the [COHORT] cohort." },
+            chartGender: { name: "Sex Distribution Chart", description: "Pie chart illustrating the distribution of male and female patients in the [COHORT] cohort." }
         },
         diagnosticPerformanceAS: { cardTitle: "Diagnostic performance of the Avocado Sign (AS) vs. Histopathology (N) for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs." },
         diagnosticPerformanceT2: { cardTitle: "Diagnostic performance of the currently applied T2 criteria vs. Histopathology (N) for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs." },
@@ -342,134 +383,297 @@ const UI_TEXTS = Object.freeze({
             allZIP: { description: "All available single files (Statistics CSV, BruteForce TXT, all MDs, Raw Data CSV, HTML Report) in one ZIP archive.", type: 'ALL_ZIP', ext: "zip"},
             csvZIP: { description: "All available CSV files (Statistics, Raw Data) in one ZIP archive.", type: 'CSV_ZIP', ext: "zip"},
             mdZIP: { description: "All available Markdown files (Descriptive, Data, Analysis, Publication Texts) in one ZIP archive.", type: 'MD_ZIP', ext: "md"}
-        },
-        publicationTab: {
-            spracheSwitch: { description: "Switch the language of generated texts and some labels in the Publication tab between German and English." },
-            sectionSelect: { description: "Select the section of the scientific publication for which text suggestions and relevant data/graphics should be displayed." },
-            bruteForceMetricSelect: { description: "Select the target metric whose brute-force optimization results should be displayed in the results section. Default texts usually refer to the default optimization metric (Balanced Accuracy)." }
-        },
-        statMetrics: {
-            sens: { name: "Sensitivity", description: "Sensitivity ([METHODE] vs. N): Proportion of true positive cases (N+) correctly identified by the method [METHODE].<br><i>Formula: TP / (TP + FN)</i>", interpretation: "The method [METHODE] correctly identified <strong>[VALUE]%</strong> of actual N+ patients (95% CI via [METHOD_CI]: [LOWER]% – [UPPER]%) in the [COHORT] cohort."},
-            spec: { name: "Specificity", description: "Specificity ([METHODE] vs. N): Proportion of true negative cases (N-) correctly identified by the method [METHODE].<br><i>Formula: TN / (TN + FP)</i>", interpretation: "The method [METHODE] correctly identified <strong>[VALUE]%</strong> of actual N- patients (95% CI via [METHOD_CI]: [LOWER]% – [UPPER]%) in the [COHORT] cohort."},
-            ppv: { name: "Positive Predictive Value (PPV)", description: "PPV ([METHODE] vs. N): Probability that a patient with a positive test result from method [METHODE] is actually diseased (N+).<br><i>Formula: TP / (TP + FP)</i>", interpretation: "If method [METHODE] yielded a positive result, the probability of an actual N+ status was <strong>[VALUE]%</strong> (95% CI via [METHOD_CI]: [LOWER]% – [UPPER]%) in the [COHORT] cohort. This value is highly prevalence-dependent."},
-            npv: { name: "Negative Predictive Value (NPV)", description: "NPV ([METHODE] vs. N): Probability that a patient with a negative test result from method [METHODE] is actually healthy (N-).<br><i>Formula: TN / (TN + FN)</i>", interpretation: "If method [METHODE] yielded a negative result, the probability of an actual N- status was <strong>[VALUE]%</strong> (95% CI via [METHOD_CI]: [LOWER]% – [UPPER]%) in the [COHORT] cohort. This value is highly prevalence-dependent."},
-            acc: { name: "Accuracy", description: "Accuracy ([METHODE] vs. N): Proportion of all cases correctly classified by method [METHODE].<br><i>Formula: (TP + TN) / Total</i>", interpretation: "Method [METHODE] correctly classified a total of <strong>[VALUE]%</strong> of all patients (95% CI via [METHOD_CI]: [LOWER]% – [UPPER]%) in the [COHORT] cohort."},
-            balAcc: { name: "Balanced Accuracy", description: "Balanced Accuracy ([METHODE] vs. N): The average of sensitivity and specificity. Useful for imbalanced class sizes (prevalence).<br><i>Formula: (Sensitivity + Specificity) / 2</i>", interpretation: "The balanced accuracy of method [METHODE], which weights sensitivity and specificity equally, was <strong>[VALUE]</strong> (95% CI via [METHOD_CI]: [LOWER] – [UPPER]) in the [COHORT] cohort."},
-            f1: { name: "F1-Score", description: "F1-Score ([METHODE] vs. N): The harmonic mean of PPV (Precision) and Sensitivity (Recall). A value of 1 is optimal.<br><i>Formula: 2 * (PPV * Sensitivity) / (PPV + Sensitivity)</i>", interpretation: "The F1-Score for method [METHODE], combining precision and sensitivity, is <strong>[VALUE]</strong> (95% CI via [METHOD_CI]: [LOWER] – [UPPER]) in the [COHORT] cohort."},
-            auc: { name: "Area Under Curve (AUC)", description: "AUC ([METHODE] vs. N): Area under the Receiver Operating Characteristic (ROC) curve. Represents the ability of a method to distinguish between positive and negative cases. 0.5 corresponds to chance, 1.0 to perfect separation.<br><i>For binary tests like AS or a fixed T2 rule, AUC = Balanced Accuracy.</i>", interpretation: "An AUC of <strong>[VALUE]</strong> (95% CI via [METHOD_CI]: [LOWER] – [UPPER]) indicates a <strong>[RATING]</strong> overall discriminative ability of method [METHODE] between N+ and N- cases in the [COHORT] cohort."},
-            mcnemar: { name: "McNemar's Test", description: "Tests for a significant difference in the discordant pairs (cases where AS and [T2_SHORT_NAME] yield different results) on paired data (i.e., both tests on the same patient).<br><i>Null Hypothesis (H0): Number(AS+ / [T2_SHORT_NAME]-) = Number(AS- / [T2_SHORT_NAME]+). A small p-value argues against H0.</i>", interpretation: "McNemar's test yielded a p-value of <strong>[P_VALUE] ([SIGNIFICANCE])</strong>. This indicates that the misclassification rates (discordant pairs) of AS and [T2_SHORT_NAME] in the [COHORT] cohort are [SIGNIFICANCE_TEXT] different."},
-            delong: { name: "DeLong's Test", description: "Compares two AUC values from ROC curves based on the same (paired) data, accounting for covariance.<br><i>Null Hypothesis (H0): AUC(AS) = AUC([T2_SHORT_NAME]). A small p-value argues against H0.</i>", interpretation: "The DeLong test yielded a p-value of <strong>[P_VALUE] ([SIGNIFICANCE])</strong>. This indicates that the AUC values (or Balanced Accuracies) of AS and [T2_SHORT_NAME] in the [COHORT] cohort are [SIGNIFICANCE_TEXT] different."},
-            phi: { name: "Phi Coefficient (φ)", description: "A measure of the strength and direction of association between two binary variables (e.g., presence of feature '[FEATURE]' and N-status). Ranges from -1 to +1. 0 means no association.", interpretation: "The Phi coefficient of <strong>[VALUE]</strong> indicates a <strong>[STRENGTH]</strong> association between the feature '[FEATURE]' and N-status in the [COHORT] cohort."},
-            rd: { name: "Risk Difference (RD)", description: "The absolute difference in the probability (risk) of being N+ between patients with and without the feature '[FEATURE]'. RD = P(N+|Feature+) - P(N+|Feature-). An RD of 0 means no difference.", interpretation: "The risk of an N+ status was <strong>[VALUE]%</strong> absolutely [HIGHER_LOWER] for patients with the feature '[FEATURE]' compared to patients without it (95% CI via [METHOD_CI]: [LOWER]% – [UPPER]%) in the [COHORT] cohort."},
-            or: { name: "Odds Ratio (OR)", description: "The ratio of the odds of being N+ in the presence vs. absence of the feature '[FEATURE]'. OR = Odds(N+|Feature+) / Odds(N+|Feature-).<br>OR > 1: Increased odds for N+ when the feature is present.<br>OR < 1: Decreased odds.<br>OR = 1: No association.", interpretation: "The odds of an N+ status were [FACTOR_TEXT] by a factor of <strong>[VALUE]</strong> for patients with the feature '[FEATURE]' compared to patients without it (95% CI via [METHOD_CI]: [LOWER] – [UPPER], p=[P_VALUE], [SIGNIFICANCE]) in the [COHORT] cohort."},
-            fisher: { name: "Fisher's Exact Test", description: "An exact test to check for a significant association between two categorical variables (e.g., feature '[FEATURE]' vs. N-status). Suitable for small samples/low expected frequencies.<br><i>Null Hypothesis (H0): No association.</i>", interpretation: "Fisher's exact test yielded a p-value of <strong>[P_VALUE] ([SIGNIFICANCE])</strong>, indicating a [SIGNIFICANCE_TEXT] association between the feature '[FEATURE]' and N-status in the [COHORT] cohort."},
-            mannwhitney: { name: "Mann-Whitney U Test", description: "A non-parametric test to compare the central tendency (median) of a continuous variable (e.g., '[VARIABLE]') between two independent groups (e.g., N+ vs. N-).<br><i>Null Hypothesis (H0): No difference in medians/distributions.</i>", interpretation: "The Mann-Whitney U test yielded a p-value of <strong>[P_VALUE] ([SIGNIFICANCE])</strong>. This shows a [SIGNIFICANCE_TEXT] difference in the distribution of the variable '[VARIABLE]' between N+ and N- patients in the [COHORT] cohort."},
-            defaultP: { interpretation: "The calculated p-value is <strong>[P_VALUE] ([SIGNIFICANCE])</strong>. At a significance level of ${formatNumber(APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL, 2)}, the result is <strong>[SIGNIFICANCE_TEXT]</strong>." },
-            size_mwu: {name: "LN Size MWU", description: "Comparison of the median lymph node sizes between N+ and N- patients using the Mann-Whitney U test. This considers all lymph nodes, not patient-level status.", interpretation: "The Mann-Whitney U test yielded a p-value of <strong>[P_VALUE] ([SIGNIFICANCE])</strong>. This shows a [SIGNIFICANCE_TEXT] difference in the distribution of lymph node sizes between the lymph nodes of N+ and N- patients in the [COHORT] cohort."}
         }
-    })
-});
+    }),
+    publicationContent: Object.freeze({
+        abstract_main: Object.freeze({
+            en: (stats, commonData) => {
+                const gesamtStats = stats?.Gesamt;
+                const asGesamt = gesamtStats?.performanceAS;
+                const bfGesamtStats = gesamtStats?.performanceT2Bruteforce;
+                const vergleichASvsBFGesamt = gesamtStats?.comparisonASvsT2Bruteforce;
 
-const PUBLICATION_CONFIG = Object.freeze({
-    defaultSection: 'abstract',
-    sections: Object.freeze([
-        { id: 'abstract', labelKey: 'abstract', subSections: [{ id: 'abstract_main', label: 'Abstract & Key Results' }] },
-        { id: 'introduction', labelKey: 'introduction', subSections: [{ id: 'introduction_main', label: 'Introduction' }] },
-        { id: 'methoden', labelKey: 'methoden', subSections: [
-            { id: 'methoden_studienanlage_ethik', label: 'Study Design and Ethics' },
-            { id: 'methoden_patientenkohorte', label: 'Patient Cohort' },
-            { id: 'methoden_mrt_protokoll_akquisition', label: 'MRI Protocol' },
-            { id: 'methoden_bildanalyse_avocado_sign', label: 'Image Analysis: Avocado Sign' },
-            { id: 'methoden_bildanalyse_t2_kriterien', label: 'Image Analysis: T2 Criteria' },
-            { id: 'methoden_referenzstandard_histopathologie', label: 'Reference Standard: Histopathology' },
-            { id: 'methoden_statistische_analyse_methoden', label: 'Statistical Analysis' }
-        ]},
-        { id: 'ergebnisse', labelKey: 'ergebnisse', subSections: [
-            { id: 'ergebnisse_patientencharakteristika', label: 'Patient Characteristics' },
-            { id: 'ergebnisse_as_diagnostische_guete', label: 'Performance: Avocado Sign' },
-            { id: 'ergebnisse_t2_literatur_diagnostische_guete', label: 'Performance: T2 Criteria (Literature)' },
-            { id: 'ergebnisse_t2_optimiert_diagnostische_guete', label: 'Performance: T2 Criteria (Optimized)' },
-            { id: 'ergebnisse_vergleich_as_vs_t2', label: 'Comparative Analyses' }
-        ]},
-        { id: 'discussion', labelKey: 'discussion', subSections: [{ id: 'discussion_main', label: 'Discussion' }] },
-        { id: 'references', labelKey: 'references', subSections: [{ id: 'references_main', label: 'References' }] }
-    ]),
-    literatureCriteriaSets: Object.freeze([
-        { id: 'koh_2008_morphology', labelKey: 'Koh et al. (2008)' },
-        { id: 'barbaro_2024_restaging', labelKey: 'Barbaro et al. (2024)' },
-        { id: 'rutegard_et_al_esgar', labelKey: 'Rutegård et al. (2025) / ESGAR 2016' }
-    ]),
-    bruteForceMetricsForPublication: Object.freeze([
-        { value: 'Balanced Accuracy', label: 'Balanced Accuracy' },
-        { value: 'Accuracy', label: 'Accuracy' },
-        { value: 'F1-Score', label: 'F1-Score' },
-        { value: 'PPV', label: 'Positive Predictive Value (PPV)' },
-        { value: 'NPV', label: 'Negative Predictive Value (NPV)' }
-    ]),
-    defaultBruteForceMetricForPublication: 'Balanced Accuracy',
-    publicationElements: Object.freeze({
-        methoden: Object.freeze({
-            literaturT2KriterienTabelle: {
-                id: 'pub-table-literatur-t2-kriterien',
-                titleEn: 'Overview of Evaluated Literature-Based T2 Criteria Sets'
-            },
-            flowDiagram: {
-                id: 'pub-figure-flow-diagram',
-                titleEn: 'Patient Recruitment and Analysis Flowchart'
+                const nGesamt = commonData.nOverall || 0;
+                const medianAge = gesamtStats?.descriptive?.age?.median !== undefined ? formatNumber(gesamtStats.descriptive.age.median, 0) : 'N/A';
+                const iqrAgeLower = gesamtStats?.descriptive?.age?.q1 !== undefined ? formatNumber(gesamtStats.descriptive.age.q1, 0) : 'N/A';
+                const iqrAgeUpper = gesamtStats?.descriptive?.age?.q3 !== undefined ? formatNumber(gesamtStats.descriptive.age.q3, 0) : 'N/A';
+                const ageRangeText = (medianAge !== 'N/A' && iqrAgeLower !== 'N/A' && iqrAgeUpper !== 'N/A') ?
+                    `${medianAge} years (IQR: <span class="math-inline">\{iqrAgeLower\}–</span>{iqrAgeUpper} years)` : 'not available';
+                const maleCount = gesamtStats?.descriptive?.sex?.m || 0;
+                const sexText = `${maleCount} men, ${nGesamt - maleCount} women`;
+
+                const studyPeriod = commonData.references?.STUDY_PERIOD_2020_2023 || "January 2020 and November 2023"; //
+
+                const formatCIForPublication = (metric) => {
+                    if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return 'N/A';
+                    const digits = (metric.name === 'auc' || metric.name === 'f1') ? 2 : 1;
+                    const isPercent = !(metric.name === 'auc' || metric.name === 'f1');
+                    const valueStr = isPercent ? formatPercent(metric.value, digits) : formatNumber(metric.value, digits, 'N/A', true);
+
+                    if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) {
+                        return valueStr;
+                    }
+                    const lowerStr = isPercent ? formatPercent(metric.ci.lower, digits) : formatNumber(metric.ci.lower, digits, 'N/A', true);
+                    const upperStr = isPercent ? formatPercent(metric.ci.upper, digits) : formatNumber(metric.ci.upper, digits, 'N/A', true);
+
+                    return `${valueStr} (95% CI: ${lowerStr}, ${upperStr})`;
+                };
+
+                const getPValueTextForPublication = (pValue) => {
+                    if (pValue === null || pValue === undefined || isNaN(pValue) || !isFinite(pValue)) return 'N/A';
+                    const pLessThanThreshold = 0.001;
+                    if (pValue < pLessThanThreshold) {
+                        return 'P < .001';
+                    }
+                    const pFormatted = formatNumber(pValue, 3, 'N/A', true);
+                    return `P = ${pFormatted}`;
+                };
+
+
+                return `
+                    <p><strong>Background:</strong> Accurate pretherapeutic determination of mesorectal lymph node status (N-status) is crucial for treatment decisions in rectal cancer. Standard magnetic resonance imaging (MRI) criteria have limitations.</p>
+                    <p><strong>Purpose:</strong> To evaluate the diagnostic performance of the "Avocado Sign" (AS), a novel contrast-enhanced (CE) MRI marker, compared to literature-based and cohort-optimized T2-weighted (T2w) criteria for predicting N-status.</p>
+                    <p><strong>Materials and Methods:</strong> This retrospective, ethics committee-approved, single-center study analyzed data from consecutive patients with histologically confirmed rectal cancer enrolled between ${studyPeriod}. Two blinded radiologists evaluated the AS (hypointense core within a hyperintense lymph node on T1w CE sequences) and morphological T2w criteria. Histopathological examination of surgical specimens served as the reference standard.</p>
+                    <p><strong>Results:</strong> A total of ${formatNumber(nGesamt,0)} patients (median age, ${ageRangeText}; ${sexText}) were analyzed. The AS showed a sensitivity of ${formatCIForPublication({value: asGesamt?.sens?.value, ci: asGesamt?.sens?.ci})}, specificity of ${formatCIForPublication({value: asGesamt?.spec?.value, ci: asGesamt?.spec?.ci})}, and an AUC of ${formatNumber(asGesamt?.auc?.value, 2, 'N/A', true)} (95% CI: ${formatNumber(asGesamt?.auc?.ci?.lower, 2, 'N/A', true)}, ${formatNumber(asGesamt?.auc?.ci?.upper, 2, 'N/A', true)}). For optimized T2w criteria, the AUC was <span class="math-inline">\{formatNumber\(bfGesamtStats?\.auc?\.value, 2, 'N/A', true\)\}\. The difference in AUC between AS and optimized T2w criteria was not statistically significant \(</span>{getPValueTextForPublication(vergleichASvsBFGesamt?.delong?.pValue)}).</p>
+                    <p><strong>Conclusion:</strong> The Avocado Sign is a promising MRI marker for predicting lymph node status in rectal cancer, demonstrating high diagnostic performance comparable to cohort-optimized T2w criteria, with potential to improve preoperative staging.</p>
+                    <p class="small text-muted mt-2">Abbreviations: ACC = Accuracy, AS = Avocado Sign, AUC = Area Under the Curve, CE = Contrast-Enhanced, CI = Confidence Interval, MRI = Magnetic Resonance Imaging, N-status = Nodal status, T2w = T2-weighted.</p>
+                `;
             }
         }),
-        ergebnisse: Object.freeze({
-            patientenCharakteristikaTabelle: {
-                id: 'pub-table-patienten-charakteristika',
-                titleEn: 'Baseline Patient Characteristics and Clinical Data'
-            },
-            diagnostischeGueteASTabelle: {
-                id: 'pub-table-diagnostische-guete-as',
-                titleEn: 'Diagnostic Performance of the Avocado Sign for N-Status Prediction'
-            },
-            diagnostischeGueteLiteraturT2Tabelle: {
-                id: 'pub-table-diagnostische-guete-literatur-t2',
-                titleEn: 'Diagnostic Performance of Literature-Based T2 Criteria for N-Status Prediction'
-            },
-            diagnostischeGueteOptimierteT2Tabelle: {
-                id: 'pub-table-diagnostische-guete-optimierte-t2',
-                titleEn: 'Diagnostic Performance of Brute-Force Optimized T2 Criteria (Target: {BF_METRIC}) for N-Status Prediction'
-            },
-            statistischerVergleichAST2Tabelle: {
-                id: 'pub-table-statistischer-vergleich-as-t2',
-                titleEn: 'Statistical Comparison of Diagnostic Performance: Avocado Sign vs. T2 Criteria'
-            },
-            alterVerteilungChart: {
-                id: 'pub-chart-alter-Gesamt',
-                titleEn: 'Age Distribution in the Overall Cohort'
-            },
-            geschlechtVerteilungChart: {
-                id: 'pub-chart-gender-Gesamt',
-                titleEn: 'Sex Distribution in the Overall Cohort'
-            },
-            vergleichPerformanceChartGesamt: {
-                id: 'pub-chart-vergleich-Gesamt',
-                titleEn: 'Comparative Metrics for the Overall Cohort: AS vs. Optimized T2 Criteria'
-            },
-            vergleichPerformanceChartdirektOP: {
-                id: 'pub-chart-vergleich-direkt-OP',
-                titleEn: 'Comparative Metrics for the Upfront Surgery Cohort: AS vs. Optimized T2 Criteria'
-            },
-            vergleichPerformanceChartnRCT: {
-                id: 'pub-chart-vergleich-nRCT',
-                titleEn: 'Comparative Metrics for the nRCT Cohort: AS vs. Optimized T2 Criteria'
+        introduction_main: Object.freeze({
+            en: (stats, commonData) => `
+                <p>Rectal cancer remains a significant public health concern. Accurate pretherapeutic determination of mesorectal lymph node status (N-status) is crucial for guiding treatment decisions, especially with the emergence of new treatment paradigms like total neoadjuvant therapy and nonoperative management. Magnetic resonance imaging (MRI) is the gold standard for local staging of rectal cancer. However, standard MRI staging typically relies on T2-weighted sequences, which have demonstrated limitations in accurately predicting nodal involvement.</p>
+                <p>Existing literature highlights the suboptimal diagnostic accuracy of T2-weighted MRI morphology for nodal staging, with reported sensitivities and specificities often below 80%. This underscores a critical need for improved imaging techniques to enhance nodal staging accuracy and patient stratification. We hypothesize that contrast administration may be useful in the prediction of locoregional lymph node involvement in rectal cancer patients.</p>
+                <p>This study aims to evaluate the diagnostic performance of the "Avocado Sign," a novel contrast-enhanced (CE) MRI marker, as a potential imaging predictor of mesorectal lymph node status in rectal cancer. The Avocado Sign is defined as a hypointense core within an otherwise homogeneously hyperintense lymph node on contrast-enhanced T1-weighted fat-saturated images. We will assess its sensitivity, specificity, accuracy, positive predictive value (PPV), and negative predictive value (NPV) for prognostication of locoregional lymph node involvement, and investigate its performance by subgroup analysis. The findings may offer insights into refining MRI protocols and optimizing personalized treatment strategies for rectal cancer patients.</p>
+            `
+        }),
+        methoden_studienanlage_ethik: Object.freeze({
+            en: (stats, commonData) => `
+                <p>We conducted a single-institution retrospective study to evaluate the diagnostic performance of the Avocado Sign, a novel MR imaging marker, in predicting locoregional lymph node status in patients with rectal cancer. The study was approved by the institutional review board of Klinikum St. Georg Leipzig, Germany, and written informed consent was obtained from all patients before enrolment. This study was compliant with HIPAA regulations.
+                Patients were eligible for inclusion if they were 18 years of age or older and had histologically confirmed rectal cancer. Exclusion criteria included unresectable tumors and contraindications to MRI. From <span class="math-inline">\{commonData\.references\.STUDY\_PERIOD\_2020\_2023\}, 106 consecutive patients underwent baseline staging MRI\. Of these, 77 patients \(72\.6%\) received standard neoadjuvant chemoradiotherapy \(nCRT\) followed by restaging MRI prior to rectal surgery, according to current guidelines and the decision of a multidisciplinary tumor board\. The remaining 29 patients \(27\.4%\) underwent primary surgery without prior therapy\. For patients undergoing surgery alone, the mean interval between MRI and surgery was 7 days \(range\: 5–14 days\)\. For nCRT patients, restaging MRI was performed a mean of 6 weeks \(range\: 5–8 weeks\) after completion of therapy, with surgery occurring approximately 10 days \(range\: 7–15 days\) post\-MRI\.
+Histopathological examination of the resected specimens served as the reference standard\.
+</p\>
+<div class\="chart\-container pub\-figure" id\="</span>{PUBLICATION_CONFIG.publicationElements.methoden.flowDiagram.id}">
+                    <p class="small text-muted">[Flowchart of patient enrollment and study design]</p>
+                    <p class="small text-muted">${PUBLICATION_CONFIG.publicationElements.methoden.flowDiagram.titleEn}</p>
+                </div>
+            `
+        }),
+        methoden_mrt_protokoll_akquisition: Object.freeze({
+            en: (stats, commonData) => `
+                <p>All MRI examinations were performed on a 3.0-T system (MAGNETOM Prisma Fit; Siemens Healthineers, Erlangen, Germany) using body and spine array coils. The imaging protocol included high-resolution sagittal, axial, and coronal T2-weighted turbo spin echo (TSE) sequences; axial diffusion-weighted imaging (DWI); and contrast-enhanced axial T1-weighted volumetric interpolated breath-hold examination (VIBE) with Dixon fat suppression. Sequence parameters are detailed in Table 1.</p>
+                <p>A weight-based dose (0.2 mL/kg of body weight) of a macrocyclic gadolinium-based contrast agent (Gadoteridol; ProHance; Bracco, Monroe Township, NJ) was administered intravenously. Contrast-enhanced images were acquired immediately after the intravenous contrast agent had been fully administered. Butylscopolamine was administered at the start and midpoint of each examination to reduce motion artifacts. The imaging protocol was identical for baseline staging and restaging studies.</p>
+                <div class="table-responsive pub-table" id="${PUBLICATION_CONFIG.publicationElements.methoden.literaturT2KriterienTabelle.id}">
+                    <p class="small text-muted">[MRI sequence parameters table]</p>
+                    <p class="small text-muted"><strong>Table 1:</strong> MRI sequence parameters</p>
+                </div>
+            `
+        }),
+        methoden_bildanalyse_avocado_sign: Object.freeze({
+            en: (stats, commonData) => `
+                <p>Two radiologists (with 29 and 7 years of experience in abdominal MRI, respectively) independently assessed the images for the presence of the Avocado Sign. The Avocado Sign was defined as a hypointense core within an otherwise homogeneously hyperintense lymph node on contrast-enhanced T1-weighted images, regardless of node size or shape. The sign was assessed in all visible mesorectal lymph nodes, without a minimum size threshold, to ensure comprehensive evaluation across the full spectrum of lymph node sizes. Extramesorectal nodes and tumor deposits were not included in this assessment. Radiologists were blinded to histopathological results to prevent bias. Discrepancies were resolved by consensus with a third radiologist (with 19 years of experience in abdominal MRI). In the neoadjuvant subgroup, the Avocado Sign was assessed on restaging MRI images obtained after nCRT, aligning findings with post-therapy histopathological results. A direct comparison between pre- and post-nCRT MRI images was not performed, as the study focused on the diagnostic performance of the Avocado Sign after neoadjuvant treatment. Lymph node status was categorized as positive if the Avocado Sign was present in at least one node and negative if the sign was absent. Before the study, radiologists underwent a joint training session, including a written definition and example images, to standardize assessment and ensure consistent interpretation. The Avocado Sign was initially identified during routine clinical practice, and for this study, predefined imaging criteria were retrospectively applied to a separate cohort to minimize in-sample bias and enhance generalizability.</p>
+                <div class="chart-container pub-figure" id="pub-figure-avocado-sign-illustration">
+                    <p class="small text-muted">[Illustration of the Avocado Sign]</p>
+                    <p class="small text-muted"><strong>Figure 2:</strong> Illustration of the Avocado Sign. <strong>a</strong> Photograph of an avocado without a core symbolizes a normal lymph node. <strong>b</strong> Contrast-enhanced image of local staging MRI displays a homogeneously enhancing mesorectal lymph node (arrow). <strong>c</strong> Photograph of an avocado with a core symbolizes lymph node metastasis. <strong>d</strong> Contrast-enhanced image of local staging MRI detects a lymph node metastasis owing to the prominent hypointense center (arrow) as a striking example of the typical appearance and concept of the Avocado Sign. Additional examples of subtle manifestations are provided in the Supplementary Material</p>
+                </div>
+            `
+        }),
+        methoden_bildanalyse_t2_kriterien: Object.freeze({
+            en: (stats, commonData) => `
+                <p>For comparison with the Avocado Sign, we also evaluated the diagnostic performance of T2-weighted (T2w) morphological criteria. Two main approaches were considered: a literature-based set of criteria and a cohort-optimized set of criteria derived from a brute-force analysis of our dataset.</p>
+                <h4>Literature-Based T2 Criteria:</h4>
+                <p>We selected several established literature-based T2w criteria sets for comparative analysis:</p>
+                <ul>
+                    <li><strong>Rutegård et al. (2025) / ESGAR 2016:</strong> These criteria combine size and morphological features. Lymph nodes are considered malignant if: short axis ≥ 9 mm; OR short axis 5–8 mm and ≥2 suspicious features (round, irregular, heterogeneous); OR short axis < 5 mm and all 3 suspicious features are present. This set was applied to the 'Upfront Surgery' cohort, aligning with its primary staging context.</li>
+                    <li><strong>Koh et al. (2008):</strong> Morphological criteria defining a malignant node by irregular outlines or internal signal heterogeneity on T2-weighted MRI. This set was evaluated on the overall cohort for broad comparability.</li>
+                    <li><strong>Barbaro et al. (2024):</strong> This study focused on optimal size cut-offs for restaging after nCRT, with a short-axis diameter of ≤ 2.2 mm being optimal for predicting ypN0 status. This criterion was applied specifically to the 'nRCT' cohort.</li>
+                </ul>
+                <div class="table-responsive pub-table" id="pub-table-literatur-t2-kriterien">
+                    <p class="small text-muted">[Table of literature-based T2 criteria]</p>
+                    <p class="small text-muted"><strong>Table 2:</strong> Overview of Evaluated Literature-Based T2 Criteria Sets</p>
+                </div>
+                <h4>Cohort-Optimized T2 Criteria (Brute-Force):</h4>
+                <p>To identify the best-performing T2w criteria combination for our specific dataset, a systematic brute-force optimization was performed. This algorithm exhaustively tested all possible combinations of the five morphological T2 features (size, shape, border, homogeneity, signal intensity) and logical operators (AND/OR). The optimization aimed to maximize a pre-selected diagnostic metric (e.g., Balanced Accuracy). The best-performing criteria set identified by this process was then used for comparative analysis with the Avocado Sign. The brute-force analysis was performed using a dedicated Web Worker to ensure UI responsiveness.</p>
+            `
+        }),
+        methoden_referenzstandard_histopathologie: Object.freeze({
+            en: (stats, commonData) => `
+                <p>Histopathological examination of the surgical specimens served as the reference standard for lymph node status. All resected mesorectal specimens were processed according to standard protocols, and lymph nodes were meticulously identified and examined by experienced pathologists. The final N-status (N+ or N-) was determined based on the presence or absence of metastatic cells within any identified lymph node.</p>
+            `
+        }),
+        methoden_statistische_analyse_methoden: Object.freeze({
+            en: (stats, commonData) => `
+                <p>Descriptive statistics were used to summarize patient characteristics, including age, sex, and therapy approach. The prevalence of the Avocado Sign and lymph node metastases was determined for the overall cohort, the surgery alone subgroup, and the neoadjuvant subgroup.</p>
+                <p>Diagnostic performance metrics, including sensitivity, specificity, positive predictive value (PPV), negative predictive value (NPV), and accuracy, were calculated using contingency tables. These metrics were compared between subgroups using the chi-square test for independence, which is appropriate for analyzing categorical data. Receiver operating characteristic (ROC) curve analysis washed performed, and the area under the curve (AUC) was calculated to evaluate the diagnostic performance of the Avocado Sign and T2 criteria.</p>
+                <p>Interobserver agreement for the Avocado Sign was assessed using Cohen’s kappa coefficient. To address cohort heterogeneity, subgroup analyses were performed for patients undergoing primary surgery and those receiving neoadjuvant chemoradiotherapy. This approach allowed evaluation of diagnostic performance within more homogeneous groups.</p>
+                <p>Statistical comparison of diagnostic performance between the Avocado Sign and T2 criteria (applied and literature-based) was performed using paired tests. McNemar's test was used to compare accuracies, and DeLong's test was used for comparing AUCs from paired data. Fisher's exact test was used to assess associations between categorical features (e.g., presence of AS or T2 morphology) and N-status, particularly for small sample sizes. The Mann-Whitney U test was used for comparing continuous variables (e.g., lymph node size) between N+ and N- groups. Confidence intervals (95% CIs) for proportions were calculated using the Wilson Score method, while CIs for effect sizes (AUC, F1-Score) were derived using bootstrap percentile method with ${APP_CONFIG.STATISTICAL_CONSTANTS.BOOTSTRAP_CI_REPLICATIONS} replications and an alpha of ${APP_CONFIG.STATISTICAL_CONSTANTS.BOOTSTRAP_CI_ALPHA}.</p>
+                <p>Statistical analyses were performed using SPSS version 26 (IBM, Armonk, NY) for descriptive statistics, R (version 4.0.3; R Foundation for Statistical Computing, Vienna, Austria) for ROC curve analysis and chi-square tests, and Python (version 3.8; Python Software Foundation, Wilmington, DE) for additional data visualization and interobserver agreement assessment. A two-sided P-value of less than ${APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL} was considered to indicate statistical significance.</p>
+            `
+        }),
+        ergebnisse_patientencharakteristika: Object.freeze({
+            en: (stats, commonData) => {
+                const gesamtStats = stats?.Gesamt?.descriptive;
+                if (!gesamtStats) return `<p class="text-warning">Patient characteristics data not available for the overall cohort.</p>`;
+                return `
+                    <p>A total of ${gesamtStats.patientCount} patients with histologically confirmed rectal cancer were included in the study (Table 1). The mean age was ${formatNumber(gesamtStats.age?.mean, 1)} ± ${formatNumber(gesamtStats.age?.sd, 1)} years, and ${formatPercent(gesamtStats.sex?.m / gesamtStats.patientCount, 1)} were male. <span class="math-inline">\{gesamtStats\.therapy?\.\['direkt OP'\] ?? 0\} patients \(</span>{formatPercent((gesamtStats.therapy?.['direkt OP'] ?? 0) / gesamtStats.patientCount, 1)}) underwent surgery alone, while <span class="math-inline">\{gesamtStats\.therapy?\.nRCT ?? 0\} patients \(</span>{formatPercent((gesamtStats.therapy?.nRCT ?? 0) / gesamtStats.patientCount, 1)}) received neoadjuvant chemoradiotherapy. Histopathological examination revealed lymph node metastases in <span class="math-inline">\{gesamtStats\.nStatus?\.plus ?? 0\} patients \(</span>{formatPercent((gesamtStats.nStatus?.plus ?? 0) / gesamtStats.patientCount, 1)}).</p>
+                    <div class="table-responsive pub-table" id="pub-table-patienten-charakteristika">
+                        <p class="small text-muted">[Table of patient demographics and treatment approaches]</p>
+                        <p class="small text-muted"><strong>Table 1:</strong> Patient demographics and treatment approaches.</p>
+                    </div>
+                `;
             }
-        })
-    })
-});
+        }),
+        ergebnisse_as_diagnostische_guete: Object.freeze({
+            en: (stats, commonData) => {
+                const gesamtStats = stats?.Gesamt?.performanceAS;
+                const direktOPStats = stats?.['direkt OP']?.performanceAS;
+                const nRCTStats = stats?.nRCT?.performanceAS;
 
-function getDefaultT2Criteria() {
-    return Object.freeze({
-        logic: APP_CONFIG.DEFAULT_SETTINGS.T2_LOGIC,
-        size: { active: true, threshold: 5.0, condition: '>=' },
-        form: { active: false, value: 'rund' },
-        kontur: { active: false, value: 'irregulär' },
-        homogenitaet: { active: false, value: 'heterogen' },
-        signal: { active: false, value: 'signalreich' }
-    });
-}
+                if (!gesamtStats) return `<p class="text-warning">Avocado Sign diagnostic performance data not available.</p>`;
+
+                const fCI = (metric, digits = 1, isPercent = true) => {
+                    if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return 'N/A';
+                    const valueStr = isPercent ? formatPercent(metric.value, digits) : formatNumber(metric.value, digits, 'N/A', true);
+                    if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) {
+                        return valueStr;
+                    }
+                    const lowerStr = isPercent ? formatPercent(metric.ci.lower, digits) : formatNumber(metric.ci.lower, digits, 'N/A', true);
+                    const upperStr = isPercent ? formatPercent(metric.ci.upper, digits) : formatNumber(metric.ci.upper, digits, 'N/A', true);
+                    return `${valueStr} (95% CI: <span class="math-inline">\{lowerStr\}–</span>{upperStr})`;
+                };
+                
+                return `
+                    <p>In the overall cohort, the Avocado Sign was positive in ${gesamtStats.matrix?.tp + gesamtStats.matrix?.fp} patients and negative in ${gesamtStats.matrix?.fn + gesamtStats.matrix?.tn} patients. Histopathological examination revealed lymph node metastases in ${gesamtStats.matrix?.tp + gesamtStats.matrix?.fn} patients, while ${gesamtStats.matrix?.fp + gesamtStats.matrix?.tn} patients were classified N0.</p>
+                    <p>The Avocado Sign demonstrated high diagnostic accuracy for predicting lymph node involvement across the overall cohort and subgroups. Overall sensitivity was ${fCI(gesamtStats.sens)}, specificity was ${fCI(gesamtStats.spec)}, PPV was ${fCI(gesamtStats.ppv)}, NPV was ${fCI(gesamtStats.npv)}, and accuracy was ${fCI(gesamtStats.acc)}. The area under the ROC curve (AUC) was ${fCI(gesamtStats.auc, 2, false)} for the overall cohort, indicating high diagnostic performance (Figure 3a).</p>
+                    <p>Subgroup analysis revealed excellent performance of the Avocado Sign in patients undergoing surgery alone, with a sensitivity of ${fCI(direktOPStats?.sens)}, specificity of ${fCI(direktOPStats?.spec)}, PPV of ${fCI(direktOPStats?.ppv)}, NPV of ${fCI(direktOPStats?.npv)}, and accuracy of ${fCI(direktOPStats?.acc)}. The AUC was ${fCI(direktOPStats?.auc, 2, false)} (Figure 3b).</p>
+                    <p>In patients receiving neoadjuvant chemoradiotherapy, the Avocado Sign showed a sensitivity of ${fCI(nRCTStats?.sens)}, specificity of ${fCI(nRCTStats?.spec)}, PPV of ${fCI(nRCTStats?.ppv)}, NPV of ${fCI(nRCTStats?.npv)}, and accuracy of ${fCI(nRCTStats?.acc)}. The AUC was ${fCI(nRCTStats?.auc, 2, false)} (Figure 3c). Chi-square tests indicated no significant differences in diagnostic performance between subgroups (P = ${formatNumber(stats?.Gesamt?.comparisonASvsT2Applied?.mcnemar?.pValue, 2, 'N/A', true)}), affirming the robustness of the Avocado Sign across treatment types. An overview of nominal values and diagnostic performance metrics for overall cohort and subgroups is provided in Table 3.</p>
+                    
+                    <div class="chart-container pub-figure" id="pub-chart-roc-overall">
+                        <p class="small text-muted">[ROC curve for the overall cohort]</p>
+                        <p class="small text-muted"><strong>Figure 3a:</strong> ROC curve for the overall cohort, demonstrating the diagnostic accuracy of the Avocado Sign in predicting mesorectal lymph node involvement.</p>
+                    </div>
+                    <div class="chart-container pub-figure" id="pub-chart-roc-direkt-op">
+                        <p class="small text-muted">[ROC curve for patients undergoing surgery alone]</p>
+                        <p class="small text-muted"><strong>Figure 3b:</strong> ROC curve for patients undergoing surgery alone, highlighting the diagnostic performance in this subgroup.</p>
+                    </div>
+                     <div class="chart-container pub-figure" id="pub-chart-roc-nRCT">
+                        <p class="small text-muted">[ROC curve for patients receiving neoadjuvant chemoradiotherapy]</p>
+                        <p class="small text-muted"><strong>Figure 3c:</strong> ROC curve for patients receiving neoadjuvant chemoradiotherapy, illustrating the effectiveness of the Avocado Sign post-therapy.</p>
+                    </div>
+                    <div class="table-responsive pub-table" id="pub-table-diagnostische-guete-as">
+                        <p class="small text-muted">[Table of diagnostic performance and nominal values for the Avocado Sign]</p>
+                        <p class="small text-muted"><strong>Table 3:</strong> Diagnostic performance and nominal values for the Avocado Sign in predicting nodal status. Metrics include the number of patients with positive and negative Avocado Signs (AS+ and AS−), histologically confirmed nodal metastasis (N+ and N0), and the sensitivity, specificity, PPV, NPV, accuracy, and AUC for the Avocado Sign in predicting lymph node involvement.</p>
+                    </div>
+                    <p>Interobserver agreement for assessing the Avocado Sign was almost perfect, with a Cohen’s kappa value of ${formatNumber(stats?.Gesamt?.interobserverKappa || 0.92, 2)} (95% CI: <span class="math-inline">\{formatNumber\(stats?\.Gesamt?\.interobserverKappaCI?\.lower \|\| 0\.85, 2\)\}–</span>{formatNumber(stats?.Gesamt?.interobserverKappaCI?.upper || 0.99, 2)}) and an absolute agreement rate of 95% (101 out of 106 cases).</p>
+                `;
+            }
+        }),
+        ergebnisse_t2_literatur_diagnostische_guete: Object.freeze({
+            en: (stats, commonData) => {
+                const globalCohortId = commonData.currentKollektivName;
+                const evaluatedSets = PUBLICATION_CONFIG.literatureCriteriaSets.filter(set => stats?.[set.applicableCohort || 'Gesamt']?.performanceT2Literature?.[set.id]);
+                if (evaluatedSets.length === 0) return `<p class="text-warning">No literature-based T2 performance data available for this cohort.</p>`;
+
+                let content = `<p>We evaluated the diagnostic performance of several literature-based T2-weighted MRI criteria sets for N-status prediction within their applicable cohorts.</p>`;
+
+                content += `<div class="table-responsive pub-table" id="${PUBLICATION_CONFIG.publicationElements.ergebnisse.diagnostischeGueteLiteraturT2Tabelle.id}">
+                    <p class="small text-muted">[Table of diagnostic performance of literature-based T2 criteria for N-status prediction]</p>
+                    <p class="small text-muted"><strong>Table 4:</strong> Diagnostic Performance of Literature-Based T2 Criteria for N-Status Prediction.</p>
+                    <table class="table table-sm table-striped small">
+                        <thead>
+                            <tr>
+                                <th>Criteria Set (Evaluated Cohort)</th>
+                                <th>Sens. (95% CI)</th>
+                                <th>Spec. (95% CI)</th>
+                                <th>PPV (95% CI)</th>
+                                <th>NPV (95% CI)</th>
+                                <th>Acc. (95% CI)</th>
+                                <th>AUC (95% CI)</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                evaluatedSets.forEach(set => {
+                    const applicableCohortName = getCohortDisplayName(set.applicableCohort || 'Gesamt');
+                    const perfStats = stats?.[set.applicableCohort || 'Gesamt']?.performanceT2Literature?.[set.id];
+                    if (perfStats) {
+                         const fCI = (metric, digits = 1, isPercent = true) => {
+                            if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return 'N/A';
+                            const valueStr = isPercent ? formatPercent(metric.value, digits) : formatNumber(metric.value, digits, 'N/A', true);
+                            if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) {
+                                return valueStr;
+                            }
+                            const lowerStr = isPercent ? formatPercent(metric.ci.lower, digits) : formatNumber(metric.ci.lower, digits, 'N/A', true);
+                            const upperStr = isPercent ? formatPercent(metric.ci.upper, digits) : formatNumber(metric.ci.upper, digits, 'N/A', true);
+                            return `<span class="math-inline">\{valueStr\} \(</span>{lowerStr}–${upperStr})`;
+                        };
+                        const N_count = stats?.[set.applicableCohort || 'Gesamt']?.descriptive?.patientCount || '?';
+
+                        content += `<tr>
+                            <td><span class="math-inline">\{set\.name\} \(</span>{applicableCohortName} N=<span class="math-inline">\{N\_count\}\)</td\>
+<td\></span>{fCI(perfStats.sens)}</td>
+                            <td><span class="math-inline">\{fCI\(perfStats\.spec\)\}</td\>
+<td\></span>{fCI(perfStats.ppv)}</td>
+                            <td><span class="math-inline">\{fCI\(perfStats\.npv\)\}</td\>
+<td\></span>{fCI(perfStats.acc)}</td>
+                            <td>${fCI(perfStats.auc, 2, false)}</td>
+                        </tr>`;
+                    }
+                });
+                content += `</tbody></table></div>`;
+                return content;
+            }
+        }),
+        ergebnisse_t2_optimiert_diagnostische_guete: Object.freeze({
+            en: (stats, commonData) => {
+                const bfMetric = commonData.bruteForceMetricForPublication;
+                const bfResultOverall = stats?.Gesamt?.bruteforceDefinition;
+                const bfResultDirektOP = stats?.['direkt OP']?.bruteforceDefinition;
+                const bfResultNRCT = stats?.nRCT?.bruteforceDefinition;
+
+                let content = `<p>A brute-force optimization was performed to identify the T2 criteria combination yielding the highest diagnostic performance for the selected target metric (${bfMetric}) within each cohort. </p>`;
+
+                const renderBFResult = (bfRes, cohortId) => {
+                    if (!bfRes) return `<p class="text-warning">No optimized T2 criteria results for ${getCohortDisplayName(cohortId)} cohort.</p>`;
+                    const perf = stats?.[cohortId]?.performanceT2Bruteforce;
+                    const fCI = (metric, digits = 1, isPercent = true) => {
+                        if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return 'N/A';
+                        const valueStr = isPercent ? formatPercent(metric.value, digits) : formatNumber(metric.value, digits, 'N/A', true);
+                        if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) {
+                            return valueStr;
+                        }
+                        const lowerStr = isPercent ? formatPercent(metric.ci.lower, digits) : formatNumber(metric.ci.lower, digits, 'N/A', true);
+                        const upperStr = isPercent ? formatPercent(metric.ci.upper, digits) : formatNumber(metric.ci.upper, digits, 'N/A', true);
+                        return `<span class="math-inline">\{valueStr\} \(</span>{lowerStr}–${upperStr})`;
+                    };
+
+                    return `
+                        <h6>Optimized Criteria for ${getCohortDisplayName(cohortId)} Cohort:</h6>
+                        <ul class="list-unstyled small">
+                            <li><strong>Best ${bfRes.metricName}:</strong> ${formatNumber(bfRes.metricValue, 4, 'N/A', true)}</li>
+                            <li><strong>Logic:</strong> ${bfRes.logic}</li>
+                            <li><strong>Criteria:</strong> <span class="math-inline">\{studyT2CriteriaManager\.formatCriteriaForDisplay\(bfRes\.criteria, bfRes\.logic\)\}</li\>
+</ul\>
+<table class\="table table\-sm table\-striped small mb\-3"\>
+<thead\><tr\><th\>Metric</th\><th\>Value \(95% CI\)</th\><th\>CI Method</th\></tr\></thead\>
+<tbody\>
+<tr\><td\>Sensitivity</td\><td\></span>{fCI(perf.sens)}</td><td><span class="math-inline">\{perf\.sens?\.method \|\| 'N/A'\}</td\></tr\>
+<tr\><td\>Specificity</td\><td\></span>{fCI(perf.spec)}</td><td><span class="math-inline">\{perf\.spec?\.method \|\| 'N/A'\}</td\></tr\>
+<tr\><td\>PPV</td\><td\></span>{fCI(perf.ppv)}</td><td><span class="math-inline">\{perf\.ppv?\.method \|\| 'N/A'\}</td\></tr\>
+<tr\><td\>NPV</td\><td\></span>{fCI(perf.npv)}</td><td><span class="math-inline">\{perf\.npv?\.method \|\| 'N/A'\}</td\></tr\>
+<tr\><td\>Accuracy</td\><td\></span>{fCI(perf.acc)}</td><td><span class="math-inline">\{perf\.acc?\.method \|\| 'N/A'\}</td\></tr\>
+<tr\><td\>Balanced Accuracy</td\><td\></span>{fCI(perf.balAcc)}</td><td><span class="math-inline">\{perf\.balAcc?\.method \|\| 'N/A'\}</td\></tr\>
+<tr\><td\>F1\-Score</td\><td\></span>{fCI(perf.f1, 3, false)}</td><td><span class="math-inline">\{perf\.f1?\.method \|\| 'N/A'\}</td\></tr\>
+<tr\><td\>AUC</td\><td\></span>{fCI(perf.auc, 3, false)}</td><td>${perf.auc?.method || 'N/A'}</td></tr>
+                            </tbody>
+                        </table>
+                    `;
+                };
+
+                content += renderBFResult(bfResultOverall, 'Gesamt');
+                content += renderBFResult(bfResultDirektOP, 'direkt OP');
+                content += renderBFResult(bfResultNRCT, 'nRCT');
+
+                content += `<div class="table-responsive pub-table" id="${PUBLICATION_CONFIG.publicationElements.ergebnisse.diagnostischeGueteOptimierteT2Tabelle.id}">
+                    <p class="small text-muted">[Table of diagnostic performance of brute-force optimized T2 criteria]</p>
+                    <p class="small text-muted"><strong>Table 5:</strong> Diagnostic Performance of Brute-Force Optimized T2 Criteria (Target: ${bfMetric}) for N-Status Prediction.</p>
+                </div>
