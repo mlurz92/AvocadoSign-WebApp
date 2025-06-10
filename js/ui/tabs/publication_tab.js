@@ -18,14 +18,16 @@ const publicationTab = (() => {
 
         const formatCIForPublication = (metric) => {
             if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return 'N/A';
-            const digits = (metric.name === 'auc' || metric.name === 'f1') ? 2 : 1;
-            const isPercent = !(metric.name === 'auc' || metric.name === 'f1');
+            const metricName = Object.keys(metric).find(k => k === 'sens' || k === 'spec' || k === 'ppv' || k === 'npv' || k === 'acc' || k === 'auc' || k === 'f1') || 'value';
+            const digits = (metricName === 'auc' || metricName === 'f1') ? 2 : 1;
+            const isPercent = !(metricName === 'auc' || metricName === 'f1');
             const valueStr = isPercent ? formatPercent(metric.value, digits) : formatNumber(metric.value, digits, 'N/A', true);
             if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) return valueStr;
             const lowerStr = isPercent ? formatPercent(metric.ci.lower, digits) : formatNumber(metric.ci.lower, digits, 'N/A', true);
             const upperStr = isPercent ? formatPercent(metric.ci.upper, digits) : formatNumber(metric.ci.upper, digits, 'N/A', true);
             return `${valueStr} (95% CI: ${lowerStr}, ${upperStr})`;
         };
+        
         const getPValueTextForPublication = (pValue) => {
             if (pValue === null || pValue === undefined || isNaN(pValue) || !isFinite(pValue)) return 'N/A';
             if (pValue < 0.001) return 'P < .001';
@@ -118,6 +120,7 @@ const publicationTab = (() => {
 
         const fCI = (metric, digits = 1, isPercent = true) => {
             if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return 'N/A';
+            const metricName = Object.keys(metric).find(k => k === 'sens' || k === 'spec' || k === 'ppv' || k === 'npv' || k === 'acc' || k === 'auc' || k === 'f1') || 'value';
             const valueStr = isPercent ? formatPercent(metric.value, digits) : formatNumber(metric.value, digits, 'N/A', true);
             if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) {
                 return valueStr;
@@ -210,15 +213,12 @@ const publicationTab = (() => {
         const na = 'N/A';
         const fv = (val, dig = 1, useStd = true) => formatNumber(val, dig, na, useStd);
         const fP = (val, dig = 1) => formatPercent(val, dig, na);
-        const getPValueTextForPublication = (pValue) => {
-            if (pValue === null || pValue === undefined || isNaN(pValue) || !isFinite(pValue)) return 'N/A';
-            if (pValue < 0.001) return 'P < .001';
-            return `P = ${formatNumber(pValue, 3, 'N/A', true)}`;
-        };
+        
         const fCI_pub = (metric) => {
             if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return na;
-            const digits = (metric.name === 'auc') ? 2 : 1;
-            const isPercent = metric.name !== 'auc';
+            const metricName = Object.keys(metric).find(k => k === 'sens' || k === 'spec' || k === 'ppv' || k === 'npv' || k === 'acc' || k === 'auc' || k === 'f1') || 'value';
+            const digits = (metricName === 'auc') ? 2 : 1;
+            const isPercent = metricName !== 'auc';
             const valueStr = isPercent ? fP(metric.value, digits) : fv(metric.value, digits, true);
             if (!metric.ci || typeof metric.ci.lower !== 'number' || isNaN(metric.ci.lower)) return valueStr;
             const lowerStr = isPercent ? fP(metric.ci.lower, digits) : fv(metric.ci.lower, digits, true);
@@ -259,12 +259,15 @@ const publicationTab = (() => {
         } else if (tableId === pubConfig.ergebnisse.diagnostischeGueteASTabelle.id) {
              caption = pubConfig.ergebnisse.diagnostischeGueteASTabelle.titleEn;
              headers = ['Metric', `Overall (n=${stats?.Gesamt?.descriptive?.patientCount||'?'})`, `Surgery alone (n=${stats?.['direkt OP']?.descriptive?.patientCount||'?'})`, `Neoadjuvant therapy (n=${stats?.nRCT?.descriptive?.patientCount||'?'})`];
-             const getRow = (metricKey, formatFn) => [
+             const getRow = (metricKey, formatFn) => {
+                const keyLower = metricKey.toLowerCase();
+                return [
                  metricKey,
-                 formatFn(stats?.Gesamt?.performanceAS?.[metricKey.toLowerCase()]),
-                 formatFn(stats?.['direkt OP']?.performanceAS?.[metricKey.toLowerCase()]),
-                 formatFn(stats?.nRCT?.performanceAS?.[metricKey.toLowerCase()])
-             ];
+                 formatFn(stats?.Gesamt?.performanceAS?.[keyLower]),
+                 formatFn(stats?.['direkt OP']?.performanceAS?.[keyLower]),
+                 formatFn(stats?.nRCT?.performanceAS?.[keyLower])
+                ];
+             };
              rows = [
                  getRow('Sensitivity', m => fCI_pub({...m, name: 'sens'})),
                  getRow('Specificity', m => fCI_pub({...m, name: 'spec'})),
