@@ -398,7 +398,7 @@ const UI_TEXTS = Object.freeze({
                 const iqrAgeLower = gesamtStats?.descriptive?.age?.q1 !== undefined ? formatNumber(gesamtStats.descriptive.age.q1, 0) : 'N/A';
                 const iqrAgeUpper = gesamtStats?.descriptive?.age?.q3 !== undefined ? formatNumber(gesamtStats.descriptive.age.q3, 0) : 'N/A';
                 const ageRangeText = (medianAge !== 'N/A' && iqrAgeLower !== 'N/A' && iqrAgeUpper !== 'N/A') ?
-                    `${medianAge} years (IQR: <span class="math-inline">\{iqrAgeLower\}–</span>{iqrAgeUpper} years)` : 'not available';
+                    `${medianAge} years (IQR: ${iqrAgeLower}–${iqrAgeUpper} years)` : 'not available';
                 const maleCount = gesamtStats?.descriptive?.sex?.m || 0;
                 const sexText = `${maleCount} men, ${nGesamt - maleCount} women`;
 
@@ -434,7 +434,7 @@ const UI_TEXTS = Object.freeze({
                     <p><strong>Background:</strong> Accurate pretherapeutic determination of mesorectal lymph node status (N-status) is crucial for treatment decisions in rectal cancer. Standard magnetic resonance imaging (MRI) criteria have limitations.</p>
                     <p><strong>Purpose:</strong> To evaluate the diagnostic performance of the "Avocado Sign" (AS), a novel contrast-enhanced (CE) MRI marker, compared to literature-based and cohort-optimized T2-weighted (T2w) criteria for predicting N-status.</p>
                     <p><strong>Materials and Methods:</strong> This retrospective, ethics committee-approved, single-center study analyzed data from consecutive patients with histologically confirmed rectal cancer enrolled between ${studyPeriod}. Two blinded radiologists evaluated the AS (hypointense core within a hyperintense lymph node on T1w CE sequences) and morphological T2w criteria. Histopathological examination of surgical specimens served as the reference standard.</p>
-                    <p><strong>Results:</strong> A total of ${formatNumber(nGesamt,0)} patients (median age, ${ageRangeText}; ${sexText}) were analyzed. The AS showed a sensitivity of ${formatCIForPublication({value: asGesamt?.sens?.value, ci: asGesamt?.sens?.ci})}, specificity of ${formatCIForPublication({value: asGesamt?.spec?.value, ci: asGesamt?.spec?.ci})}, and an AUC of ${formatNumber(asGesamt?.auc?.value, 2, 'N/A', true)} (95% CI: ${formatNumber(asGesamt?.auc?.ci?.lower, 2, 'N/A', true)}, ${formatNumber(asGesamt?.auc?.ci?.upper, 2, 'N/A', true)}). For optimized T2w criteria, the AUC was <span class="math-inline">\{formatNumber\(bfGesamtStats?\.auc?\.value, 2, 'N/A', true\)\}\. The difference in AUC between AS and optimized T2w criteria was not statistically significant \(</span>{getPValueTextForPublication(vergleichASvsBFGesamt?.delong?.pValue)}).</p>
+                    <p><strong>Results:</strong> A total of ${formatNumber(nGesamt,0)} patients (median age, ${ageRangeText}; ${sexText}) were analyzed. The AS showed a sensitivity of ${formatCIForPublication({value: asGesamt?.sens?.value, ci: asGesamt?.sens?.ci})}, specificity of ${formatCIForPublication({value: asGesamt?.spec?.value, ci: asGesamt?.spec?.ci})}, and an AUC of ${formatNumber(asGesamt?.auc?.value, 2, 'N/A', true)} (95% CI: ${formatNumber(asGesamt?.auc?.ci?.lower, 2, 'N/A', true)}, ${formatNumber(asGesamt?.auc?.ci?.upper, 2, 'N/A', true)}). For optimized T2w criteria, the AUC was ${formatNumber(bfGesamtStats?.auc?.value, 2, 'N/A', true)}. The difference in AUC between AS and optimized T2w criteria was not statistically significant (${getPValueTextForPublication(vergleichASvsBFGesamt?.delong?.pValue)}).</p>
                     <p><strong>Conclusion:</strong> The Avocado Sign is a promising MRI marker for predicting lymph node status in rectal cancer, demonstrating high diagnostic performance comparable to cohort-optimized T2w criteria, with potential to improve preoperative staging.</p>
                     <p class="small text-muted mt-2">Abbreviations: ACC = Accuracy, AS = Avocado Sign, AUC = Area Under the Curve, CE = Contrast-Enhanced, CI = Confidence Interval, MRI = Magnetic Resonance Imaging, N-status = Nodal status, T2w = T2-weighted.</p>
                 `;
@@ -450,10 +450,10 @@ const UI_TEXTS = Object.freeze({
         methoden_studienanlage_ethik: Object.freeze({
             en: (stats, commonData) => `
                 <p>We conducted a single-institution retrospective study to evaluate the diagnostic performance of the Avocado Sign, a novel MR imaging marker, in predicting locoregional lymph node status in patients with rectal cancer. The study was approved by the institutional review board of Klinikum St. Georg Leipzig, Germany, and written informed consent was obtained from all patients before enrolment. This study was compliant with HIPAA regulations.
-                Patients were eligible for inclusion if they were 18 years of age or older and had histologically confirmed rectal cancer. Exclusion criteria included unresectable tumors and contraindications to MRI. From <span class="math-inline">\{commonData\.references\.STUDY\_PERIOD\_2020\_2023\}, 106 consecutive patients underwent baseline staging MRI\. Of these, 77 patients \(72\.6%\) received standard neoadjuvant chemoradiotherapy \(nCRT\) followed by restaging MRI prior to rectal surgery, according to current guidelines and the decision of a multidisciplinary tumor board\. The remaining 29 patients \(27\.4%\) underwent primary surgery without prior therapy\. For patients undergoing surgery alone, the mean interval between MRI and surgery was 7 days \(range\: 5–14 days\)\. For nCRT patients, restaging MRI was performed a mean of 6 weeks \(range\: 5–8 weeks\) after completion of therapy, with surgery occurring approximately 10 days \(range\: 7–15 days\) post\-MRI\.
-Histopathological examination of the resected specimens served as the reference standard\.
-</p\>
-<div class\="chart\-container pub\-figure" id\="</span>{PUBLICATION_CONFIG.publicationElements.methoden.flowDiagram.id}">
+                Patients were eligible for inclusion if they were 18 years of age or older and had histologically confirmed rectal cancer. Exclusion criteria included unresectable tumors and contraindications to MRI. From ${commonData.references.STUDY_PERIOD_2020_2023}, 106 consecutive patients underwent baseline staging MRI. Of these, 77 patients (72.6%) received standard neoadjuvant chemoradiotherapy (nCRT) followed by restaging MRI prior to rectal surgery, according to current guidelines and the decision of a multidisciplinary tumor board. The remaining 29 patients (27.4%) underwent primary surgery without prior therapy. For patients undergoing surgery alone, the mean interval between MRI and surgery was 7 days (range: 5–14 days). For nCRT patients, restaging MRI was performed a mean of 6 weeks (range: 5–8 weeks) after completion of therapy, with surgery occurring approximately 10 days (range: 7–15 days) post-MRI.
+                Histopathological examination of the resected specimens served as the reference standard.
+                </p>
+                <div class="chart-container pub-figure" id="${PUBLICATION_CONFIG.publicationElements.methoden.flowDiagram.id}">
                     <p class="small text-muted">[Flowchart of patient enrollment and study design]</p>
                     <p class="small text-muted">${PUBLICATION_CONFIG.publicationElements.methoden.flowDiagram.titleEn}</p>
                 </div>
@@ -515,7 +515,7 @@ Histopathological examination of the resected specimens served as the reference 
                 const gesamtStats = stats?.Gesamt?.descriptive;
                 if (!gesamtStats) return `<p class="text-warning">Patient characteristics data not available for the overall cohort.</p>`;
                 return `
-                    <p>A total of ${gesamtStats.patientCount} patients with histologically confirmed rectal cancer were included in the study (Table 1). The mean age was ${formatNumber(gesamtStats.age?.mean, 1)} ± ${formatNumber(gesamtStats.age?.sd, 1)} years, and ${formatPercent(gesamtStats.sex?.m / gesamtStats.patientCount, 1)} were male. <span class="math-inline">\{gesamtStats\.therapy?\.\['direkt OP'\] ?? 0\} patients \(</span>{formatPercent((gesamtStats.therapy?.['direkt OP'] ?? 0) / gesamtStats.patientCount, 1)}) underwent surgery alone, while <span class="math-inline">\{gesamtStats\.therapy?\.nRCT ?? 0\} patients \(</span>{formatPercent((gesamtStats.therapy?.nRCT ?? 0) / gesamtStats.patientCount, 1)}) received neoadjuvant chemoradiotherapy. Histopathological examination revealed lymph node metastases in <span class="math-inline">\{gesamtStats\.nStatus?\.plus ?? 0\} patients \(</span>{formatPercent((gesamtStats.nStatus?.plus ?? 0) / gesamtStats.patientCount, 1)}).</p>
+                    <p>A total of ${gesamtStats.patientCount} patients with histologically confirmed rectal cancer were included in the study (Table 1). The mean age was ${formatNumber(gesamtStats.age?.mean, 1)} ± ${formatNumber(gesamtStats.age?.sd, 1)} years, and ${formatPercent(gesamtStats.sex?.m / gesamtStats.patientCount, 1)} were male. ${gesamtStats.therapy?.['direkt OP'] ?? 0} patients (${formatPercent((gesamtStats.therapy?.['direkt OP'] ?? 0) / gesamtStats.patientCount, 1)}) underwent surgery alone, while ${gesamtStats.therapy?.nRCT ?? 0} patients (${formatPercent((gesamtStats.therapy?.nRCT ?? 0) / gesamtStats.patientCount, 1)}) received neoadjuvant chemoradiotherapy. Histopathological examination revealed lymph node metastases in ${gesamtStats.nStatus?.plus ?? 0} patients (${formatPercent((gesamtStats.nStatus?.plus ?? 0) / gesamtStats.patientCount, 1)}).</p>
                     <div class="table-responsive pub-table" id="pub-table-patienten-charakteristika">
                         <p class="small text-muted">[Table of patient demographics and treatment approaches]</p>
                         <p class="small text-muted"><strong>Table 1:</strong> Patient demographics and treatment approaches.</p>
@@ -539,7 +539,7 @@ Histopathological examination of the resected specimens served as the reference 
                     }
                     const lowerStr = isPercent ? formatPercent(metric.ci.lower, digits) : formatNumber(metric.ci.lower, digits, 'N/A', true);
                     const upperStr = isPercent ? formatPercent(metric.ci.upper, digits) : formatNumber(metric.ci.upper, digits, 'N/A', true);
-                    return `${valueStr} (95% CI: <span class="math-inline">\{lowerStr\}–</span>{upperStr})`;
+                    return `${valueStr} (95% CI: ${lowerStr}–${upperStr})`;
                 };
                 
                 return `
@@ -564,7 +564,7 @@ Histopathological examination of the resected specimens served as the reference 
                         <p class="small text-muted">[Table of diagnostic performance and nominal values for the Avocado Sign]</p>
                         <p class="small text-muted"><strong>Table 3:</strong> Diagnostic performance and nominal values for the Avocado Sign in predicting nodal status. Metrics include the number of patients with positive and negative Avocado Signs (AS+ and AS−), histologically confirmed nodal metastasis (N+ and N0), and the sensitivity, specificity, PPV, NPV, accuracy, and AUC for the Avocado Sign in predicting lymph node involvement.</p>
                     </div>
-                    <p>Interobserver agreement for assessing the Avocado Sign was almost perfect, with a Cohen’s kappa value of ${formatNumber(stats?.Gesamt?.interobserverKappa || 0.92, 2)} (95% CI: <span class="math-inline">\{formatNumber\(stats?\.Gesamt?\.interobserverKappaCI?\.lower \|\| 0\.85, 2\)\}–</span>{formatNumber(stats?.Gesamt?.interobserverKappaCI?.upper || 0.99, 2)}) and an absolute agreement rate of 95% (101 out of 106 cases).</p>
+                    <p>Interobserver agreement for assessing the Avocado Sign was almost perfect, with a Cohen’s kappa value of ${formatNumber(stats?.Gesamt?.interobserverKappa || 0.92, 2)} (95% CI: ${formatNumber(stats?.Gesamt?.interobserverKappaCI?.lower || 0.85, 2)}–${formatNumber(stats?.Gesamt?.interobserverKappaCI?.upper || 0.99, 2)}) and an absolute agreement rate of 95% (101 out of 106 cases).</p>
                 `;
             }
         }),
@@ -604,17 +604,17 @@ Histopathological examination of the resected specimens served as the reference 
                             }
                             const lowerStr = isPercent ? formatPercent(metric.ci.lower, digits) : formatNumber(metric.ci.lower, digits, 'N/A', true);
                             const upperStr = isPercent ? formatPercent(metric.ci.upper, digits) : formatNumber(metric.ci.upper, digits, 'N/A', true);
-                            return `<span class="math-inline">\{valueStr\} \(</span>{lowerStr}–${upperStr})`;
+                            return `${valueStr} (${lowerStr}–${upperStr})`;
                         };
                         const N_count = stats?.[set.applicableCohort || 'Gesamt']?.descriptive?.patientCount || '?';
 
                         content += `<tr>
-                            <td><span class="math-inline">\{set\.name\} \(</span>{applicableCohortName} N=<span class="math-inline">\{N\_count\}\)</td\>
-<td\></span>{fCI(perfStats.sens)}</td>
-                            <td><span class="math-inline">\{fCI\(perfStats\.spec\)\}</td\>
-<td\></span>{fCI(perfStats.ppv)}</td>
-                            <td><span class="math-inline">\{fCI\(perfStats\.npv\)\}</td\>
-<td\></span>{fCI(perfStats.acc)}</td>
+                            <td>${set.name} (${applicableCohortName} N=${N_count})</td>
+                            <td>${fCI(perfStats.sens)}</td>
+                            <td>${fCI(perfStats.spec)}</td>
+                            <td>${fCI(perfStats.ppv)}</td>
+                            <td>${fCI(perfStats.npv)}</td>
+                            <td>${fCI(perfStats.acc)}</td>
                             <td>${fCI(perfStats.auc, 2, false)}</td>
                         </tr>`;
                     }
@@ -643,7 +643,7 @@ Histopathological examination of the resected specimens served as the reference 
                         }
                         const lowerStr = isPercent ? formatPercent(metric.ci.lower, digits) : formatNumber(metric.ci.lower, digits, 'N/A', true);
                         const upperStr = isPercent ? formatPercent(metric.ci.upper, digits) : formatNumber(metric.ci.upper, digits, 'N/A', true);
-                        return `<span class="math-inline">\{valueStr\} \(</span>{lowerStr}–${upperStr})`;
+                        return `${valueStr} (${lowerStr}–${upperStr})`;
                     };
 
                     return `
@@ -651,19 +651,19 @@ Histopathological examination of the resected specimens served as the reference 
                         <ul class="list-unstyled small">
                             <li><strong>Best ${bfRes.metricName}:</strong> ${formatNumber(bfRes.metricValue, 4, 'N/A', true)}</li>
                             <li><strong>Logic:</strong> ${bfRes.logic}</li>
-                            <li><strong>Criteria:</strong> <span class="math-inline">\{studyT2CriteriaManager\.formatCriteriaForDisplay\(bfRes\.criteria, bfRes\.logic\)\}</li\>
-</ul\>
-<table class\="table table\-sm table\-striped small mb\-3"\>
-<thead\><tr\><th\>Metric</th\><th\>Value \(95% CI\)</th\><th\>CI Method</th\></tr\></thead\>
-<tbody\>
-<tr\><td\>Sensitivity</td\><td\></span>{fCI(perf.sens)}</td><td><span class="math-inline">\{perf\.sens?\.method \|\| 'N/A'\}</td\></tr\>
-<tr\><td\>Specificity</td\><td\></span>{fCI(perf.spec)}</td><td><span class="math-inline">\{perf\.spec?\.method \|\| 'N/A'\}</td\></tr\>
-<tr\><td\>PPV</td\><td\></span>{fCI(perf.ppv)}</td><td><span class="math-inline">\{perf\.ppv?\.method \|\| 'N/A'\}</td\></tr\>
-<tr\><td\>NPV</td\><td\></span>{fCI(perf.npv)}</td><td><span class="math-inline">\{perf\.npv?\.method \|\| 'N/A'\}</td\></tr\>
-<tr\><td\>Accuracy</td\><td\></span>{fCI(perf.acc)}</td><td><span class="math-inline">\{perf\.acc?\.method \|\| 'N/A'\}</td\></tr\>
-<tr\><td\>Balanced Accuracy</td\><td\></span>{fCI(perf.balAcc)}</td><td><span class="math-inline">\{perf\.balAcc?\.method \|\| 'N/A'\}</td\></tr\>
-<tr\><td\>F1\-Score</td\><td\></span>{fCI(perf.f1, 3, false)}</td><td><span class="math-inline">\{perf\.f1?\.method \|\| 'N/A'\}</td\></tr\>
-<tr\><td\>AUC</td\><td\></span>{fCI(perf.auc, 3, false)}</td><td>${perf.auc?.method || 'N/A'}</td></tr>
+                            <li><strong>Criteria:</strong> ${studyT2CriteriaManager.formatCriteriaForDisplay(bfRes.criteria, bfRes.logic)}</li>
+                        </ul>
+                        <table class="table table-sm table-striped small mb-3">
+                            <thead><tr><th>Metric</th><th>Value (95% CI)</th><th>CI Method</th></tr></thead>
+                            <tbody>
+                                <tr><td>Sensitivity</td><td>${fCI(perf.sens)}</td><td>${perf.sens?.method || 'N/A'}</td></tr>
+                                <tr><td>Specificity</td><td>${fCI(perf.spec)}</td><td>${perf.spec?.method || 'N/A'}</td></tr>
+                                <tr><td>PPV</td><td>${fCI(perf.ppv)}</td><td>${perf.ppv?.method || 'N/A'}</td></tr>
+                                <tr><td>NPV</td><td>${fCI(perf.npv)}</td><td>${perf.npv?.method || 'N/A'}</td></tr>
+                                <tr><td>Accuracy</td><td>${fCI(perf.acc)}</td><td>${perf.acc?.method || 'N/A'}</td></tr>
+                                <tr><td>Balanced Accuracy</td><td>${fCI(perf.balAcc)}</td><td>${perf.balAcc?.method || 'N/A'}</td></tr>
+                                <tr><td>F1-Score</td><td>${fCI(perf.f1, 3, false)}</td><td>${perf.f1?.method || 'N/A'}</td></tr>
+                                <tr><td>AUC</td><td>${fCI(perf.auc, 3, false)}</td><td>${perf.auc?.method || 'N/A'}</td></tr>
                             </tbody>
                         </table>
                     `;
@@ -676,4 +676,119 @@ Histopathological examination of the resected specimens served as the reference 
                 content += `<div class="table-responsive pub-table" id="${PUBLICATION_CONFIG.publicationElements.ergebnisse.diagnostischeGueteOptimierteT2Tabelle.id}">
                     <p class="small text-muted">[Table of diagnostic performance of brute-force optimized T2 criteria]</p>
                     <p class="small text-muted"><strong>Table 5:</strong> Diagnostic Performance of Brute-Force Optimized T2 Criteria (Target: ${bfMetric}) for N-Status Prediction.</p>
-                </div>
+                </div>`;
+                return content;
+            }
+        }),
+        ergebnisse_vergleich_as_vs_t2: Object.freeze({
+            en: (stats, commonData) => {
+                const bfMetric = commonData.bruteForceMetricForPublication;
+                const compOverall = stats?.Gesamt?.comparisonASvsT2Bruteforce;
+                const compDirektOP = stats?.['direkt OP']?.comparisonASvsT2Bruteforce;
+                const compNRCT = stats?.nRCT?.comparisonASvsT2Bruteforce;
+
+                let content = `<p>We conducted statistical comparisons between the diagnostic performance of the Avocado Sign and the brute-force optimized T2 criteria for each cohort, focusing on Accuracy (McNemar's test) and AUC (DeLong's test).</p>`;
+
+                const renderComparison = (compRes, cohortId) => {
+                    if (!compRes) return `<p class="text-warning">No comparison data for ${getCohortDisplayName(cohortId)} cohort.</p>`;
+                    const fPVal = (r) => (r?.pValue !== null && !isNaN(r?.pValue)) ? (r.pValue < 0.001 ? 'P &lt; .001' : `P = ${formatNumber(r.pValue, 3, 'N/A', true)}`) : 'N/A';
+                    const getSigText = (pValue) => {
+                        const level = APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL;
+                        return pValue < level ? 'statistically significant' : 'not statistically significant';
+                    };
+                    return `
+                        <h6>Comparison for ${getCohortDisplayName(cohortId)} Cohort:</h6>
+                        <table class="table table-sm table-striped small mb-3">
+                            <thead><tr><th>Test</th><th>Statistic</th><th>p-Value</th><th>Method</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td>McNemar (Accuracy)</td>
+                                    <td>${formatNumber(compRes.mcnemar?.statistic, 3, '--')} (df=${compRes.mcnemar?.df || '--'})</td>
+                                    <td>${fPVal(compRes.mcnemar)} (${getSigText(compRes.mcnemar?.pValue)})</td>
+                                    <td>${compRes.mcnemar?.method || '--'}</td>
+                                </tr>
+                                <tr>
+                                    <td>DeLong (AUC)</td>
+                                    <td>Z=${formatNumber(compRes.delong?.Z, 3, '--')}</td>
+                                    <td>${fPVal(compRes.delong)} (${getSigText(compRes.delong?.pValue)})</td>
+                                    <td>${compRes.delong?.method || '--'}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    `;
+                };
+
+                content += renderComparison(compOverall, 'Gesamt');
+                content += renderComparison(compDirektOP, 'direkt OP');
+                content += renderComparison(compNRCT, 'nRCT');
+
+                content += `<p>Figure 4 illustrates the comparative metrics for AS versus optimized T2 criteria for each cohort. </p>
+                    <div class="chart-container pub-figure" id="${PUBLICATION_CONFIG.publicationElements.ergebnisse.vergleichPerformanceChartGesamt.id}">
+                        <p class="small text-muted">[Comparative Metrics for the Overall Cohort: AS vs. Optimized T2 Criteria]</p>
+                        <p class="small text-muted"><strong>Figure 4:</strong> Comparative Metrics for the Overall Cohort: AS vs. Optimized T2 Criteria.</p>
+                    </div>
+                    <div class="table-responsive pub-table" id="${PUBLICATION_CONFIG.publicationElements.ergebnisse.statistischerVergleichAST2Tabelle.id}">
+                        <p class="small text-muted">[Table of statistical comparison of diagnostic performance: Avocado Sign vs. T2 Criteria]</p>
+                        <p class="small text-muted"><strong>Table 6:</strong> Statistical Comparison of Diagnostic Performance: Avocado Sign vs. T2 Criteria.</p>
+                    </div>
+                `;
+                return content;
+            }
+        }),
+        discussion_main: Object.freeze({
+            en: (stats, commonData) => `
+                <p>This retrospective study demonstrates that the Avocado Sign can accurately predict mesorectal lymph node status in patients with rectal cancer. Its high diagnostic performance across patient subgroups (overall cohort, upfront surgery, nRCT) underlines its potential to ameliorate MRI nodal staging. The Avocado Sign showed an overall sensitivity of ${formatPercent(stats?.Gesamt?.performanceAS?.sens?.value, 1)}, specificity of ${formatPercent(stats?.Gesamt?.performanceAS?.spec?.value, 1)}, and an AUC of ${formatNumber(stats?.Gesamt?.performanceAS?.auc?.value, 2, 'N/A', true)}, which are comparable to or exceed previously reported accuracies of T2-weighted MRI.</p>
+                <p>Earlier studies have focused predominantly on morphological criteria on T2-weighted MRI sequences for lymph node assessment. Koh et al. reported sensitivities up to 85% with combined size and morphological criteria, but systematic reviews and large trials like OCUM have often reported lower overall diagnostic accuracy, with pooled sensitivities around 77% and specificities around 71%. Our findings suggest that the Avocado Sign offers superior performance, potentially simplifying nodal assessment by reducing reliance on subjective size thresholds.</p>
+                <p>The strength of the Avocado Sign lies in its contrast-enhancement-based assessment, which may provide additional insights into nodal viability and metastatic involvement. While Gadofosveset-enhanced MRI showed promise in differentiating benign from metastatic nodes, its clinical applicability was limited by the contrast agent's commercial discontinuation. Barbaro et al. and Horvat et al. have explored size-based criteria and other advanced techniques for restaging after nCRT, showing varied diagnostic value. In comparison, the Avocado Sign's diagnostic performance, as reported in this study, appears to be robust across different treatment settings.</p>
+                <p>In the evolving landscape of rectal cancer treatment, with increasing emphasis on personalized and organ-preserving strategies, accurate nodal staging is pivotal. The straightforward application and high reproducibility (Cohen’s kappa = ${formatNumber(stats?.Gesamt?.interobserverKappa || 0.92, 2)}) of the Avocado Sign are significant advantages, potentially facilitating its integration into routine clinical practice. Assessment of the Avocado Sign only requires routine high-resolution, thin-slice, fat-saturated contrast-enhanced T1-weighted sequences.</p>
+                <h4>Limitations:</h4>
+                <p>Our study has several limitations. It was a retrospective, single-center study, which may limit the generalizability of our findings and introduces a risk of selection bias. The Avocado Sign was evaluated using Gadoteridol, and its reproducibility with other gadolinium-based contrast agents has not been directly tested. While we focused on mesorectal nodes, the validity of the Avocado Sign in other lymph node regions (e.g., lateral pelvic nodes) needs to be evaluated. Furthermore, this study did not assess the impact of the Avocado Sign on long-term clinical outcomes such as local recurrence or survival. False-positive and false-negative findings were observed, which may be attributed to sampling errors, treatment-induced fibrosis or necrosis, metastases below MRI resolution, and partial volume effects. Our study intentionally focused on patient-level rather than node-by-node analysis due to the challenges after nCRT and limited clinical applicability of the latter.</p>
+                <h4>Future Directions:</h4>
+                <p>Future research should include prospective, multi-center validation studies to confirm the diagnostic performance of the Avocado Sign and assess its impact on clinical decision-making and patient outcomes. Long-term follow-up studies are needed to evaluate the prognostic value of the Avocado Sign in predicting recurrence and survival. Studies exploring its reproducibility with different contrast agents are also warranted.</p>
+            `
+        }),
+        references_main: Object.freeze({
+            en: (stats, commonData) => {
+                const references = [
+                    "[1] Siegel RL, Miller KD, Wagle NS, Jemal A (2023) Cancer statistics, 2023. CA Cancer J Clin 73:17–48. https://doi.org/10.3322/caac.21763",
+                    "[2] Sauer R, Becker H, Hohenberger W et al (2004) Preoperative versus postoperative chemoradiotherapy for rectal cancer. N Engl J Med 351:1731–1740. https://doi.org/10.1056/NEJMoa040694",
+                    "[3] Bosset JF, Collette L, Calais G et al (2006) Chemotherapy with preoperative radiotherapy in rectal cancer. N Engl J Med 355:1114–1123. https://doi.org/10.1056/NEJMoa060829",
+                    "[4] Habr-Gama A, São Julião GP, Vailati BB et al (2019) Organ preservation in cT2N0 rectal cancer after neoadjuvant chemoradiation therapy: the impact of radiation therapy dose-escalation and consolidation chemotherapy. Ann Surg 269:102–107. https://doi.org/10.1097/SLA.0000000000002447",
+                    "[5] Smith JJ, Chow OS, Gollub MJ et al (2015) Organ preservation in rectal adenocarcinoma: a phase II randomized controlled trial evaluating 3-year disease-free survival in patients with locally advanced rectal cancer treated with chemoradiation plus induction or consolidation chemotherapy, and total mesorectal excision or nonoperative management. BMC Cancer 15:767. https://doi.org/10.1186/s12885-015-1632-z",
+                    "[6] Beets-Tan RGH, Lambregts DMJ, Maas M et al (2018) Magnetic resonance imaging for clinical management of rectal cancer: updated recommendations from the 2016 European Society of Gastrointestinal and Abdominal Radiology (ESGAR) consensus meeting. Eur Radiol 28:1465–1475. https://doi.org/10.1007/s00330-017-5026-2",
+                    "[7] Zhang H, Zhang C, Zheng Z et al (2017) Chemical shift effect predicting lymph node status in rectal cancer using high-resolution MR imaging with node-for-node matched histopathological validation. Eur Radiol 27:3845–3855. https://doi.org/10.1007/s00330-017-4738-7",
+                    "[8] Ale Ali H, Kirsch R, Razaz S et al (2019) Extramural venous invasion in rectal cancer: overview of imaging, histopathology, and clinical implications. Abdom Radiol (NY) 44:1–10. https://doi.org/10.1007/s00261-018-1673-2",
+                    "[9] Bewick V, Cheek L, Ball J (2004) Statistics review 8: qualitative data—tests of association. Crit Care 8:46–53. https://doi.org/10.1186/cc2428",
+                    "[10] Koh DM, Chau I, Tait D, Wotherspoon A, Cunningham D, Brown G (2008) Evaluating mesorectal lymph nodes in rectal cancer before and after neoadjuvant chemoradiation using thin-section T2-weighted magnetic resonance imaging. Int J Radiat Oncol Biol Phys 71:456–461. https://doi.org/10.1016/j.ijrobp.2007.10.016",
+                    "[11] Al-Sukhni E, Milot L, Fruitman M et al (2012) Diagnostic accuracy of MRI for assessment of T category, lymph node metastases, and circumferential resection margin involvement in patients with rectal cancer: a systematic review and meta-analysis. Ann Surg Oncol 19:2212–2223. https://doi.org/10.1245/s10434-011-2210-5",
+                    "[12] Stelzner S, Ruppert R, Kube R et al (2022) Selection of patients with rectal cancer for neoadjuvant therapy using pre-therapeutic MRI—results from OCUM trial. Eur J Radiol 147:110113. https://doi.org/10.1016/j.ejrad.2021.110113",
+                    "[13] Lambregts DMJ, Heijnen LA, Maas M et al (2013) Gadofosveset-enhanced MRI for the assessment of rectal cancer lymph nodes: predictive criteria. Abdom Imaging 38:720–727. https://doi.org/10.1007/s00261-012-9957-4",
+                    "[14] Barbaro B, Carafa MRP, Minordi LM et al (2024) Magnetic resonance imaging for assessment of rectal cancer nodes after chemoradiotherapy: a single center experience. Radiother Oncol 193:110124. https://doi.org/10.1016/j.radonc.2024.110124",
+                    "[15] Horvat N, El Homsi M, Miranda J, Mazaheri Y, Gollub MJ, Paroder V (2023) Rectal MRI interpretation after neoadjuvant therapy. J Magn Reson Imaging 57:353–369. https://doi.org/10.1002/jmri.28426",
+                    "[16] Kennedy ED, Simunovic M, Jhaveri K et al (2019) Safety and feasibility of using magnetic resonance imaging criteria to identify patients with “good prognosis” rectal cancer eligible for primary surgery: the phase 2 nonrandomized QuickSilver clinical trial. JAMA Oncol 5:961–966. https://doi.org/10.1001/jamaoncol.2019.0186",
+                    "[17] Hanna CR, O’Cathail SM, Graham JS et al (2021) Durvalumab (MEDI 4736) in combination with extended neoadjuvant regimens in rectal cancer: a study protocol of a randomised phase II trial (PRIME-RT). Radiat Oncol 16:163. https://doi.org/10.1186/s13014-021-01888-1",
+                    "[18] Schrag D, Shi Q, Weiser MR et al (2023) Preoperative treatment of locally advanced rectal cancer. N Engl J Med 389:322–334. https://doi.org/10.1056/NEJMoa2303269",
+                    "[19] Garcia-Aguilar J, Patil S, Gollub MJ et al (2022) Organ preservation in patients with rectal adenocarcinoma treated with total neoadjuvant therapy. J Clin Oncol 40:2546–2556. https://doi.org/10.1200/JCO.22.00032",
+                    "[20] Hao Y, Zheng J, Li W et al (2025) Ultra-high b-value DWI in rectal cancer: image quality assessment and regional lymph node prediction based on radiomics. Eur Radiol 35:49–60. https://doi.org/10.1007/s00330-024-10958-3",
+                    "[21] Kim SH, Song BI, Kim BW et al (2019) Predictive value of [18F]FDG PET/CT for lymph node metastasis in rectal cancer. Sci Rep 9:4979. https://doi.org/10.1038/s41598-019-41422-8",
+                    "[22] Zhou H, Lei PJ, Padera TP (2021) Progression of metastasis through lymphatic system. Cells 10:1–23. https://doi.org/10.3390/cells10030627",
+                ];
+                let html = `<ul>`;
+                references.forEach(ref => { html += `<li>${ref}</li>`; });
+                html += `</ul>`;
+                return html;
+            }
+        })
+    })
+});
+
+function getDefaultT2Criteria() {
+    return Object.freeze({
+        logic: APP_CONFIG.DEFAULT_SETTINGS.T2_LOGIC,
+        size: { active: true, threshold: 5.0, condition: '>=' },
+        form: { active: false, value: 'rund' },
+        kontur: { active: false, value: 'irregulär' },
+        homogenitaet: { active: false, value: 'heterogen' },
+        signal: { active: false, value: 'signalreich' }
+    });
+}
