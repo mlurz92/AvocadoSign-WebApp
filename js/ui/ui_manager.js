@@ -4,12 +4,6 @@ const uiManager = (() => {
     let collapseEventListenersAttached = new Set();
     let quickGuideModalInstance = null;
 
-    function escapeHTML(text) {
-        if (typeof text !== 'string') return text === null ? '' : String(text);
-        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-        return text.replace(/[&<>"']/g, match => map[match]);
-    }
-
     function showToast(message, type = 'info', duration = APP_CONFIG.UI_SETTINGS.TOAST_DURATION_MS) {
         const toastContainer = document.getElementById('toast-container');
         if (!toastContainer) return;
@@ -46,7 +40,6 @@ const uiManager = (() => {
 
     function initializeTooltips(scope = document.body) {
         if (!window.tippy || typeof scope?.querySelectorAll !== 'function') return;
-        // Destroy existing tooltips to prevent duplicates and stale content
         tippyInstances.forEach(instance => {
             if (instance && !instance.state.isDestroyed) {
                 instance.destroy();
@@ -75,7 +68,7 @@ const uiManager = (() => {
         const element = document.getElementById(elementId);
         if (element) {
             element.innerHTML = html ?? '';
-            initializeTooltips(element); // Re-initialize tooltips for new content
+            initializeTooltips(element);
         }
     }
 
@@ -131,51 +124,6 @@ const uiManager = (() => {
             updateElementHTML(containerId, errorMessage);
             showToast(`Error loading tab '${tabId}'.`, 'danger');
         }
-    }
-
-    function getT2IconSVG(type, value) {
-        const s = APP_CONFIG.UI_SETTINGS.ICON_SIZE;
-        const sw = APP_CONFIG.UI_SETTINGS.ICON_STROKE_WIDTH;
-        const iconColor = APP_CONFIG.UI_SETTINGS.ICON_COLOR;
-        const c = s / 2;
-        const r = (s - sw) / 2;
-        const sq = s - sw * 1.5;
-        const sqPos = (s - sq) / 2;
-        let svgContent = '';
-        let fillColor = 'none';
-        const unknownIconSVG = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" stroke-dasharray="2 2" /><line x1="${sqPos}" y1="${sqPos}" x2="${sqPos+sq}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/><line x1="${sqPos+sq}" y1="${sqPos}" x2="${sqPos}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`;
-
-        switch (type) {
-            case 'shape':
-                if (value === 'rund') svgContent = `<circle cx="${c}" cy="${c}" r="${r}" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw}"/>`;
-                else if (value === 'oval') svgContent = `<ellipse cx="${c}" cy="${c}" rx="${r}" ry="${r * 0.65}" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw}"/>`;
-                else svgContent = unknownIconSVG;
-                break;
-            case 'border':
-                if (value === 'scharf') svgContent = `<circle cx="${c}" cy="${c}" r="${r}" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`;
-                else if (value === 'irregulär') svgContent = `<path d="M ${c + r} ${c} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${r*0.8} ${r*1.2} 0 0 1 ${c-r*0.9} ${c-r*0.3} A ${r*1.1} ${r*0.7} 0 0 1 ${c+r} ${c} Z" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`;
-                else svgContent = unknownIconSVG;
-                break;
-            case 'homogeneity':
-                if (value === 'homogen') svgContent = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="${iconColor}" stroke="none" rx="1" ry="1"/>`;
-                else if (value === 'heterogen') { const pSize = sq / 4; svgContent = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" rx="1" ry="1"/>`; for(let i=0;i<3;i++){for(let j=0;j<3;j++){if((i+j)%2===0){svgContent+=`<rect x="${sqPos+i*pSize+pSize/2}" y="${sqPos+j*pSize+pSize/2}" width="${pSize}" height="${pSize}" fill="${iconColor}" stroke="none" style="opacity:0.6;"/>`;}}} }
-                else svgContent = unknownIconSVG;
-                break;
-            case 'signal':
-                if (value === 'signalarm') fillColor = '#555555';
-                else if (value === 'intermediär') fillColor = '#aaaaaa';
-                else if (value === 'signalreich') fillColor = '#f0f0f0';
-                else { svgContent = unknownIconSVG; break; }
-                const strokeColor = (value === 'signalreich') ? '#333333' : 'rgba(0,0,0,0.1)';
-                svgContent = `<circle cx="${c}" cy="${c}" r="${r}" fill="${fillColor}" stroke="${strokeColor}" stroke-width="${sw * 0.75}"/>`;
-                break;
-            case 'ruler-horizontal':
-                svgContent = `<path d="M${sw/2} ${c} H${s-sw/2} M${c} ${sw/2} V${s-sw/2}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`;
-                type = 'size';
-                break;
-            default: svgContent = unknownIconSVG;
-        }
-        return `<svg class="icon-t2 icon-${type}" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${type}: ${value || 'unknown'}">${svgContent}</svg>`;
     }
 
     function showQuickGuide() {
@@ -263,7 +211,7 @@ const uiManager = (() => {
             document.body.insertAdjacentHTML('beforeend', modalHTML);
             modalElement = document.getElementById('quick-guide-modal');
             quickGuideModalInstance = new bootstrap.Modal(modalElement);
-            initializeTooltips(modalElement); // Initialize tooltips for the modal content
+            initializeTooltips(modalElement);
         }
         if (quickGuideModalInstance) quickGuideModalInstance.show();
     }
@@ -296,8 +244,6 @@ const uiManager = (() => {
             if (button.id === 'export-bruteforce-txt') {
                 setElementDisabled(button.id, !hasBruteForceResults);
             } else if (button.id === 'export-charts-png-zip' || button.id === 'export-charts-svg-zip') {
-                // These are enabled based on presence of charts in other tabs, which is assumed
-                // for simplicity here to be if data is present and tabs are functional.
                 setElementDisabled(button.id, !hasData);
             } else {
                 setElementDisabled(button.id, !hasData);
@@ -341,7 +287,6 @@ const uiManager = (() => {
             Array.from(presStudySelect.options).forEach(option => {
                 option.selected = option.value === currentStudyId;
             });
-            // Disable selection if AS Performance view is active
             presStudySelect.disabled = currentView === 'as-pur';
         }
     }
@@ -373,7 +318,6 @@ const uiManager = (() => {
         if (criteriaCard) {
             const hasUnsavedChanges = t2CriteriaManager.isUnsaved();
             criteriaCard.classList.toggle('criteria-unsaved-indicator', hasUnsavedChanges);
-            // Re-initialize tooltip to update its content for the unsaved indicator if it has one.
             const existingTippyInstance = tippyInstances.find(inst => inst.reference === criteriaCard);
             if (existingTippyInstance) {
                 existingTippyInstance.setContent(UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator);
@@ -383,7 +327,6 @@ const uiManager = (() => {
                     existingTippyInstance.disable();
                 }
             } else if (hasUnsavedChanges) {
-                // If it doesn't have an instance but should, create it.
                 tippy(criteriaCard, {
                     allowHTML: true, theme: 'warning', placement: 'top', animation: 'fade',
                     interactive: false, appendTo: () => document.body, delay: APP_CONFIG.UI_SETTINGS.TOOLTIP_DELAY,
@@ -499,7 +442,7 @@ const uiManager = (() => {
             if (cancelButton) setElementDisabled(cancelButton.id, true);
             if (applyBestButton) setElementDisabled(applyBestButton.id, showModalButton);
             if (bfModalExportBtn) setElementDisabled(bfModalExportBtn.id, !exportModalButtonEnabled);
-        } else { // Initial state / No run yet
+        } else {
              contentHTML = `<p class="text-muted small p-3">No brute-force optimization has been performed yet for cohort '${getCohortDisplayName(currentCohort)}'.</p>`;
              if (startButton) setElementDisabled(startButton.id, false);
              if (cancelButton) setElementDisabled(cancelButton.id, true);
@@ -507,7 +450,6 @@ const uiManager = (() => {
              if (bfModalExportBtn) setElementDisabled(bfModalExportBtn.id, true);
         }
         
-        // Re-create the card if it doesn't exist or is in a different state
         const bfCardTitle = `Criteria Optimization (Brute-Force) <span class="badge bg-info text-dark ms-2 small" data-tippy-content="${UI_TEXTS.tooltips.bruteForceInfo.description.replace('[COHORT_NAME]', getCohortDisplayName(currentCohort))}">Cohort: ${getCohortDisplayName(currentCohort)}</span>`;
         
         bfCardContainer.innerHTML = `
@@ -534,7 +476,6 @@ const uiManager = (() => {
     }
 
     return Object.freeze({
-        escapeHTML,
         showToast,
         initializeTooltips,
         updateElementText,
@@ -544,7 +485,6 @@ const uiManager = (() => {
         highlightElement,
         attachRowCollapseListeners,
         renderTabContent,
-        getT2IconSVG,
         showQuickGuide,
         updateHeaderStatsUI,
         updateCohortButtonsUI,
