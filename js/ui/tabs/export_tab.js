@@ -2,11 +2,11 @@ const exportTab = (() => {
 
     const createExportButton = (config) => {
         if (!config || !config.id) return '';
+        // Tooltip config key is derived from the button ID, e.g., 'stats-csv' -> 'statscsv'
         const tooltipConfigKey = config.id.replace(/-/g, '');
         const tooltipConfig = APP_CONFIG.UI_TEXTS.tooltips.exportTab[tooltipConfigKey];
         
         if (!tooltipConfig) {
-            console.warn(`Missing tooltip config for export button: ${config.id}`);
             return '';
         }
 
@@ -17,7 +17,7 @@ const exportTab = (() => {
         return `
             <div class="col-md-6 mb-3">
                 <div class="d-flex align-items-center">
-                    <button id="export-${config.id}" class="btn btn-primary btn-sm me-3" data-export-type="${config.id}">
+                    <button id="export-${config.id}" class="btn btn-primary btn-sm me-3" data-export-type="${config.id}" data-tippy-content="${description}">
                         <i class="fas ${config.icon} fa-fw me-2"></i>${config.label}
                     </button>
                     <div>
@@ -35,19 +35,19 @@ const exportTab = (() => {
 
         const singleExports = [
             { id: 'stats-csv', label: 'Statistics', icon: 'fa-chart-pie' },
-            { id: 'bruteforce-txt', label: 'Brute-Force', icon: 'fa-cogs' },
+            { id: 'bruteforce-txt', label: 'Brute-Force Report', icon: 'fa-cogs' },
             { id: 'datatable-md', label: 'Data List', icon: 'fa-database' },
             { id: 'analysistable-md', label: 'Analysis Table', icon: 'fa-tasks' },
             { id: 'filtered-data-csv', label: 'Filtered Raw Data', icon: 'fa-filter' },
-            { id: 'comprehensive-report-html', label: 'HTML Report', icon: 'fa-file-invoice' }
+            { id: 'comprehensive-report-html', label: 'Comprehensive HTML Report', icon: 'fa-file-invoice' }
         ];
 
         const packageExports = [
-            { id: 'all-zip', label: 'All Single Files', icon: 'fa-file-archive' },
-            { id: 'csv-zip', label: 'CSV Package', icon: 'fa-file-csv' },
-            { id: 'md-zip', label: 'Markdown Package', icon: 'fa-file-alt' },
-            { id: 'png-zip', label: 'PNG Graphics', icon: 'fa-images' },
-            { id: 'svg-zip', label: 'SVG Graphics', icon: 'fa-vector-square' }
+            { id: 'all-zip', label: 'All Files Package', icon: 'fa-file-archive' },
+            { id: 'csv-zip', label: 'CSV Files Package', icon: 'fa-file-csv' },
+            { id: 'md-zip', label: 'Markdown Files Package', icon: 'fa-file-alt' },
+            { id: 'png-zip', label: 'PNG Graphics Package', icon: 'fa-images' },
+            { id: 'svg-zip', label: 'SVG Graphics Package', icon: 'fa-vector-square' }
         ];
 
         const singleExportsHTML = singleExports.map(createExportButton).join('');
