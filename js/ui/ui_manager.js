@@ -4,7 +4,10 @@ const uiManager = (() => {
     let collapseEventListenersAttached = new Set();
     let quickGuideModalInstance = null;
 
-    function showToast(message, type = 'info', duration = APP_CONFIG.UI_SETTINGS.TOAST_DURATION_MS) {
+    function showToast(message, type = 'info', duration = 3000) {
+        if (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.UI_SETTINGS?.TOAST_DURATION_MS) {
+            duration = APP_CONFIG.UI_SETTINGS.TOAST_DURATION_MS;
+        }
         const toastContainer = document.getElementById('toast-container');
         if (!toastContainer) return;
         if (!message) return;
@@ -40,17 +43,11 @@ const uiManager = (() => {
 
     function initializeTooltips(scope = document.body) {
         if (!window.tippy || typeof scope?.querySelectorAll !== 'function') return;
-        tippyInstances.forEach(instance => {
-            if (instance && !instance.state.isDestroyed) {
-                instance.destroy();
-            }
-        });
-        tippyInstances = [];
-
-        const elementsInScope = Array.from(scope.matches('[data-tippy-content]') ? [scope] : scope.querySelectorAll('[data-tippy-content]'));
-        const newInstances = tippy(elementsInScope, {
+        
+        const newInstances = tippy(scope.querySelectorAll('[data-tippy-content]'), {
             allowHTML: true, theme: 'glass', placement: 'top', animation: 'fade',
-            interactive: false, appendTo: () => document.body, delay: APP_CONFIG.UI_SETTINGS.TOOLTIP_DELAY,
+            interactive: false, appendTo: () => document.body, 
+            delay: (APP_CONFIG && APP_CONFIG.UI_SETTINGS) ? APP_CONFIG.UI_SETTINGS.TOOLTIP_DELAY : [200, 100],
             maxWidth: 400, duration: [150, 150], zIndex: 3050,
             onCreate(instance) { if (!instance.props.content || String(instance.props.content).trim() === '') { instance.disable(); } },
             onShow(instance) { const content = instance.reference.getAttribute('data-tippy-content'); return !!content && String(content).trim() !== ''; }
@@ -127,8 +124,13 @@ const uiManager = (() => {
     }
 
     function showQuickGuide() {
+        if (quickGuideModalInstance) {
+            quickGuideModalInstance.show();
+            return;
+        }
         let modalElement = document.getElementById('quick-guide-modal');
         if (!modalElement) {
+            const appVersion = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG.APP_VERSION : '3.0.0';
             const quickGuideContent = `
                 <h2>1. Introduction</h2>
                 <p>The <strong>Nodal Staging: Avocado Sign vs. T2 Criteria</strong> analysis tool is a client-side web application designed for scientific research in the radiological diagnosis of rectal cancer. It enables in-depth analyses and detailed comparisons of diagnostic performance for various MRI-based criteria for assessing mesorectal lymph node status (N-status). The application focuses on evaluating the novel "Avocado Sign" (AS) against established T2-weighted (T2w) morphological criteria. It is intended solely as a <strong>research instrument</strong>. The results are <strong>not for clinical diagnosis or direct patient treatment decisions</strong>. </p>
@@ -193,7 +195,7 @@ const uiManager = (() => {
                     <li><strong>Configuration:</strong> <code>js/config.js</code> centralizes settings, UI texts, statistical constants, and publication configurations.</li>
                     <li><strong>Glossary of Key Terms:</strong> AS (Avocado Sign), AUC (Area Under the Curve), BF (Brute-Force), CI (Confidence Interval), nRCT (Neoadjuvant Chemoradiotherapy), NPV (Negative Predictive Value), OR (Odds Ratio), PPV (Positive Predictive Value), RD (Risk Difference), T2w (T2-weighted).</li>
                 </ul>
-                <p class="small text-muted text-end"><em>Description generated for Application Version 3.0.0. Last updated: June 10, 2025.</em></p>
+                <p class="small text-muted text-end"><em>Description generated for Application Version ${appVersion}. Last updated: June 10, 2025.</em></p>
             `;
             const modalHTML = `
                 <div class="modal fade" id="quick-guide-modal" tabindex="-1" aria-labelledby="quickGuideModalLabel" aria-hidden="true">
@@ -210,8 +212,9 @@ const uiManager = (() => {
                 </div>`;
             document.body.insertAdjacentHTML('beforeend', modalHTML);
             modalElement = document.getElementById('quick-guide-modal');
-            quickGuideModalInstance = new bootstrap.Modal(modalElement);
-            initializeTooltips(modalElement);
+        }
+        if (modalElement && !quickGuideModalInstance) {
+             quickGuideModalInstance = new bootstrap.Modal(modalElement);
         }
         if (quickGuideModalInstance) quickGuideModalInstance.show();
     }
@@ -234,17 +237,14 @@ const uiManager = (() => {
     }
 
     function updateExportButtonStates(activeTabId, hasBruteForceResults, hasData) {
-        const exportBfBtn = document.getElementById('export-bruteforce-modal-txt');
-        if (exportBfBtn) {
+        const bfModalExportBtn = document.getElementById('export-bruteforce-modal-txt');
+        if (bfModalExportBtn) {
             setElementDisabled('export-bruteforce-modal-txt', !hasBruteForceResults);
         }
-
         const exportTabButtons = document.querySelectorAll('#export-tab-pane button[id^="export-"]');
         exportTabButtons.forEach(button => {
-            if (button.id === 'export-bruteforce-txt') {
+            if (button.id.includes('bruteforce')) {
                 setElementDisabled(button.id, !hasBruteForceResults);
-            } else if (button.id === 'export-charts-png-zip' || button.id === 'export-charts-svg-zip') {
-                setElementDisabled(button.id, !hasData);
             } else {
                 setElementDisabled(button.id, !hasData);
             }
@@ -253,218 +253,136 @@ const uiManager = (() => {
 
     function updateStatisticsSelectorsUI(layout, cohort1, cohort2) {
         const layoutToggleBtn = document.getElementById('statistics-toggle-comparison');
-        const cohort1Select = document.getElementById('statistics-cohort-select-1');
-        const cohort2Select = document.getElementById('statistics-cohort-select-2');
         const cohortSelectorsContainer = document.getElementById('statistics-cohort-selectors');
-
         if (layoutToggleBtn) {
             layoutToggleBtn.classList.toggle('active', layout === 'vergleich');
             layoutToggleBtn.textContent = layout === 'vergleich' ? 'Comparison Active' : 'Single View';
         }
-
         if (cohortSelectorsContainer) {
             cohortSelectorsContainer.style.display = layout === 'vergleich' ? 'flex' : 'none';
         }
-
-        if (cohort1Select) {
-            Array.from(cohort1Select.options).forEach(option => {
-                option.selected = option.value === cohort1;
-            });
-        }
-        if (cohort2Select) {
-            Array.from(cohort2Select.options).forEach(option => {
-                option.selected = option.value === cohort2;
-            });
-        }
+        document.getElementById('statistics-cohort-select-1').value = cohort1;
+        document.getElementById('statistics-cohort-select-2').value = cohort2;
     }
 
     function updatePresentationViewUI(currentView, currentStudyId) {
         document.getElementById('view-as-perf').checked = currentView === 'as-pur';
         document.getElementById('view-as-vs-t2').checked = currentView === 'as-vs-t2';
-
         const presStudySelect = document.getElementById('pres-study-select');
         if (presStudySelect) {
-            Array.from(presStudySelect.options).forEach(option => {
-                option.selected = option.value === currentStudyId;
-            });
+            presStudySelect.value = currentStudyId || '';
             presStudySelect.disabled = currentView === 'as-pur';
         }
     }
 
     function updatePublicationUI(currentSectionId, currentBruteForceMetric) {
-        const navLinks = document.querySelectorAll('#publication-sections-nav .nav-link');
-        navLinks.forEach(link => {
+        document.querySelectorAll('#publication-sections-nav .nav-link').forEach(link => {
             link.classList.toggle('active', link.dataset.sectionId === currentSectionId);
         });
-
         const bfMetricSelect = document.getElementById('publication-bf-metric-select');
         if (bfMetricSelect) {
-            Array.from(bfMetricSelect.options).forEach(option => {
-                option.selected = option.value === currentBruteForceMetric;
-            });
+            bfMetricSelect.value = currentBruteForceMetric;
         }
     }
     
     function updateT2CriteriaControlsUI(currentCriteria, currentLogic) {
         if (!currentCriteria) return;
-
         const sizeRangeInput = document.getElementById('range-size');
         const sizeValueDisplay = document.getElementById('value-size');
         const sizeManualInput = document.getElementById('input-size');
         const logicSwitch = document.getElementById('t2-logic-switch');
         const logicLabel = document.getElementById('t2-logic-label');
 
-        const criteriaCard = document.getElementById('t2-criteria-card');
-        if (criteriaCard) {
-            const hasUnsavedChanges = t2CriteriaManager.isUnsaved();
-            criteriaCard.classList.toggle('criteria-unsaved-indicator', hasUnsavedChanges);
-            const existingTippyInstance = tippyInstances.find(inst => inst.reference === criteriaCard);
-            if (existingTippyInstance) {
-                existingTippyInstance.setContent(UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator);
-                if (hasUnsavedChanges && existingTippyInstance.state.isDestroyed) {
-                    existingTippyInstance.enable();
-                } else if (!hasUnsavedChanges && !existingTippyInstance.state.isDestroyed) {
-                    existingTippyInstance.disable();
-                }
-            } else if (hasUnsavedChanges) {
-                tippy(criteriaCard, {
-                    allowHTML: true, theme: 'warning', placement: 'top', animation: 'fade',
-                    interactive: false, appendTo: () => document.body, delay: APP_CONFIG.UI_SETTINGS.TOOLTIP_DELAY,
-                    maxWidth: 400, duration: [150, 150], zIndex: 3050,
-                    content: UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator
-                });
-            }
-        }
-
-
         Object.keys(currentCriteria).forEach(key => {
             if (key === 'logic') return;
-
             const criterion = currentCriteria[key];
             const checkbox = document.getElementById(`check-${key}`);
             const optionsContainer = checkbox?.closest('.criteria-group')?.querySelector('.criteria-options-container');
-
-            if (checkbox) {
-                checkbox.checked = criterion.active;
-            }
-
+            if (checkbox) checkbox.checked = criterion.active;
             if (key === 'size') {
-                if (sizeRangeInput) {
-                    sizeRangeInput.value = criterion.threshold;
-                    sizeRangeInput.disabled = !criterion.active;
-                }
-                if (sizeValueDisplay) {
-                    sizeValueDisplay.textContent = formatNumber(criterion.threshold, 1);
-                }
-                if (sizeManualInput) {
-                    sizeManualInput.value = formatNumber(criterion.threshold, 1);
-                    sizeManualInput.disabled = !criterion.active;
-                }
-            } else {
-                if (optionsContainer) {
-                    const buttons = optionsContainer.querySelectorAll('.t2-criteria-button');
-                    buttons.forEach(button => {
-                        button.classList.toggle('active', criterion.active && button.dataset.value === criterion.value);
-                        button.classList.toggle('inactive-option', !criterion.active);
-                        button.disabled = !criterion.active;
-                    });
-                }
+                if (sizeRangeInput) { sizeRangeInput.value = criterion.threshold; sizeRangeInput.disabled = !criterion.active; }
+                if (sizeValueDisplay) { sizeValueDisplay.textContent = formatNumber(criterion.threshold, 1); }
+                if (sizeManualInput) { sizeManualInput.value = formatNumber(criterion.threshold, 1, '', true); sizeManualInput.disabled = !criterion.active; }
+            } else if (optionsContainer) {
+                optionsContainer.querySelectorAll('.t2-criteria-button').forEach(button => {
+                    button.classList.toggle('active', criterion.active && button.dataset.value === criterion.value);
+                    button.classList.toggle('inactive-option', !criterion.active);
+                    button.disabled = !criterion.active;
+                });
             }
         });
-
-        if (logicSwitch) {
-            logicSwitch.checked = currentLogic === 'OR';
-        }
-        if (logicLabel) {
-            logicLabel.textContent = currentLogic;
-        }
+        if (logicSwitch) logicSwitch.checked = currentLogic === 'OR';
+        if (logicLabel) logicLabel.textContent = currentLogic;
     }
     
     function updateBruteForceUI(status, payload = {}, isWorkerAvailable = false, currentCohort = null) {
-        const bfCardContainer = document.getElementById('brute-force-card-container');
-        if (!bfCardContainer) return;
-
+        const container = document.getElementById('brute-force-card-container');
+        if (!container) return;
         let contentHTML = '';
-        let showModalButton = false;
-        let exportModalButtonEnabled = false;
-
-        const startButton = document.getElementById('btn-start-brute-force');
-        const cancelButton = document.getElementById('btn-cancel-brute-force');
-        const applyBestButton = document.getElementById('btn-apply-best-bf-criteria');
-        const bfModalExportBtn = document.getElementById('export-bruteforce-modal-txt');
+        let showResultControls = false;
+        const cohortDisplayName = getCohortDisplayName(currentCohort);
 
         if (!isWorkerAvailable) {
-            contentHTML = `<p class="text-danger small p-3">Web Workers are not supported by your browser or failed to initialize. Brute-force optimization is unavailable.</p>`;
-            if (startButton) setElementDisabled(startButton.id, true);
-            if (cancelButton) setElementDisabled(cancelButton.id, true);
-            if (applyBestButton) setElementDisabled(applyBestButton.id, true);
-            if (bfModalExportBtn) setElementDisabled(bfModalExportBtn.id, true);
+            contentHTML = `<p class="text-danger small p-3">Web Workers are not supported. Brute-force optimization is unavailable.</p>`;
         } else if (status === 'started' || status === 'progress') {
-            const progress = (payload.tested / payload.total) * 100;
-            const currentBestText = payload.currentBest ? `Current best ${payload.metric}: ${formatNumber(payload.currentBest.metricValue, 4, true)}` : '';
+            const progress = (payload.total > 0) ? (payload.tested / payload.total) * 100 : 0;
+            const currentBestText = payload.currentBest ? `Current best ${payload.metric}: ${formatNumber(payload.currentBest.metricValue, 4, 'N/A', true)}` : 'Searching...';
             const totalDisplay = payload.total > 0 ? formatNumber(payload.total, 0) : '...';
             contentHTML = `
                 <div class="d-flex align-items-center">
                     <div class="progress flex-grow-1 me-3" style="height: 20px;">
                         <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: ${progress}%" aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100">${formatPercent(progress/100, 0)}</div>
                     </div>
-                    <span class="small text-muted text-nowrap" data-tippy-content="${UI_TEXTS.tooltips.bruteForceProgress.description}">Tested: ${formatNumber(payload.tested, 0)} / ${totalDisplay}</span>
+                    <span class="small text-muted text-nowrap">Tested: ${formatNumber(payload.tested, 0)} / ${totalDisplay}</span>
                 </div>
                 <p class="small text-muted mt-2 mb-0">${currentBestText}</p>
             `;
-            if (startButton) setElementDisabled(startButton.id, true);
-            if (cancelButton) setElementDisabled(cancelButton.id, false);
-            if (applyBestButton) setElementDisabled(applyBestButton.id, true);
-            if (bfModalExportBtn) setElementDisabled(bfModalExportBtn.id, true);
-        } else if (status === 'result' || status === 'cancelled' || status === 'error') {
+        } else {
             const bfResult = bruteForceManager.getResultsForCohort(currentCohort);
             if (bfResult && bfResult.bestResult) {
                 const best = bfResult.bestResult;
-                const metric = bfResult.metric;
                 const criteriaDisplay = studyT2CriteriaManager.formatCriteriaForDisplay(best.criteria, best.logic);
-                const cohortStats = bfResult.nTotal ? `N=${bfResult.nTotal} (N+: ${bfResult.nPlus}, N-: ${bfResult.nMinus})` : '';
+                let cohortStats = `(N=${bfResult.nTotal}, N+: ${bfResult.nPlus}, N-: ${bfResult.nMinus})`;
+                
+                const resultTooltipTemplate = UI_TEXTS.tooltips.bruteForceResult.description;
+                const resultTooltip = resultTooltipTemplate
+                    .replace('[N_TOTAL]', bfResult.nTotal)
+                    .replace('[N_PLUS]', bfResult.nPlus)
+                    .replace('[N_MINUS]', bfResult.nMinus);
 
                 contentHTML = `
-                    <p class="small text-muted" data-tippy-content="${UI_TEXTS.tooltips.bruteForceResult.description.replace('[N_TOTAL]', bfResult.nTotal).replace('[N_PLUS]', bfResult.nPlus).replace('[N_MINUS]', bfResult.nMinus)}">
-                        <strong>Optimization complete for cohort '${getCohortDisplayName(currentCohort)}'.</strong><br>
-                        Best ${metric}: <strong class="text-primary">${formatNumber(best.metricValue, 4, true)}</strong><br>
-                        Criteria: <code>${criteriaDisplay}</code> (Logic: ${best.logic})
-                        ${bfResult.duration ? `<br>Duration: ${formatNumber(bfResult.duration / 1000, 1, true)}s for ${formatNumber(bfResult.totalTested, 0)} combinations.` : ''}
-                        ${cohortStats ? `<span data-tippy-content="${UI_TEXTS.tooltips.bruteForceResult.cohortStats}">Cohort Stats: ${cohortStats}</span>` : ''}
+                    <p class="small text-muted" data-tippy-content="${resultTooltip}">
+                        <strong>Optimization complete for cohort '${cohortDisplayName}'.</strong><br>
+                        Best ${bfResult.metric}: <strong class="text-primary">${formatNumber(best.metricValue, 4, 'N/A', true)}</strong><br>
+                        Criteria: <code>${criteriaDisplay}</code><br>
+                        Duration: ${formatNumber(bfResult.duration / 1000, 1, 'N/A', true)}s for ${formatNumber(bfResult.totalTested, 0)} combinations.
                     </p>
                 `;
-                showModalButton = true;
-                exportModalButtonEnabled = true;
+                showResultControls = true;
+            } else if (status === 'cancelled') {
+                 contentHTML = `<p class="text-warning small p-3">Brute-force optimization was cancelled for cohort '${cohortDisplayName}'.</p>`;
             } else {
-                contentHTML = `<p class="text-muted small p-3">Brute-force optimization completed, but no valid results found for cohort '${getCohortDisplayName(currentCohort)}'. Try another metric or cohort, or check data quality.</p>`;
+                contentHTML = `<p class="text-muted small p-3">No brute-force optimization has been performed yet for cohort '${cohortDisplayName}'.</p>`;
             }
-            if (startButton) setElementDisabled(startButton.id, false);
-            if (cancelButton) setElementDisabled(cancelButton.id, true);
-            if (applyBestButton) setElementDisabled(applyBestButton.id, showModalButton);
-            if (bfModalExportBtn) setElementDisabled(bfModalExportBtn.id, !exportModalButtonEnabled);
-        } else {
-             contentHTML = `<p class="text-muted small p-3">No brute-force optimization has been performed yet for cohort '${getCohortDisplayName(currentCohort)}'.</p>`;
-             if (startButton) setElementDisabled(startButton.id, false);
-             if (cancelButton) setElementDisabled(cancelButton.id, true);
-             if (applyBestButton) setElementDisabled(applyBestButton.id, true);
-             if (bfModalExportBtn) setElementDisabled(bfModalExportBtn.id, true);
         }
         
-        const bfCardTitle = `Criteria Optimization (Brute-Force) <span class="badge bg-info text-dark ms-2 small" data-tippy-content="${UI_TEXTS.tooltips.bruteForceInfo.description.replace('[COHORT_NAME]', getCohortDisplayName(currentCohort))}">Cohort: ${getCohortDisplayName(currentCohort)}</span>`;
-        
-        bfCardContainer.innerHTML = `
+        const infoTooltipTemplate = UI_TEXTS.tooltips.bruteForceInfo.description;
+        const cardTitleTooltip = infoTooltipTemplate.replace('[COHORT_NAME]', `<strong>${cohortDisplayName}</strong>`);
+        const isRunning = status === 'started' || status === 'progress';
+
+        container.innerHTML = `
             <div class="card h-100" id="brute-force-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>${bfCardTitle}</span>
+                    <span data-tippy-content="${cardTitleTooltip}">Criteria Optimization (Brute-Force)</span>
                     <div class="d-flex align-items-center">
                         <label for="brute-force-metric" class="me-2 small text-muted" data-tippy-content="${UI_TEXTS.tooltips.bruteForceMetric.description}">Target:</label>
-                        <select class="form-select form-select-sm me-2" id="brute-force-metric" ${bruteForceManager.isRunning() ? 'disabled' : ''}>
+                        <select class="form-select form-select-sm me-2" id="brute-force-metric" ${isRunning ? 'disabled' : ''}>
                             ${['Balanced Accuracy', 'Accuracy', 'F1-Score', 'PPV', 'NPV'].map(metric => `<option value="${metric}" ${payload.metric === metric ? 'selected' : ''}>${metric}</option>`).join('')}
                         </select>
-                        <button class="btn btn-sm btn-success me-2" id="btn-start-brute-force" data-tippy-content="${UI_TEXTS.tooltips.bruteForceStart.description}"><i class="fas fa-play me-1"></i> Start</button>
-                        <button class="btn btn-sm btn-danger me-2" id="btn-cancel-brute-force" ${bruteForceManager.isRunning() ? '' : 'disabled'}><i class="fas fa-stop me-1"></i> Cancel</button>
-                        <button class="btn btn-sm btn-primary" id="btn-apply-best-bf-criteria" ${!showModalButton || bruteForceManager.isRunning() ? 'disabled' : ''}><i class="fas fa-magic me-1"></i> Apply Best</button>
-                        <button class="btn btn-sm btn-outline-info ms-2" ${!showModalButton ? 'disabled' : ''} data-bs-toggle="modal" data-bs-target="#brute-force-modal" id="btn-show-bf-details" data-tippy-content="${UI_TEXTS.tooltips.bruteForceDetailsButton.description}"><i class="fas fa-info-circle"></i> Top 10</button>
+                        <button class="btn btn-sm btn-success me-2" id="btn-start-brute-force" data-tippy-content="${UI_TEXTS.tooltips.bruteForceStart.description}" ${isRunning || !isWorkerAvailable ? 'disabled' : ''}><i class="fas fa-play me-1"></i> Start</button>
+                        <button class="btn btn-sm btn-danger me-2" id="btn-cancel-brute-force" ${!isRunning ? 'disabled' : ''}><i class="fas fa-stop me-1"></i> Cancel</button>
+                        <button class="btn btn-sm btn-primary" id="btn-apply-best-bf-criteria" ${!showResultControls || isRunning ? 'disabled' : ''}><i class="fas fa-magic me-1"></i> Apply Best</button>
+                        <button class="btn btn-sm btn-outline-info ms-2" ${!showResultControls ? 'disabled' : ''} data-bs-toggle="modal" data-bs-target="#brute-force-modal" id="btn-show-bf-details" data-tippy-content="${UI_TEXTS.tooltips.bruteForceDetailsButton.description}"><i class="fas fa-info-circle"></i> Top 10</button>
                     </div>
                 </div>
                 <div class="card-body">
@@ -472,76 +390,58 @@ const uiManager = (() => {
                 </div>
             </div>
         `;
-        initializeTooltips(bfCardContainer);
+        initializeTooltips(container);
     }
 
     function updateSortIcons(tableHeaderId, sortState) {
         const tableHeader = document.getElementById(tableHeaderId);
         if (!tableHeader) return;
-
-        tableHeader.querySelectorAll('th').forEach(th => {
+        tableHeader.querySelectorAll('th[data-sort-key]').forEach(th => {
             const sortKey = th.dataset.sortKey;
             const sortIcon = th.querySelector('.fa-sort, .fa-sort-up, .fa-sort-down');
-
             if (sortIcon) {
-                // Reset all icons to default sort state
-                sortIcon.classList.remove('fa-sort-up', 'fa-sort-down', 'text-primary');
-                sortIcon.classList.add('fa-sort', 'text-muted', 'opacity-50');
-
-                if (sortState && sortKey === sortState.key) {
-                    if (!sortState.subKey || (sortState.subKey && th.querySelector(`.sortable-sub-header[data-sub-key="${sortState.subKey}"]`))) {
-                        sortIcon.classList.remove('fa-sort', 'text-muted', 'opacity-50');
-                        sortIcon.classList.add(
-                            sortState.direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down',
-                            'text-primary'
-                        );
-                    }
-                }
+                sortIcon.className = 'fas fa-sort text-muted opacity-50 ms-1';
             }
-
-            // Also handle sub-headers for 'status' column
-            if (sortKey === 'status' && sortState && sortState.key === 'status') {
-                th.querySelectorAll('.sortable-sub-header').forEach(subHeader => {
-                    if (subHeader.dataset.subKey === sortState.subKey) {
-                        subHeader.style.fontWeight = 'bold';
-                        subHeader.style.textDecoration = 'underline';
-                        subHeader.style.color = 'var(--primary-color)';
-                    } else {
-                        subHeader.style.fontWeight = '';
-                        subHeader.style.textDecoration = '';
-                        subHeader.style.color = '';
-                    }
-                });
-            } else if (sortKey === 'status') {
-                th.querySelectorAll('.sortable-sub-header').forEach(subHeader => {
-                    subHeader.style.fontWeight = '';
-                    subHeader.style.textDecoration = '';
-                    subHeader.style.color = '';
-                });
+            if (sortKey === 'status') {
+                 th.querySelectorAll('.sortable-sub-header').forEach(sub => {
+                     sub.style.fontWeight = 'normal';
+                     sub.style.textDecoration = 'none';
+                 });
             }
         });
+        if (sortState?.key) {
+            const activeTh = tableHeader.querySelector(`th[data-sort-key="${sortState.key}"]`);
+            if (activeTh) {
+                const activeIcon = activeTh.querySelector('.fa-sort, .fa-sort-up, .fa-sort-down');
+                if (activeIcon) {
+                    activeIcon.className = `fas ${sortState.direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down'} text-primary ms-1`;
+                }
+                if (sortState.key === 'status' && sortState.subKey) {
+                    const activeSub = activeTh.querySelector(`.sortable-sub-header[data-sub-key="${sortState.subKey}"]`);
+                    if(activeSub) {
+                        activeSub.style.fontWeight = 'bold';
+                        activeSub.style.textDecoration = 'underline';
+                    }
+                }
+            }
+        }
     }
 
-    function markCriteriaSavedIndicator(isSaved) {
+    function markCriteriaSavedIndicator(isUnsaved) {
         const criteriaCard = document.getElementById('t2-criteria-card');
         if (criteriaCard) {
-            criteriaCard.classList.toggle('criteria-unsaved-indicator', isSaved);
-            const existingTippyInstance = tippyInstances.find(inst => inst.reference === criteriaCard);
-            if (existingTippyInstance) {
-                existingTippyInstance.setContent(UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator);
-                if (isSaved && existingTippyInstance.state.isDestroyed) { // If it was disabled because it was saved
-                    existingTippyInstance.enable(); // Re-enable it
-                } else if (!isSaved && !existingTippyInstance.state.isDestroyed) { // If it's saved and active
-                    existingTippyInstance.disable(); // Disable it
-                }
-            } else if (isSaved) {
-                // If it doesn't have an instance but should, create it.
+            criteriaCard.classList.toggle('criteria-unsaved-indicator', isUnsaved);
+            let instance = tippy.getInstance(criteriaCard);
+            if(isUnsaved && !instance) {
                 tippy(criteriaCard, {
-                    allowHTML: true, theme: 'warning', placement: 'top', animation: 'fade',
-                    interactive: false, appendTo: () => document.body, delay: APP_CONFIG.UI_SETTINGS.TOOLTIP_DELAY,
-                    maxWidth: 400, duration: [150, 150], zIndex: 3050,
-                    content: UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator
+                    content: UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator,
+                    theme: 'warning', placement: 'top',
                 });
+            } else if (instance) {
+                instance.setProps({
+                    content: UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator,
+                });
+                if(isUnsaved) instance.enable(); else instance.disable();
             }
         }
     }
@@ -555,25 +455,17 @@ const uiManager = (() => {
         const collapseElements = tableBody.querySelectorAll('.collapse');
 
         collapseElements.forEach(collapseEl => {
-            if (isExpanding) {
-                if (!collapseEl.classList.contains('show')) {
-                    const bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
-                    bsCollapse.show();
-                }
-            } else {
-                if (collapseEl.classList.contains('show')) {
-                    const bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
-                    bsCollapse.hide();
-                }
-            }
+            const bsCollapse = bootstrap.Collapse.getInstance(collapseEl) || new bootstrap.Collapse(collapseEl, { toggle: false });
+            if (isExpanding) bsCollapse.show(); else bsCollapse.hide();
         });
 
         toggleButton.dataset.action = isExpanding ? 'collapse' : 'expand';
+        const expandAllTooltip = (typeof UI_TEXTS !== 'undefined') ? UI_TEXTS.tooltips.dataTab.expandAll : 'Expand All Details';
+        const collapseAllTooltip = (typeof UI_TEXTS !== 'undefined') ? UI_TEXTS.tooltips.dataTab.collapseAll || 'Collapse All Details' : 'Collapse All Details';
         toggleButton.innerHTML = isExpanding
             ? `Collapse All Details <i class="fas fa-chevron-up ms-1"></i>`
             : `Expand All Details <i class="fas fa-chevron-down ms-1"></i>`;
-        toggleButton.setAttribute('data-tippy-content', isExpanding ? UI_TEXTS.tooltips.dataTab.collapseAll : UI_TEXTS.tooltips.dataTab.expandAll);
-        initializeTooltips(toggleButton); // Re-initialize tooltip for the button itself
+        toggleButton.setAttribute('data-tippy-content', isExpanding ? collapseAllTooltip : expandAllTooltip);
     }
 
 
@@ -598,6 +490,49 @@ const uiManager = (() => {
         updateBruteForceUI,
         updateSortIcons,
         markCriteriaSavedIndicator,
-        toggleAllDetails
+        toggleAllDetails,
+        getT2IconSVG: (type, value) => { 
+            const s = APP_CONFIG.UI_SETTINGS.ICON_SIZE;
+            const sw = APP_CONFIG.UI_SETTINGS.ICON_STROKE_WIDTH;
+            const iconColor = APP_CONFIG.UI_SETTINGS.ICON_COLOR;
+            const c = s / 2; const r = (s - sw) / 2;
+            const sq = s - sw * 1.5; const sqPos = (s - sq) / 2;
+            let svgContent = ''; let fillColor = 'none';
+            const unknownIconSVG = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" stroke-dasharray="2 2" /><line x1="${sqPos}" y1="${sqPos}" x2="${sqPos+sq}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/><line x1="${sqPos+sq}" y1="${sqPos}" x2="${sqPos}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`;
+            switch (type) {
+                case 'shape':
+                case 'form':
+                    if (value === 'rund') svgContent = `<circle cx="${c}" cy="${c}" r="${r}" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw}"/>`;
+                    else if (value === 'oval') svgContent = `<ellipse cx="${c}" cy="${c}" rx="${r}" ry="${r * 0.65}" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw}"/>`;
+                    else svgContent = unknownIconSVG;
+                    break;
+                case 'border':
+                case 'kontur':
+                    if (value === 'scharf') svgContent = `<circle cx="${c}" cy="${c}" r="${r}" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`;
+                    else if (value === 'irregulär') svgContent = `<path d="M ${c + r} ${c} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${r*0.8} ${r*1.2} 0 0 1 ${c-r*0.9} ${c-r*0.3} A ${r*1.1} ${r*0.7} 0 0 1 ${c+r} ${c} Z" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`;
+                    else svgContent = unknownIconSVG;
+                    break;
+                case 'homogeneity':
+                case 'homogenitaet':
+                    if (value === 'homogen') svgContent = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="${iconColor}" stroke="none" rx="1" ry="1"/>`;
+                    else if (value === 'heterogen') { const pSize = sq / 4; svgContent = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" rx="1" ry="1"/>`; for(let i=0;i<3;i++){for(let j=0;j<3;j++){if((i+j)%2===0){svgContent+=`<rect x="${sqPos+i*pSize+pSize/2}" y="${sqPos+j*pSize+pSize/2}" width="${pSize}" height="${pSize}" fill="${iconColor}" stroke="none" style="opacity:0.6;"/>`;}}} }
+                    else svgContent = unknownIconSVG;
+                    break;
+                case 'signal':
+                    if (value === 'signalarm') fillColor = '#555555';
+                    else if (value === 'intermediär') fillColor = '#aaaaaa';
+                    else if (value === 'signalreich') fillColor = '#f0f0f0';
+                    else { svgContent = unknownIconSVG; break; }
+                    const strokeColor = (value === 'signalreich') ? '#333333' : 'rgba(0,0,0,0.1)';
+                    svgContent = `<circle cx="${c}" cy="${c}" r="${r}" fill="${fillColor}" stroke="${strokeColor}" stroke-width="${sw * 0.75}"/>`;
+                    break;
+                case 'ruler-horizontal':
+                    svgContent = `<path d="M${sw/2} ${c} H${s-sw/2} M${c} ${sw/2} V${s-sw/2}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`;
+                    type = 'size';
+                    break;
+                default: svgContent = unknownIconSVG;
+            }
+            return `<svg class="icon-t2 icon-${type}" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${type}: ${value || 'unknown'}">${svgContent}</svg>`;
+        }
     });
 })();
