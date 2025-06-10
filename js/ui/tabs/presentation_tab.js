@@ -30,7 +30,7 @@ const presentationTab = (() => {
         let tableHTML = `
             <div class="col-12">
                 <div class="card h-100">
-                    <div class="card-header d-flex justify-content-between align-items-center"><span>AS Performance vs. N for All Cohorts</span><button class="btn btn-sm btn-outline-secondary p-0 px-1 border-0 table-download-png-btn" id="dl-${tableId}-png" data-table-id="${tableId}" data-table-name="Pres_AS_Perf_Overview"><i class="fas fa-image"></i></button></div>
+                    <div class="card-header d-flex justify-content-between align-items-center"><span>AS Performance vs. N for All Cohorts</span>${uiComponents.createHeaderButtonHTML([{id: `dl-${tableId}-png`, icon: 'fa-image', format: 'png', tableId: tableId, tableName: `Pres_AS_Perf_Overview`}], tableId, "AS_Performance_Overview")}</div>
                     <div class="card-body p-0"><div class="table-responsive"><table class="table table-striped table-hover table-sm small mb-0" id="${tableId}">
                         <thead class="small"><tr><th>Cohort</th><th>Sens. (95% CI)</th><th>Spec. (95% CI)</th><th>PPV (95% CI)</th><th>NPV (95% CI)</th><th>Acc. (95% CI)</th><th>AUC (95% CI)</th></tr></thead>
                         <tbody>${cohorts.map(k => createPerfTableRow(statsMap[k], k)).join('')}</tbody>
@@ -46,7 +46,7 @@ const presentationTab = (() => {
             <div class="col-lg-8 offset-lg-2">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center"><span>Performance Visualization (AS vs. N) - Cohort: ${currentCohortName}</span>
-                        <span class="card-header-buttons"><button class="btn btn-sm btn-outline-secondary p-0 px-1 border-0 chart-download-btn" id="dl-${chartId}-png" data-chart-id="${chartId}" data-format="png" data-chart-name="AS_Performance_${currentCohortName.replace(/\s+/g, '_')}"><i class="fas fa-image"></i></button><button class="btn btn-sm btn-outline-secondary p-0 px-1 border-0 chart-download-btn" id="dl-${chartId}-svg" data-chart-id="${chartId}" data-format="svg" data-chart-name="AS_Performance_${currentCohortName.replace(/\s+/g, '_')}"><i class="fas fa-file-code"></i></button></span>
+                        <span class="card-header-buttons">${uiComponents.createHeaderButtonHTML([{id: `dl-${chartId}-png`, icon: 'fa-image', format: 'png', chartId: chartId, chartName: `AS_Performance_${currentCohortName.replace(/\s+/g, '_')}`}, {id: `dl-${chartId}-svg`, icon: 'fa-file-code', format: 'svg', chartId: chartId, chartName: `AS_Performance_${currentCohortName.replace(/\s+/g, '_')}`}], chartId, "AS_Performance_Chart")}</span>
                     </div>
                     <div class="card-body p-1"><div id="${chartId}" class="pres-chart-container border rounded" style="min-height: 280px;">${hasDataForCurrent ? '' : `<p class="text-center text-muted p-3">No data for chart (${currentCohortName}).</p>`}</div></div>
                 </div>
@@ -103,7 +103,7 @@ const presentationTab = (() => {
                      <div class="col-lg-7 col-xl-7 presentation-comparison-col-left">
                         <div class="card h-100">
                              <div class="card-header d-flex justify-content-between align-items-center"><span>Comparison Chart (AS vs. ${t2ShortNameEffective})</span>
-                                 <span class="card-header-buttons"><button class="btn btn-sm btn-outline-secondary p-0 px-1 border-0 chart-download-btn" id="download-chart-as-vs-t2-png" data-chart-id="${chartContainerId}" data-format="png" data-chart-name="${chartBaseName}"><i class="fas fa-image"></i></button><button class="btn btn-sm btn-outline-secondary p-0 px-1 border-0 chart-download-btn" id="download-chart-as-vs-t2-svg" data-chart-id="${chartContainerId}" data-format="svg" data-chart-name="${chartBaseName}"><i class="fas fa-file-code"></i></button></span>
+                                 <span class="card-header-buttons">${uiComponents.createHeaderButtonHTML([{id: `download-chart-as-vs-t2-png`, icon: 'fa-image', format: 'png', chartId: chartContainerId, chartName: chartBaseName}, {id: `download-chart-as-vs-t2-svg`, icon: 'fa-file-code', format: 'svg', chartId: chartContainerId, chartName: chartBaseName}], chartContainerId, "AS_vs_T2_Comparison_Chart")}</span>
                              </div>
                             <div class="card-body p-1 d-flex align-items-center justify-content-center"><div id="${chartContainerId}" class="pres-chart-container w-100" style="min-height: 300px;"><p class="text-muted small text-center p-3">Loading comparison chart...</p></div></div>
                             <div class="card-footer text-end p-1"><button class="btn btn-sm btn-outline-secondary me-1" id="download-performance-as-vs-t2-csv"><i class="fas fa-file-csv me-1"></i>Table (CSV)</button><button class="btn btn-sm btn-outline-secondary" id="download-comp-table-as-vs-t2-md"><i class="fab fa-markdown me-1"></i>Metrics (MD)</button></div>
@@ -127,12 +127,8 @@ const presentationTab = (() => {
         return `<div class="row mb-4"><div class="col-12"><h4 class="text-center mb-1">Comparison: Avocado Sign vs. T2 Criteria</h4><p class="text-center text-muted small mb-3">Current comparison cohort: <strong>${displayCohortForComparison}</strong> ${cohortNotice}</p><div class="row justify-content-center"><div class="col-md-9 col-lg-7"><div class="input-group input-group-sm"><label class="input-group-text" for="pres-study-select">T2 Comparison Basis:</label><select class="form-select" id="pres-study-select"><option value="" ${!selectedStudyId ? 'selected' : ''} disabled>-- Please select --</option>${appliedOptionHTML}<option value="" disabled>--- Published Criteria ---</option>${studyOptionsHTML}</select></div></div></div></div></div><div id="presentation-as-vs-t2-results">${resultsHTML}</div>`;
     }
 
-    function render(view, presentationData, selectedStudyId, currentGlobalCohort, processedData, criteria, logic) { // Hinzugefügte Parameter
-        // Innerhalb der render Funktion von presentationTab:
-        // Die presentationData wird jetzt in app.js aufbereitet und an presentationTab.render übergeben
-        // Diese Daten können dann für die Charts verwendet werden.
-
-        // Hier ist der Code, der die Chart-Daten für den Vergleichsbalkendiagramm vorbereitet
+    function render(view, presentationData, selectedStudyIdFromState, currentGlobalCohort, processedData, criteria, logic) {
+        // Prepare chart data based on presentationData passed from main.js
         let chartDataForComparison = [];
         let t2ShortNameEffectiveForChart = "T2";
 
@@ -150,7 +146,6 @@ const presentationTab = (() => {
             ];
         }
 
-
         let viewSelectorHTML = `
             <div class="row mb-4">
                 <div class="col-12 d-flex justify-content-center">
@@ -165,16 +160,14 @@ const presentationTab = (() => {
 
         let contentHTML = (view === 'as-pur') 
             ? _createASPerformanceViewHTML(presentationData)
-            : _createASvsT2ComparisonViewHTML(presentationData, selectedStudyId, currentGlobalCohort);
+            : _createASvsT2ComparisonViewHTML(presentationData, selectedStudyIdFromState, currentGlobalCohort);
         
-        // Nach dem Rendern des HTML den Chart rendern (asynchron)
         setTimeout(() => {
-            uiManager.initializeTooltips(document.getElementById('presentation-content-area')); // Tooltips für den gesamten Tab initialisieren
+            uiManager.initializeTooltips(document.getElementById('presentation-content-area'));
 
             if (view === 'as-pur' && presentationData?.statsCurrentCohort) {
-                // Rendering des ROC-Charts, falls relevant
                 const chartId = "pres-as-perf-chart";
-                const dataForROC = processedData.filter(p => p.therapy === presentationData.cohort); // Filter the global processedData for the current cohort
+                const dataForROC = processedData.filter(p => p.therapy === presentationData.cohort || presentationData.cohort === 'Gesamt');
                 if (document.getElementById(chartId) && dataForROC.length > 0) {
                     chartRenderer.renderDiagnosticPerformanceChart(dataForROC, 'asStatus', 'nStatus', chartId, UI_TEXTS.legendLabels.avocadoSign);
                 } else if (document.getElementById(chartId)) {
@@ -186,7 +179,7 @@ const presentationTab = (() => {
                     chartRenderer.renderComparisonBarChart(chartDataForComparison, chartContainerId, {}, t2ShortNameEffectiveForChart);
                 }
             }
-        }, 100); // Eine kleine Verzögerung, um sicherzustellen, dass das DOM gerendert ist
+        }, 100);
 
         return viewSelectorHTML + `<div id="presentation-content-area">${contentHTML}</div>`;
     }
