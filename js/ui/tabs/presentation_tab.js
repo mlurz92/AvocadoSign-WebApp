@@ -11,7 +11,11 @@ const presentationTab = (() => {
         const createPerfTableRow = (stats, cohortKey) => {
             const cohortDisplayName = getCohortDisplayName(cohortKey);
             const na = '--';
-            const fCI_p = (m, k) => { const d = (k === 'auc'||k==='f1') ? 3 : 1; const p = !(k === 'auc'||k==='f1'); return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, d, p, na); };
+            const fCI_p = (m, k) => { 
+                const d = (k === 'auc') ? 2 : ((k === 'f1') ? 3 : 1); 
+                const p = !(k === 'auc' || k === 'f1'); 
+                return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, d, p, na); 
+            };
             if (!stats || typeof stats.matrix !== 'object') {
                 const nPatients = stats?.patientCount || '?';
                 return `<tr><td class="fw-bold">${cohortDisplayName} (N=${nPatients})</td><td colspan="6" class="text-muted text-center">Data missing</td></tr>`;
@@ -81,7 +85,8 @@ const presentationTab = (() => {
             const metricNames = { sens: 'Sensitivity', spec: 'Specificity', ppv: 'PPV', npv: 'NPV', acc: 'Accuracy', balAcc: 'Bal. Accuracy', f1: 'F1-Score', auc: 'AUC' };
             let comparisonTableHTML = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0" id="pres-as-vs-t2-comp-table"><thead class="small"><tr><th>Metric</th><th>AS (Value, 95% CI)</th><th>${t2ShortNameEffective} (Value, 95% CI)</th></tr></thead><tbody>`;
             metrics.forEach(key => {
-                const isRate = !(key === 'f1' || key === 'auc'); const digits = isRate ? 1 : 3;
+                const isRate = !(key === 'f1' || key === 'auc'); 
+                const digits = (key === 'auc') ? 2 : ((key === 'f1') ? 3 : 1);
                 const valAS = formatCI(performanceAS[key]?.value, performanceAS[key]?.ci?.lower, performanceAS[key]?.ci?.upper, digits, isRate, '--');
                 const valT2 = formatCI(performanceT2[key]?.value, performanceT2[key]?.ci?.lower, performanceT2[key]?.ci?.upper, digits, isRate, '--');
                 comparisonTableHTML += `<tr><td>${metricNames[key]}</td><td>${valAS}</td><td>${valT2}</td></tr>`;
@@ -89,10 +94,10 @@ const presentationTab = (() => {
             comparisonTableHTML += `</tbody></table></div>`;
             const comparisonTableCardHTML = uiComponents.createStatisticsCard('pres-as-vs-t2-comp-table_card', `Performance Metrics (AS vs. ${t2ShortNameEffective})`, comparisonTableHTML, false, null, [{id: 'dl-pres-as-vs-t2-comp-table-png', icon: 'fa-image', format: 'png', tableId: 'pres-as-vs-t2-comp-table', tableName: `Pres_ASvsT2_Metrics_${comparisonCriteriaSet?.id || 'T2'}`}]);
 
-            const fPVal = (r, d=3) => (r?.pValue !== null && !isNaN(r?.pValue)) ? (r.pValue < 0.001 ? '&lt;0.001' : formatNumber(r.pValue, d, '--')) : '--';
+            const fPVal = (r) => (r?.pValue !== null && !isNaN(r?.pValue)) ? (getPValueText(r.pValue, 'en', true)) : '--';
             let testsTableHTML = `<table class="table table-sm table-striped small mb-0" id="pres-as-vs-t2-test-table"><thead class="small visually-hidden"><tr><th>Test</th><th>Statistic</th><th>p-Value</th><th>Method</th></tr></thead><tbody>`;
-            testsTableHTML += `<tr><td>McNemar (Acc)</td><td>${formatNumber(comparison?.mcnemar?.statistic, 3, '--')} (df=${comparison?.mcnemar?.df || '--'})</td><td>${fPVal(comparison?.mcnemar)} ${getStatisticalSignificanceSymbol(comparison?.mcnemar?.pValue)}</td><td class="text-muted">${comparison?.mcnemar?.method || '--'}</td></tr>`;
-            testsTableHTML += `<tr><td>DeLong (AUC)</td><td>Z=${formatNumber(comparison?.delong?.Z, 3, '--')}</td><td> ${fPVal(comparison?.delong)} ${getStatisticalSignificanceSymbol(comparison?.delong?.pValue)}</td><td class="text-muted">${comparison?.delong?.method || '--'}</td></tr>`;
+            testsTableHTML += `<tr><td>McNemar (Acc)</td><td>${formatNumber(comparison?.mcnemar?.statistic, 3, '--', true)} (df=${comparison?.mcnemar?.df || '--'})</td><td>${fPVal(comparison?.mcnemar)} ${getStatisticalSignificanceSymbol(comparison?.mcnemar?.pValue)}</td><td class="text-muted">${comparison?.mcnemar?.method || '--'}</td></tr>`;
+            testsTableHTML += `<tr><td>DeLong (AUC)</td><td>Z=${formatNumber(comparison?.delong?.Z, 3, '--', true)}</td><td> ${fPVal(comparison?.delong)} ${getStatisticalSignificanceSymbol(comparison?.delong?.pValue)}</td><td class="text-muted">${comparison?.delong?.method || '--'}</td></tr>`;
             testsTableHTML += `</tbody></table>`;
             const testsCardHTML = uiComponents.createStatisticsCard('pres-as-vs-t2-test-table_card', `Statistical Comparison (AS vs. ${t2ShortNameEffective})`, testsTableHTML, false, null, [{id: `dl-pres-as-vs-t2-test-table-png`, icon: 'fa-image', format: 'png', tableId: 'pres-as-vs-t2-test-table', tableName: `Pres_ASvsT2_Tests_${comparisonCriteriaSet?.id || 'T2'}`}]);
             
@@ -128,7 +133,6 @@ const presentationTab = (() => {
     }
 
     function render(view, presentationData, selectedStudyIdFromState, currentGlobalCohort, processedData, criteria, logic) {
-        // Prepare chart data based on presentationData passed from main.js
         let chartDataForComparison = [];
         let t2ShortNameEffectiveForChart = "T2";
 
@@ -137,7 +141,6 @@ const presentationTab = (() => {
             const performanceT2 = presentationData.performanceT2;
             t2ShortNameEffectiveForChart = presentationData.t2ShortName || (presentationData.comparisonCriteriaSet?.displayShortName || 'T2');
 
-            // Erstelle die Daten für das Balkendiagramm
             chartDataForComparison = [
                 { metric: 'Sens.', AS: performanceAS.sens?.value || 0, T2: performanceT2.sens?.value || 0 },
                 { metric: 'Spec.', AS: performanceAS.spec?.value || 0, T2: performanceT2.spec?.value || 0 },
@@ -167,7 +170,7 @@ const presentationTab = (() => {
 
             if (view === 'as-pur' && presentationData?.statsCurrentCohort) {
                 const chartId = "pres-as-perf-chart";
-                const dataForROC = processedData.filter(p => p.therapy === presentationData.cohort || presentationData.cohort === 'Gesamt');
+                const dataForROC = dataProcessor.filterDataByCohort(processedData, presentationData.cohort);
                 if (document.getElementById(chartId) && dataForROC.length > 0) {
                     chartRenderer.renderDiagnosticPerformanceChart(dataForROC, 'asStatus', 'nStatus', chartId, UI_TEXTS.legendLabels.avocadoSign);
                 } else if (document.getElementById(chartId)) {
