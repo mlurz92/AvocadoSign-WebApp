@@ -140,7 +140,10 @@ const analysisTab = (() => {
             if(metricsOverviewContainer) {
                 if (currentCohortStats && currentCohortStats.performanceT2Applied) {
                     const statsT2 = currentCohortStats.performanceT2Applied;
-                    const fCI = (m, d=1, p=true) => formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, d, p, '--');
+                    const fCI = (m, d=1, p=true) => {
+                        const digits = (m?.name === 'auc') ? 2 : ((m?.name === 'f1') ? 3 : d);
+                        return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, digits, p, '--');
+                    };
                     const na = '--';
 
                     const metricsHtml = `
@@ -154,14 +157,14 @@ const analysisTab = (() => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>Sensitivity</td><td>${fCI(statsT2.sens)}</td><td>${statsT2.sens?.method || na}</td></tr>
-                                    <tr><td>Specificity</td><td>${fCI(statsT2.spec)}</td><td>${statsT2.spec?.method || na}</td></tr>
-                                    <tr><td>PPV</td><td>${fCI(statsT2.ppv)}</td><td>${statsT2.ppv?.method || na}</td></tr>
-                                    <tr><td>NPV</td><td>${fCI(statsT2.npv)}</td><td>${statsT2.npv?.method || na}</td></tr>
-                                    <tr><td>Accuracy</td><td>${fCI(statsT2.acc)}</td><td>${statsT2.acc?.method || na}</td></tr>
-                                    <tr><td>Balanced Accuracy</td><td>${fCI(statsT2.balAcc)}</td><td>${statsT2.balAcc?.method || na}</td></tr>
+                                    <tr><td>Sensitivity</td><td>${fCI(statsT2.sens, 1, true)}</td><td>${statsT2.sens?.method || na}</td></tr>
+                                    <tr><td>Specificity</td><td>${fCI(statsT2.spec, 1, true)}</td><td>${statsT2.spec?.method || na}</td></tr>
+                                    <tr><td>PPV</td><td>${fCI(statsT2.ppv, 1, true)}</td><td>${statsT2.ppv?.method || na}</td></tr>
+                                    <tr><td>NPV</td><td>${fCI(statsT2.npv, 1, true)}</td><td>${statsT2.npv?.method || na}</td></tr>
+                                    <tr><td>Accuracy</td><td>${fCI(statsT2.acc, 1, true)}</td><td>${statsT2.acc?.method || na}</td></tr>
+                                    <tr><td>Balanced Accuracy</td><td>${fCI(statsT2.balAcc, 1, true)}</td><td>${statsT2.balAcc?.method || na}</td></tr>
                                     <tr><td>F1-Score</td><td>${fCI(statsT2.f1, 3, false)}</td><td>${statsT2.f1?.method || na}</td></tr>
-                                    <tr><td>AUC</td><td>${fCI(statsT2.auc, 3, false)}</td><td>${statsT2.auc?.method || na}</td></tr>
+                                    <tr><td>AUC</td><td>${fCI(statsT2.auc, 2, false)}</td><td>${statsT2.auc?.method || na}</td></tr>
                                 </tbody>
                             </table>
                         </div>
