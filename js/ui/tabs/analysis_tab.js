@@ -30,7 +30,7 @@ const analysisTab = (() => {
                 }
             }
             
-            const baseTooltipContent = UI_TEXTS.tooltips.analysisTab[col.tooltipKey] || col.label;
+            const baseTooltipContent = APP_CONFIG.UI_TEXTS.tooltips.analysisTab[col.tooltipKey] || col.label;
             const subHeaders = col.subKeys ? col.subKeys.map(sk => {
                 const isActiveSubSort = activeSubKey === sk.key;
                 const style = isActiveSubSort ? 'font-weight: bold; text-decoration: underline; color: var(--primary-color);' : '';
@@ -58,7 +58,7 @@ const analysisTab = (() => {
 
     function createAnalysisTableCardHTML(data, sortState, appliedCriteria, appliedLogic) {
         const tableHTML = createAnalysisTableHTML(data, sortState, appliedCriteria, appliedLogic);
-        const toggleButtonTooltip = UI_TEXTS.tooltips.analysisTab.expandAll || 'Toggle detail views for all patients.';
+        const toggleButtonTooltip = APP_CONFIG.UI_TEXTS.tooltips.analysisTab.expandAll || 'Toggle detail views for all patients.';
         return `
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -83,17 +83,17 @@ const analysisTab = (() => {
         }
         const histOpts = { height: 130, margin: { top: 5, right: 10, bottom: 25, left: 35 }, useCompactMargins: true };
         const pieOpts = { height: 130, margin: { top: 5, right: 5, bottom: 35, left: 5 }, innerRadiusFactor: 0.45, fontSize: '8px', useCompactMargins: true, legendBelow: true };
-        const genderData = [{label: UI_TEXTS.legendLabels.male, value: stats.sex?.m ?? 0}, {label: UI_TEXTS.legendLabels.female, value: stats.sex?.f ?? 0}];
-        if(stats.sex?.unknown > 0) genderData.push({label: UI_TEXTS.legendLabels.unknownGender, value: stats.sex.unknown });
-        const therapyData = [{label: UI_TEXTS.legendLabels.direktOP, value: stats.therapy?.['direkt OP'] ?? 0}, {label: UI_TEXTS.legendLabels.nRCT, value: stats.therapy?.nRCT ?? 0}];
+        const genderData = [{label: APP_CONFIG.UI_TEXTS.legendLabels.male, value: stats.sex?.m ?? 0}, {label: APP_CONFIG.UI_TEXTS.legendLabels.female, value: stats.sex?.f ?? 0}];
+        if(stats.sex?.unknown > 0) genderData.push({label: APP_CONFIG.UI_TEXTS.legendLabels.unknownGender, value: stats.sex.unknown });
+        const therapyData = [{label: APP_CONFIG.UI_TEXTS.legendLabels.direktOP, value: stats.therapy?.['direkt OP'] ?? 0}, {label: APP_CONFIG.UI_TEXTS.legendLabels.nRCT, value: stats.therapy?.nRCT ?? 0}];
         
         try {
             chartRenderer.renderAgeDistributionChart(stats.ageData || [], ids[0], histOpts);
             chartRenderer.renderPieChart(genderData, ids[1], {...pieOpts, legendItemCount: genderData.length});
             chartRenderer.renderPieChart(therapyData, ids[2], {...pieOpts, legendItemCount: therapyData.length});
-            chartRenderer.renderPieChart([{label: UI_TEXTS.legendLabels.nPositive, value: stats.nStatus?.plus ?? 0}, {label: UI_TEXTS.legendLabels.nNegative, value: stats.nStatus?.minus ?? 0}], ids[3], {...pieOpts, legendItemCount: 2});
-            chartRenderer.renderPieChart([{label: UI_TEXTS.legendLabels.asPositive, value: stats.asStatus?.plus ?? 0}, {label: UI_TEXTS.legendLabels.asNegative, value: stats.asStatus?.minus ?? 0}], ids[4], {...pieOpts, legendItemCount: 2});
-            chartRenderer.renderPieChart([{label: UI_TEXTS.legendLabels.t2Positive, value: stats.t2Status?.plus ?? 0}, {label: UI_TEXTS.legendLabels.t2Negative, value: stats.t2Status?.minus ?? 0}], ids[5], {...pieOpts, legendItemCount: 2});
+            chartRenderer.renderPieChart([{label: APP_CONFIG.UI_TEXTS.legendLabels.nPositive, value: stats.nStatus?.plus ?? 0}, {label: APP_CONFIG.UI_TEXTS.legendLabels.nNegative, value: stats.nStatus?.minus ?? 0}], ids[3], {...pieOpts, legendItemCount: 2});
+            chartRenderer.renderPieChart([{label: APP_CONFIG.UI_TEXTS.legendLabels.asPositive, value: stats.asStatus?.plus ?? 0}, {label: APP_CONFIG.UI_TEXTS.legendLabels.asNegative, value: stats.asStatus?.minus ?? 0}], ids[4], {...pieOpts, legendItemCount: 2});
+            chartRenderer.renderPieChart([{label: APP_CONFIG.UI_TEXTS.legendLabels.t2Positive, value: stats.t2Status?.plus ?? 0}, {label: APP_CONFIG.UI_TEXTS.legendLabels.t2Negative, value: stats.t2Status?.minus ?? 0}], ids[5], {...pieOpts, legendItemCount: 2});
         }
         catch(error) { ids.forEach(id => uiManager.updateElementHTML(id, '<p class="text-danger small text-center p-2">Chart Error</p>')); }
     }
@@ -125,12 +125,12 @@ const analysisTab = (() => {
                 } else {
                     const dlBtns = (baseId, title) => [{id:`dl-${baseId}-png`, icon: 'fa-image', tooltip: `Download '${title}' as PNG`, format:'png', chartId: baseId, chartName: title}, {id:`dl-${baseId}-svg`, icon: 'fa-file-code', tooltip: `Download '${title}' as SVG`, format:'svg', chartId: baseId, chartName: title}];
                     dashboardContainer.innerHTML = `
-                        ${uiComponents.createDashboardCard(UI_TEXTS.chartTitles.ageDistribution, `<p class="mb-0 small">Median: ${formatNumber(stats.age?.median, 1)} (${formatNumber(stats.age?.min, 0)} - ${formatNumber(stats.age?.max, 0)})</p>`, 'chart-dash-age', '', '', 'p-1', dlBtns('chart-dash-age', UI_TEXTS.chartTitles.ageDistribution))}
-                        ${uiComponents.createDashboardCard(UI_TEXTS.chartTitles.genderDistribution, `<p class="mb-0 small">M: ${stats.sex?.m ?? 0} F: ${stats.sex?.f ?? 0}</p>`, 'chart-dash-gender', '', '', 'p-1', dlBtns('chart-dash-gender', UI_TEXTS.chartTitles.genderDistribution))}
-                        ${uiComponents.createDashboardCard(UI_TEXTS.chartTitles.therapyDistribution, `<p class="mb-0 small">Upfront: ${stats.therapy?.['direkt OP'] ?? 0} nRCT: ${stats.therapy?.nRCT ?? 0}</p>`, 'chart-dash-therapy', '', '', 'p-1', dlBtns('chart-dash-therapy', UI_TEXTS.chartTitles.therapyDistribution))}
-                        ${uiComponents.createDashboardCard(UI_TEXTS.chartTitles.statusN, `<p class="mb-0 small">N+: ${stats.nStatus?.plus ?? 0} N-: ${stats.nStatus?.minus ?? 0}</p>`, 'chart-dash-status-n', '', '', 'p-1', dlBtns('chart-dash-status-n', UI_TEXTS.chartTitles.statusN))}
-                        ${uiComponents.createDashboardCard(UI_TEXTS.chartTitles.statusAS, `<p class="mb-0 small">AS+: ${stats.asStatus?.plus ?? 0} AS-: ${stats.asStatus?.minus ?? 0}</p>`, 'chart-dash-status-as', '', '', 'p-1', dlBtns('chart-dash-as', UI_TEXTS.chartTitles.statusAS))}
-                        ${uiComponents.createDashboardCard(UI_TEXTS.chartTitles.statusT2, `<p class="mb-0 small">T2+: ${stats.t2Status?.plus ?? 0} T2-: ${stats.t2Status?.minus ?? 0}</p>`, 'chart-dash-t2', '', '', 'p-1', dlBtns('chart-dash-t2', UI_TEXTS.chartTitles.statusT2))}
+                        ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.ageDistribution, `<p class="mb-0 small">Median: ${formatNumber(stats.age?.median, 1)} (${formatNumber(stats.age?.min, 0)} - ${formatNumber(stats.age?.max, 0)})</p>`, 'chart-dash-age', '', '', 'p-1', dlBtns('chart-dash-age', APP_CONFIG.UI_TEXTS.chartTitles.ageDistribution))}
+                        ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.genderDistribution, `<p class="mb-0 small">M: ${stats.sex?.m ?? 0} F: ${stats.sex?.f ?? 0}</p>`, 'chart-dash-gender', '', '', 'p-1', dlBtns('chart-dash-gender', APP_CONFIG.UI_TEXTS.chartTitles.genderDistribution))}
+                        ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.therapyDistribution, `<p class="mb-0 small">Upfront: ${stats.therapy?.['direkt OP'] ?? 0} nRCT: ${stats.therapy?.nRCT ?? 0}</p>`, 'chart-dash-therapy', '', '', 'p-1', dlBtns('chart-dash-therapy', APP_CONFIG.UI_TEXTS.chartTitles.therapyDistribution))}
+                        ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusN, `<p class="mb-0 small">N+: ${stats.nStatus?.plus ?? 0} N-: ${stats.nStatus?.minus ?? 0}</p>`, 'chart-dash-status-n', '', '', 'p-1', dlBtns('chart-dash-status-n', APP_CONFIG.UI_TEXTS.chartTitles.statusN))}
+                        ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusAS, `<p class="mb-0 small">AS+: ${stats.asStatus?.plus ?? 0} AS-: ${stats.asStatus?.minus ?? 0}</p>`, 'chart-dash-status-as', '', '', 'p-1', dlBtns('chart-dash-as', APP_CONFIG.UI_TEXTS.chartTitles.statusAS))}
+                        ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusT2, `<p class="mb-0 small">T2+: ${stats.t2Status?.plus ?? 0} T2-: ${stats.t2Status?.minus ?? 0}</p>`, 'chart-dash-t2', '', '', 'p-1', dlBtns('chart-dash-t2', APP_CONFIG.UI_TEXTS.chartTitles.statusT2))}
                     `;
                     renderDashboardCharts(stats);
                 }
