@@ -31,7 +31,7 @@ const dataTab = (() => {
                 }
             }
             
-            const baseTooltipContent = APP_CONFIG.UI_TEXTS.tooltips.dataTab[col.tooltipKey];
+            const baseTooltipContent = APP_CONFIG.UI_TEXTS.tooltips.dataTab[col.tooltipKey] || `Sort by ${col.label}`;
             const subHeaders = col.subKeys ? col.subKeys.map(sk => {
                 const isActiveSubSort = activeSubKey === sk.key;
                 const style = isActiveSubSort ? 'font-weight: bold; text-decoration: underline; color: var(--primary-color);' : '';
@@ -42,7 +42,7 @@ const dataTab = (() => {
             const sortAttributes = `data-sort-key="${col.key}" ${col.subKeys || col.key === 'details' ? '' : 'style="cursor: pointer;"'}`;
             
             if (col.subKeys) {
-                 headerHTML += `<th scope="col" ${sortAttributes} data-tippy-content="${mainTooltip}" ${thStyle}>${col.label} (${subHeaders}) ${isMainKeyActiveSort && !activeSubKey ? sortIconHTML : '<i class="fas fa-sort text-muted opacity-50 ms-1"></i>'}</th>`;
+                 headerHTML += `<th scope="col" ${sortAttributes} data-tippy-content="${mainTooltip}" ${thStyle}>${col.label} (${subHeaders}) ${isMainKeyActiveSort ? sortIconHTML : '<i class="fas fa-sort text-muted opacity-50 ms-1"></i>'}</th>`;
             } else {
                  headerHTML += `<th scope="col" ${sortAttributes} data-tippy-content="${mainTooltip}" ${thStyle}>${col.label} ${col.key === 'details' ? '' : sortIconHTML}</th>`;
             }
@@ -70,9 +70,10 @@ const dataTab = (() => {
 
     function render(data, sortState) {
         if (!data) throw new Error("Data for data tab not available.");
+        const expandAllTooltip = APP_CONFIG.UI_TEXTS.tooltips.dataTab.expandAll || 'Expand All Details';
         const toggleButtonHTML = `
             <div class="d-flex justify-content-end mb-3" id="data-toggle-button-container">
-                <button id="data-toggle-details" class="btn btn-sm btn-outline-secondary" data-action="expand" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.dataTab.expandAll}">
+                <button id="data-toggle-details" class="btn btn-sm btn-outline-secondary" data-action="expand" data-tippy-content="${expandAllTooltip}">
                    Expand All Details <i class="fas fa-chevron-down ms-1"></i>
                </button>
             </div>`;
@@ -84,7 +85,6 @@ const dataTab = (() => {
             const tableHeader = document.getElementById('data-table-header');
             if (tableBody && data.length > 0) uiManager.attachRowCollapseListeners(tableBody.id);
             if (tableHeader) uiManager.updateSortIcons(tableHeader.id, sortState);
-            // Re-initialize tooltips specifically for this rendered content
             uiManager.initializeTooltips(document.getElementById('data-pane'));
         }, 0);
 
