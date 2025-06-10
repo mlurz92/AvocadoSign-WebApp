@@ -152,61 +152,10 @@ const t2CriteriaManager = (() => {
         const evaluatedNodes = lymphNodes.map(lk => {
             if (!lk) return null;
             const checkResult = checkNode(lk, criteria);
+            
             let isNodePositive = (logic === 'AND')
                 ? activeKeys.every(key => checkResult[key] === true)
                 : activeKeys.some(key => checkResult[key] === true);
 
             if (isNodePositive) {
-                patientIsPositive = true;
-                positiveNodeCount++;
-            }
-            return { ...lk, isPositive: isNodePositive, checkResult };
-        }).filter(node => node !== null);
-
-        return {
-            t2Status: patientIsPositive ? '+' : '-',
-            positiveNodeCount: positiveNodeCount,
-            evaluatedNodes: evaluatedNodes
-        };
-    }
-
-    function evaluateDataset(dataset, criteria, logic) {
-        if (!Array.isArray(dataset)) return [];
-        if (!criteria || (logic !== 'AND' && logic !== 'OR')) {
-            return dataset.map(p => ({
-                ...cloneDeep(p),
-                t2Status: null,
-                countT2NodesPositive: 0,
-                t2NodesEvaluated: (p.t2Nodes || []).map(lk => ({...lk, isPositive: false, checkResult: {}}))
-            }));
-        }
-
-        return dataset.map(patient => {
-            if (!patient) return null;
-            const patientCopy = cloneDeep(patient);
-            const { t2Status, positiveNodeCount, evaluatedNodes } = evaluatePatient(patientCopy, criteria, logic);
-            patientCopy.t2Status = t2Status;
-            patientCopy.countT2NodesPositive = positiveNodeCount;
-            patientCopy.t2NodesEvaluated = evaluatedNodes;
-            return patientCopy;
-        }).filter(p => p !== null);
-    }
-
-    return Object.freeze({
-        init,
-        getCurrentCriteria,
-        getAppliedCriteria,
-        getCurrentLogic,
-        getAppliedLogic,
-        isUnsaved: getIsUnsaved,
-        updateCriterionValue,
-        updateCriterionThreshold,
-        toggleCriterionActive,
-        updateLogic,
-        resetCriteria,
-        applyCriteria,
-        checkNode,
-        evaluatePatient,
-        evaluateDataset
-    });
-})();
+                patient
