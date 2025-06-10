@@ -1,0 +1,16 @@
+### Koh et al. (2008) - Evaluating Nodes Before and After nCRT
+
+*   **Purpose:** To use thin-section T2-weighted MRI to evaluate the number, size, distribution, and morphology of mesorectal lymph nodes in rectal cancer before and after neoadjuvant chemoradiation (nCRT), and to compare these findings with histopathology.
+
+*   **Methods:** A prospective study of 25 patients with poor-risk rectal adenocarcinoma. Patients underwent thin-section (3-mm) T2-weighted MRI before and after nCRT, followed by total mesorectal excision surgery.
+
+*   **Nodal Malignancy Criteria:** On T2-weighted MRI, a node was considered malignant if it exhibited **irregular outlines** or **internal signal heterogeneity**.
+
+*   **Key Findings:**
+    *   **Pre-nCRT:** 152 mesorectal nodes were visible on MRI. The mean short-axis diameter was 6.2 mm. Based on morphological criteria, 100 nodes were deemed benign and 52 malignant.
+    *   **Post-nCRT:** Only 29 nodes were visible on MRI, with a mean short-axis diameter of 4.1 mm. Of these, 24 appeared benign and 5 appeared malignant. This represented significant nodal downstaging (p < 0.01).
+    *   **Node Regression:** Malignant nodes that were in contact with the mesorectal fascia before treatment regressed completely after nCRT.
+    *   **Diagnostic Agreement:** After nCRT, there was good agreement between MRI and histopathology for T-staging (kappa = 0.64) and N-staging (kappa = 0.65).
+    *   **Diagnostic Performance (Post-nCRT):** For detecting nodal disease after nCRT, MRI had a sensitivity of 67%, specificity of 95%, positive predictive value (PPV) of 80%, negative predictive value (NPV) of 90%, and accuracy of 88%.
+
+*   **Conclusion:** Neoadjuvant chemoradiation leads to a decrease in the size and number of both benign and malignant-appearing mesorectal nodes. MRI is a useful tool for observing this nodal downstaging and regression from the mesorectal fascia in vivo.
