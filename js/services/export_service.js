@@ -171,6 +171,33 @@ const exportService = (() => {
               }
          });
      }
+    
+    async function convertTableToPngBlob(tableElementId, targetWidth = 800) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const { default: html2canvas } = await import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/+esm');
+                const tableElement = document.getElementById(tableElementId);
+                if (!tableElement) return reject(new Error(`Table element with ID '${tableElementId}' not found.`));
+
+                const canvas = await html2canvas(tableElement, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
+                canvas.toBlob((blob) => {
+                    if (blob) resolve(blob);
+                    else reject(new Error("Canvas toBlob failed for table."));
+                }, 'image/png');
+            } catch (error) {
+                console.error("html2canvas dynamic import or conversion failed:", error);
+                // Fallback to a simple message if html2canvas fails to load or run
+                const errorBlob = new Blob([`Error rendering table to PNG: ${error.message}`], { type: 'text/plain' });
+                resolve(errorBlob);
+            }
+        });
+    }
+
 
     function generateStatistikCSVString(stats, kollektiv, criteria, logic) {
         if (!stats || !stats.descriptive) return null;
@@ -261,7 +288,7 @@ const exportService = (() => {
         try {
             let headers = [], rows = [], title = ''; 
             const kollektivDisplayName = getCohortDisplayName(kollektiv); 
-            const escMD = (text) => escapeHTML(String(text)); // Simplified; a real one would handle more MD chars.
+            const escMD = (text) => escapeHTML(String(text)); 
             const na = '--'; 
             const formatCriteriaFunc = typeof studyT2CriteriaManager !== 'undefined' ? studyT2CriteriaManager.formatCriteriaForDisplay : (c, l) => 'N/A'; 
             const t2CriteriaLabelShort = options.t2CriteriaLabelShort || 'T2';
@@ -353,7 +380,7 @@ const exportService = (() => {
          } catch (error) { console.error(`Error during chart export (${chartName}, ${format}):`, error); uiManager.showToast(`Error during chart export (${format.toUpperCase()}).`, 'danger'); }
     }
 
-     async function exportTablePNG(tableElementId, kollektiv, typeKey, tableName = 'Tabelle') {
+    async function exportTablePNG(tableElementId, kollektiv, typeKey, tableName = 'Tabelle') {
          uiManager.showToast(`Generating PNG for table ${tableName}...`, 'info', 1500);
          try {
              const tableElement = document.getElementById(tableElementId); const baseWidth = tableElement?.offsetWidth || 800;
@@ -463,35 +490,68 @@ const exportService = (() => {
          } catch (error) { console.error(`Error creating ${category.toUpperCase()} ZIP package:`, error); uiManager.showToast(`Error creating ${category.toUpperCase()} ZIP package.`, 'danger'); }
      }
 
-     function exportPraesentationData(actionId, presentationData, kollektiv) {
-            let content = null, filenameKey = null, extension = null, mimeType = null, options = {}, success = false; const na = '--';
-            if (!presentationData) { uiManager.showToast("No data available for presentation export.", "warning"); return; }
-            const { performanceAS, performanceT2, comparison, comparisonCriteriaSet, cohortForComparison, patientCountForComparison, t2ShortName } = presentationData || {};
-            const isAsPurView = actionId.includes('-as-pur-');
-            const isAsVsT2View = actionId.includes('-as-vs-t2-');
-            options.studyId = comparisonCriteriaSet?.id || null;
-            if (presentationData.t2ShortName) options.t2CriteriaLabelShort = presentationData.t2ShortName;
-            if (comparisonCriteriaSet?.description) options.t2CriteriaLabelFull = studyT2CriteriaManager.formatCriteriaForDisplay(comparisonCriteriaSet.criteria, comparisonCriteriaSet.logic);
+    function exportPraesentationData(actionId, presentationData, kollektiv) {
+        let content = null, filenameKey = null, extension = null, mimeType = null, options = {}, success = false; const na = '--';
+        if (!presentationData) { uiManager.showToast("No data available for presentation export.", "warning"); return; }
+        const { performanceAS, performanceT2, comparison, comparisonCriteriaSet, cohortForComparison, patientCountForComparison, t2ShortName } = presentationData || {};
+        const isAsPurView = actionId.includes('-as-pur-');
+        const isAsVsT2View = actionId.includes('-as-vs-t2-');
+        options.studyId = comparisonCriteriaSet?.id || null;
+        if (presentationData.t2ShortName) options.t2CriteriaLabelShort = presentationData.t2ShortName;
+        if (comparisonCriteriaSet?.description) options.t2CriteriaLabelFull = studyT2CriteriaManager.formatCriteriaForDisplay(comparisonCriteriaSet.criteria, comparisonCriteriaSet.logic);
 
-            try {
-                if (isAsPurView && actionId === 'download-performance-as-pur-csv') {
-                     const allStatsData = { statsGesamt: presentationData.statsGesamt, statsDirektOP: presentationData.statsDirektOP, statsNRCT: presentationData.statsNRCT }; const headers = ['Cohort', 'N', 'Sens', 'Sens CI Low', 'Sens CI High', 'Spec', 'Spec CI Low', 'Spec CI High', 'PPV', 'PPV CI Low', 'PPV CI High', 'NPV', 'NPV CI Low', 'NPV CI High', 'Acc', 'Acc CI Low', 'Acc CI High', 'BalAcc', 'BalAcc CI Low', 'BalAcc CI High', 'F1', 'F1 CI Low', 'F1 CI High', 'AUC', 'AUC CI Low', 'AUC CI High', 'CI Method']; const fVal = (v, d=1, useStd = false) => formatNumber(v, d, na, useStd);
-                     const rows = Object.entries(allStatsData).map(([key, stats]) => { let k = key.replace('stats',''); let dN = (k === 'DirektOP') ? 'direkt OP' : (k === 'NRCT') ? 'nRCT' : k; if (!stats || typeof stats.matrix !== 'object') return [getCohortDisplayName(dN), 0, ...Array(21).fill(na), na]; const n = stats.matrix ? (stats.matrix.tp + stats.matrix.fp + stats.matrix.fn + stats.matrix.tn) : 0; const fRowData = (m, metric_k) => { const dig = (metric_k === 'auc') ? 2 : ((metric_k === 'f1') ? 3 : 1); return [fVal(m?.value, dig, true), fVal(m?.ci?.lower, dig, true), fVal(m?.ci?.upper, dig, true)]; }; return [ getCohortDisplayName(dN), n, ...fRowData(stats.sens, 'sens'), ...fRowData(stats.spec, 'spec'), ...fRowData(stats.ppv, 'ppv'), ...fRowData(stats.npv, 'npv'), ...fRowData(stats.acc, 'acc'), ...fRowData(stats.balAcc, 'balAcc'), ...fRowData(stats.f1, 'f1'), ...fRowData(stats.auc, 'auc'), stats.sens?.method || na ]; });
-                     content = Papa.unparse([headers, ...rows], { delimiter: APP_CONFIG.EXPORT_SETTINGS.CSV_DELIMITER || ";" }); filenameKey = 'PRAES_AS_PERF_CSV'; extension = 'csv'; mimeType = 'text/csv;charset=utf-8;';
-                } else if (isAsPurView && actionId === 'download-performance-as-pur-md') { options.kollektiv = kollektiv; content = generateMarkdownTableString(presentationData, 'praes_as_perf', kollektiv, null, null, options); filenameKey = 'PRAES_AS_PERF_MD'; extension = 'md'; mimeType = 'text/markdown;charset=utf-8;';
-                } else if (isAsVsT2View && actionId === 'download-performance-as-vs-t2-csv') { if (!performanceAS || !performanceT2) { uiManager.showToast("Comparison data for CSV missing.", "warning"); return; } const headers = ['Metric', 'AS (Value)', 'AS (95% CI)', 'T2 (Value)', 'T2 (95% CI)', 'CI Method AS', 'CI Method T2']; const fRow = (mKey, nm, isP = true, d = 1) => { const mAS = performanceAS[mKey]; const mT2 = performanceT2[mKey]; const dig = (mKey === 'auc' || mKey === 'f1') ? 2 : d; const ciAS = `(${formatNumber(mAS?.ci?.lower, dig, na, true)} - ${formatNumber(mAS?.ci?.upper, dig, na, true)})`; const ciT2 = `(${formatNumber(mT2?.ci?.lower, dig, na, true)} - ${formatNumber(mT2?.ci?.upper, dig, na, true)})`; const valAS = formatNumber(mAS?.value, dig, na, true); const valT2 = formatNumber(mT2?.value, dig, na, true); return [nm, valAS, ciAS, valT2, ciT2, mAS?.method || na, mT2?.method || na]; }; const rows = [ fRow('sens', 'Sensitivity'), fRow('spec', 'Specificity'), fRow('ppv', 'PPV'), fRow('npv', 'NPV'), fRow('acc', 'Accuracy'), fRow('balAcc', 'Balanced Accuracy'), fRow('f1', 'F1-Score', false, 3), fRow('auc', 'AUC', false, 2) ]; content = Papa.unparse([headers, ...rows], { delimiter: APP_CONFIG.EXPORT_SETTINGS.CSV_DELIMITER || ";" }); filenameKey = 'PRAES_AS_VS_T2_PERF_CSV'; extension = 'csv'; mimeType = 'text/csv;charset=utf-8;';
-                } else if (isAsVsT2View && actionId === 'download-comp-table-as-vs-t2-md') { content = generateMarkdownTableString(presentationData, 'praes_as_vs_t2_comp', kollektiv, null, null, options); filenameKey = 'PRAES_AS_VS_T2_COMP_MD'; extension = 'md'; mimeType = 'text/markdown;charset=utf-8;';
-                } else if (isAsVsT2View && actionId === 'download-tests-as-vs-t2-md') { content = generateMarkdownTableString(presentationData, 'praes_as_vs_t2_tests', kollektiv, null, null, options); filenameKey = 'PRAES_AS_VS_T2_TESTS_MD'; extension = 'md'; mimeType = 'text/markdown;charset=utf-8;';
-                }
-            } catch(error) {
-                console.error(`Error during presentation export ${actionId}:`, error);
-                uiManager.showToast(`Error during presentation export (${actionId}).`, "danger");
-                return;
+        try {
+            if (isAsPurView && actionId === 'download-performance-as-pur-csv') {
+                 const allStatsData = { statsGesamt: presentationData.statsGesamt, statsDirektOP: presentationData.statsDirektOP, statsNRCT: presentationData.statsNRCT }; const headers = ['Cohort', 'N', 'Sens', 'Sens CI Low', 'Sens CI High', 'Spec', 'Spec CI Low', 'Spec CI High', 'PPV', 'PPV CI Low', 'PPV CI High', 'NPV', 'NPV CI Low', 'NPV CI High', 'Acc', 'Acc CI Low', 'Acc CI High', 'BalAcc', 'BalAcc CI Low', 'BalAcc CI High', 'F1', 'F1 CI Low', 'F1 CI High', 'AUC', 'AUC CI Low', 'AUC CI High', 'CI Method']; const fVal = (v, d=1, useStd = false) => formatNumber(v, d, na, useStd);
+                 const rows = Object.entries(allStatsData).map(([key, stats]) => { let k = key.replace('stats',''); let dN = (k === 'DirektOP') ? 'direkt OP' : (k === 'NRCT') ? 'nRCT' : k; if (!stats || typeof stats.matrix !== 'object') return [getCohortDisplayName(dN), 0, ...Array(21).fill(na), na]; const n = stats.matrix ? (stats.matrix.tp + stats.matrix.fp + stats.matrix.fn + stats.matrix.tn) : 0; const fRowData = (m, metric_k) => { const dig = (metric_k === 'auc') ? 2 : ((metric_k === 'f1') ? 3 : 1); return [fVal(m?.value, dig, true), fVal(m?.ci?.lower, dig, true), fVal(m?.ci?.upper, dig, true)]; }; return [ getCohortDisplayName(dN), n, ...fRowData(stats.sens, 'sens'), ...fRowData(stats.spec, 'spec'), ...fRowData(stats.ppv, 'ppv'), ...fRowData(stats.npv, 'npv'), ...fRowData(stats.acc, 'acc'), ...fRowData(stats.balAcc, 'balAcc'), ...fRowData(stats.f1, 'f1'), ...fRowData(stats.auc, 'auc'), stats.sens?.method || na ]; });
+                 content = Papa.unparse([headers, ...rows], { delimiter: APP_CONFIG.EXPORT_SETTINGS.CSV_DELIMITER || ";" }); filenameKey = 'PRAES_AS_PERF_CSV'; extension = 'csv'; mimeType = 'text/csv;charset=utf-8;';
+            } else if (isAsPurView && actionId === 'download-performance-as-pur-md') { options.kollektiv = kollektiv; content = generateMarkdownTableString(presentationData, 'praes_as_perf', kollektiv, null, null, options); filenameKey = 'PRAES_AS_PERF_MD'; extension = 'md'; mimeType = 'text/markdown;charset=utf-8;';
+            } else if (isAsVsT2View && actionId === 'download-performance-as-vs-t2-csv') { if (!performanceAS || !performanceT2) { uiManager.showToast("Comparison data for CSV missing.", "warning"); return; } const headers = ['Metric', 'AS (Value)', 'AS (95% CI)', 'T2 (Value)', 'T2 (95% CI)', 'CI Method AS', 'CI Method T2']; const fRow = (mKey, nm, isP = true, d = 1) => { const mAS = performanceAS[mKey]; const mT2 = performanceT2[mKey]; const dig = (mKey === 'auc' || mKey === 'f1') ? 2 : d; const ciAS = `(${formatNumber(mAS?.ci?.lower, dig, na, true)} - ${formatNumber(mAS?.ci?.upper, dig, na, true)})`; const ciT2 = `(${formatNumber(mT2?.ci?.lower, dig, na, true)} - ${formatNumber(mT2?.ci?.upper, dig, na, true)})`; const valAS = formatNumber(mAS?.value, dig, na, true); const valT2 = formatNumber(mT2?.value, dig, na, true); return [nm, valAS, ciAS, valT2, ciT2, mAS?.method || na, mT2?.method || na]; }; const rows = [ fRow('sens', 'Sensitivity'), fRow('spec', 'Specificity'), fRow('ppv', 'PPV'), fRow('npv', 'NPV'), fRow('acc', 'Accuracy'), fRow('balAcc', 'Balanced Accuracy'), fRow('f1', 'F1-Score', false, 3), fRow('auc', 'AUC', false, 2) ]; content = Papa.unparse([headers, ...rows], { delimiter: APP_CONFIG.EXPORT_SETTINGS.CSV_DELIMITER || ";" }); filenameKey = 'PRAES_AS_VS_T2_PERF_CSV'; extension = 'csv'; mimeType = 'text/csv;charset=utf-8;';
+            } else if (isAsVsT2View && actionId === 'download-comp-table-as-vs-t2-md') { content = generateMarkdownTableString(presentationData, 'praes_as_vs_t2_comp', kollektiv, null, null, options); filenameKey = 'PRAES_AS_VS_T2_COMP_MD'; extension = 'md'; mimeType = 'text/markdown;charset=utf-8;';
+            } else if (isAsVsT2View && actionId === 'download-tests-as-vs-t2-md') { content = generateMarkdownTableString(presentationData, 'praes_as_vs_t2_tests', kollektiv, null, null, options); filenameKey = 'PRAES_AS_VS_T2_TESTS_MD'; extension = 'md'; mimeType = 'text/markdown;charset=utf-8;';
             }
+        } catch(error) {
+            console.error(`Error during presentation export ${actionId}:`, error);
+            uiManager.showToast(`Error during presentation export (${actionId}).`, "danger");
+            return;
+        }
 
-            if(content !== null && filenameKey && extension && mimeType) { const filename = generateFilename(filenameKey, kollektiv, extension, options); if(downloadFile(content, filename, mimeType)) uiManager.showToast(`Presentation data (${extension}) exported: ${filename}`, 'success'); }
-            else if(!actionId.includes('-chart-') && !actionId.startsWith('dl-') ) { uiManager.showToast("Export for this option is not available or data is missing/error during generation.", "warning"); }
-      }
+        if(content !== null && filenameKey && extension && mimeType) { const filename = generateFilename(filenameKey, kollektiv, extension, options); if(downloadFile(content, filename, mimeType)) uiManager.showToast(`Presentation data (${extension}) exported: ${filename}`, 'success'); }
+        else if(!actionId.includes('-chart-') && !actionId.startsWith('dl-') ) { uiManager.showToast("Export for this option is not available or data is missing/error during generation.", "warning"); }
+    }
+    
+    function exportStatistikCSV(stats, kollektiv, criteria, logic) {
+        const content = generateStatistikCSVString(stats, kollektiv, criteria, logic);
+        const filename = generateFilename('STATS_CSV', kollektiv, 'csv');
+        downloadFile(content, filename, 'text/csv;charset=utf-8;');
+    }
+    
+    function exportBruteForceReport(resultsData) {
+        const content = generateBruteForceTXTString(resultsData);
+        if (resultsData?.cohort) {
+            const filename = generateFilename('BRUTEFORCE_TXT', resultsData.cohort, 'txt');
+            downloadFile(content, filename, 'text/plain;charset=utf-8;');
+        }
+    }
+    
+    function exportTableMarkdown(data, tableType, kollektiv, criteria, logic) {
+        const content = generateMarkdownTableString(data, tableType, kollektiv, criteria, logic);
+        const filenameKey = (tableType === 'daten') ? 'DATEN_MD' : 'AUSWERTUNG_MD';
+        const filename = generateFilename(filenameKey, kollektiv, 'md');
+        downloadFile(content, filename, 'text/markdown;charset=utf-8;');
+    }
+    
+    function exportFilteredDataCSV(data, kollektiv) {
+        const content = generateFilteredDataCSVString(data);
+        const filename = generateFilename('FILTERED_DATA_CSV', kollektiv, 'csv');
+        downloadFile(content, filename, 'text/csv;charset=utf-8;');
+    }
+    
+    function exportComprehensiveReportHTML(data, bfResults, kollektiv, criteria, logic) {
+        const content = generateComprehensiveReportHTML(data, bfResults, kollektiv, criteria, logic);
+        const filename = generateFilename('COMPREHENSIVE_REPORT_HTML', kollektiv, 'html');
+        downloadFile(content, filename, 'text/html;charset=utf-8;');
+    }
 
     return Object.freeze({
         exportStatistikCSV,
