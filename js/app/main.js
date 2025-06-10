@@ -22,14 +22,17 @@ class App {
             }
             
             const initialTabId = state.getActiveTabId() || 'publication';
-            const initialTabElement = document.getElementById(`${initialTabId}-tab`);
+            // The initial tab is already marked 'active' in index.html.
+            // Explicitly calling tab.show() here is redundant and can be removed
+            // to avoid potential timing issues or re-triggering.
+            // The processTabChange call below will handle the content rendering.
             
             this.processTabChange(initialTabId);
 
-            if (initialTabElement && typeof bootstrap !== 'undefined' && bootstrap.Tab) {
-                const tab = new bootstrap.Tab(initialTabElement);
-                tab.show();
-            }
+            // Removed: if (initialTabElement && typeof bootstrap !== 'undefined' && bootstrap.Tab) {
+            // Removed:    const tab = new bootstrap.Tab(initialTabElement);
+            // Removed:    tab.show();
+            // Removed: }
 
             if (!loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.FIRST_APP_START)) {
                 uiManager.showQuickGuide();
