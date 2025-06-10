@@ -1,77 +1,5 @@
 const studyT2CriteriaManager = (() => {
 
-    const studyCriteriaSets = Object.freeze([
-        Object.freeze({
-            id: 'rutegard_et_al_esgar',
-            name: 'Rutegård et al. (2025) / ESGAR 2016',
-            displayShortName: 'ESGAR 2016',
-            context: 'Primary Staging (Baseline MRI)',
-            applicableCohort: 'direkt OP',
-            criteria: Object.freeze({
-                size: Object.freeze({ active: true, threshold: 9.0, condition: '>=' }),
-                shape: Object.freeze({ active: true, value: 'rund' }),
-                border: Object.freeze({ active: true, value: 'irregulär' }),
-                homogeneity: Object.freeze({ active: true, value: 'heterogen' }),
-                signal: Object.freeze({ active: false, value: null })
-            }),
-            logic: 'KOMBINIERT',
-            description: 'ESGAR 2016 criteria for primary staging: Size ≥ 9mm OR (Size 5-8mm AND ≥2 features [round, irregular, heterogeneous]) OR (Size < 5mm AND ALL 3 features [round, irregular, heterogeneous]).',
-             studyInfo: Object.freeze({
-                reference: "Rutegård et al., Eur Radiol (2025); Beets-Tan et al., Eur Radiol (2018) [ESGAR Consensus]",
-                patientCohort: "Rutegård: N=46 (27 upfront surgery, 19 nRCT) - analysis on baseline MRI. ESGAR: Consensus.",
-                investigationType: "Primary Staging",
-                focus: "Validation of ESGAR 2016 criteria (Rutegård) and consensus recommendation (ESGAR).",
-                keyCriteriaSummary: "Size ≥ 9mm OR (5-8mm AND ≥2 of [round, irregular, heterogeneous]) OR (<5mm AND 3 of [round, irregular, heterogeneous])."
-            })
-        }),
-        Object.freeze({
-            id: 'koh_2008_morphology',
-            name: 'Koh et al. (2008)',
-            displayShortName: 'Koh et al.',
-            context: 'Primary & Restaging (Orig. study focused on post-nCRT)',
-            applicableCohort: 'Gesamt',
-            criteria: Object.freeze({
-                size: Object.freeze({ active: false, threshold: null, condition: null }),
-                shape: Object.freeze({ active: false, value: null }),
-                border: Object.freeze({ active: true, value: 'irregulär' }),
-                homogeneity: Object.freeze({ active: true, value: 'heterogen' }),
-                signal: Object.freeze({ active: false, value: null })
-            }),
-            logic: 'ODER',
-            description: 'Koh et al. (2008): Morphological criteria - Irregular border OR heterogeneous signal. Evaluated on the overall cohort in this application.',
-            studyInfo: Object.freeze({
-                reference: "Koh et al., Int J Radiat Oncol Biol Phys (2008)",
-                patientCohort: "Original study: N=25 (all nCRT, 'poor-risk'). Application in this tool: Overall cohort.",
-                investigationType: "Before and after nCRT (original accuracy analysis post-nCRT)",
-                focus: "Originally: Assessment of LNs before and after nCRT using morphology. In this tool: Comparability with Avocado Sign in the overall cohort.",
-                keyCriteriaSummary: "Irregular border OR heterogeneous signal."
-            })
-        }),
-        Object.freeze({
-            id: 'barbaro_2024_restaging',
-            name: 'Barbaro et al. (2024)',
-            displayShortName: 'Barbaro et al.',
-            context: 'Restaging after nCRT',
-            applicableCohort: 'nRCT',
-            criteria: Object.freeze({
-                size: Object.freeze({ active: true, threshold: 2.3, condition: '>=' }),
-                shape: Object.freeze({ active: false, value: null }),
-                border: Object.freeze({ active: false, value: null }),
-                homogeneity: Object.freeze({ active: false, value: null }),
-                signal: Object.freeze({ active: false, value: null })
-            }),
-            logic: 'ODER',
-            description: 'Barbaro et al. (2024): Optimal cut-off for short axis in restaging after nCRT: ≥ 2.3mm (original 2.2mm).',
-             studyInfo: Object.freeze({
-                reference: "Barbaro et al., Radiother Oncol (2024)",
-                patientCohort: "N=191 (all nCRT, LARC)",
-                investigationType: "Restaging after nCRT",
-                focus: "MRI assessment of N-status after nCRT using size (optimal cut-off).",
-                keyCriteriaSummary: "Short axis ≥ 2.3 mm (based on study: 2.2mm)."
-            })
-        })
-    ]);
-
     function formatCriteriaForDisplay(criteria, logic = null, shortFormat = false) {
         if (!criteria || typeof criteria !== 'object') return 'N/A';
         const parts = [];
@@ -99,17 +27,24 @@ const studyT2CriteriaManager = (() => {
             }
             let prefix = '';
             switch(key) {
-                case 'shape': prefix = isShort ? 'Sh=' : 'Shape='; break;
-                case 'border': prefix = isShort ? 'Bo=' : 'Border='; break;
-                case 'homogeneity': prefix = isShort ? 'Ho=' : 'Homog.='; break;
+                case 'form': prefix = isShort ? 'Sh=' : 'Shape='; break;
+                case 'kontur': prefix = isShort ? 'Bo=' : 'Border='; break;
+                case 'homogenitaet': prefix = isShort ? 'Ho=' : 'Homog.='; break;
                 case 'signal': prefix = isShort ? 'Si=' : 'Signal='; break;
                 default: prefix = key + '=';
             }
             return `${prefix}${value}`;
         };
 
-        const priorityOrder = ['size', 'border', 'homogeneity', 'shape', 'signal'];
-        const sortedActiveKeys = [...activeKeys].sort((a, b) => priorityOrder.indexOf(a) - priorityOrder.indexOf(b));
+        const priorityOrder = ['size', 'kontur', 'homogenitaet', 'form', 'signal'];
+        const sortedActiveKeys = [...activeKeys].sort((a, b) => {
+            const indexA = priorityOrder.indexOf(a);
+            const indexB = priorityOrder.indexOf(b);
+            if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+        });
 
         sortedActiveKeys.forEach(key => {
              parts.push(formatValue(key, criteria[key], shortFormat));
@@ -117,7 +52,7 @@ const studyT2CriteriaManager = (() => {
 
         const effectiveLogic = logic || criteria.logic || 'OR';
         if (effectiveLogic === 'KOMBINIERT') {
-             const studySet = studyCriteriaSets.find(s => s.logic === 'KOMBINIERT' && s.criteria.size.threshold === criteria.size.threshold);
+             const studySet = PUBLICATION_CONFIG.literatureCriteriaSets.find(s => s.logic === 'KOMBINIERT' && s.criteria.size.threshold === criteria.size.threshold);
              if (studySet?.description) {
                  return shortFormat ? (studySet.displayShortName || studySet.name) : studySet.description;
              }
@@ -131,12 +66,12 @@ const studyT2CriteriaManager = (() => {
     }
 
     function getAllStudyCriteriaSets() {
-        return cloneDeep(studyCriteriaSets);
+        return cloneDeep(PUBLICATION_CONFIG.literatureCriteriaSets);
     }
 
     function getStudyCriteriaSetById(id) {
         if (typeof id !== 'string') return null;
-        const foundSet = studyCriteriaSets.find(set => set.id === id);
+        const foundSet = PUBLICATION_CONFIG.literatureCriteriaSets.find(set => set.id === id);
         return foundSet ? cloneDeep(foundSet) : null;
     }
 
@@ -189,7 +124,7 @@ const studyT2CriteriaManager = (() => {
     }
 
     function _checkSingleNodeSimple(lymphNode, criteria) {
-        const checkResult = { size: null, shape: null, border: null, homogeneity: null, signal: null };
+        const checkResult = { size: null, form: null, kontur: null, homogenitaet: null, signal: null };
         if (!lymphNode || !criteria) return checkResult;
         if (criteria.size?.active) {
             const threshold = criteria.size.threshold;
@@ -206,9 +141,9 @@ const studyT2CriteriaManager = (() => {
                 }
             } else { checkResult.size = false; }
         }
-        if (criteria.shape?.active) checkResult.shape = (lymphNode.shape === criteria.shape.value);
-        if (criteria.border?.active) checkResult.border = (lymphNode.border === criteria.border.value);
-        if (criteria.homogeneity?.active) checkResult.homogeneity = (lymphNode.homogeneity === criteria.homogeneity.value);
+        if (criteria.form?.active) checkResult.form = (lymphNode.shape === criteria.form.value);
+        if (criteria.kontur?.active) checkResult.kontur = (lymphNode.border === criteria.border.value);
+        if (criteria.homogenitaet?.active) checkResult.homogenitaet = (lymphNode.homogeneity === criteria.homogeneity.value);
         if (criteria.signal?.active) checkResult.signal = (lymphNode.signal === criteria.signal.value);
         return checkResult;
     }
