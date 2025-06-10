@@ -475,6 +475,108 @@ const uiManager = (() => {
         initializeTooltips(bfCardContainer);
     }
 
+    function updateSortIcons(tableHeaderId, sortState) {
+        const tableHeader = document.getElementById(tableHeaderId);
+        if (!tableHeader) return;
+
+        tableHeader.querySelectorAll('th').forEach(th => {
+            const sortKey = th.dataset.sortKey;
+            const sortIcon = th.querySelector('.fa-sort, .fa-sort-up, .fa-sort-down');
+
+            if (sortIcon) {
+                // Reset all icons to default sort state
+                sortIcon.classList.remove('fa-sort-up', 'fa-sort-down', 'text-primary');
+                sortIcon.classList.add('fa-sort', 'text-muted', 'opacity-50');
+
+                if (sortState && sortKey === sortState.key) {
+                    if (!sortState.subKey || (sortState.subKey && th.querySelector(`.sortable-sub-header[data-sub-key="${sortState.subKey}"]`))) {
+                        sortIcon.classList.remove('fa-sort', 'text-muted', 'opacity-50');
+                        sortIcon.classList.add(
+                            sortState.direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down',
+                            'text-primary'
+                        );
+                    }
+                }
+            }
+
+            // Also handle sub-headers for 'status' column
+            if (sortKey === 'status' && sortState && sortState.key === 'status') {
+                th.querySelectorAll('.sortable-sub-header').forEach(subHeader => {
+                    if (subHeader.dataset.subKey === sortState.subKey) {
+                        subHeader.style.fontWeight = 'bold';
+                        subHeader.style.textDecoration = 'underline';
+                        subHeader.style.color = 'var(--primary-color)';
+                    } else {
+                        subHeader.style.fontWeight = '';
+                        subHeader.style.textDecoration = '';
+                        subHeader.style.color = '';
+                    }
+                });
+            } else if (sortKey === 'status') {
+                th.querySelectorAll('.sortable-sub-header').forEach(subHeader => {
+                    subHeader.style.fontWeight = '';
+                    subHeader.style.textDecoration = '';
+                    subHeader.style.color = '';
+                });
+            }
+        });
+    }
+
+    function markCriteriaSavedIndicator(isSaved) {
+        const criteriaCard = document.getElementById('t2-criteria-card');
+        if (criteriaCard) {
+            criteriaCard.classList.toggle('criteria-unsaved-indicator', isSaved);
+            const existingTippyInstance = tippyInstances.find(inst => inst.reference === criteriaCard);
+            if (existingTippyInstance) {
+                existingTippyInstance.setContent(UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator);
+                if (isSaved && existingTippyInstance.state.isDestroyed) { // If it was disabled because it was saved
+                    existingTippyInstance.enable(); // Re-enable it
+                } else if (!isSaved && !existingTippyInstance.state.isDestroyed) { // If it's saved and active
+                    existingTippyInstance.disable(); // Disable it
+                }
+            } else if (isSaved) {
+                // If it doesn't have an instance but should, create it.
+                tippy(criteriaCard, {
+                    allowHTML: true, theme: 'warning', placement: 'top', animation: 'fade',
+                    interactive: false, appendTo: () => document.body, delay: APP_CONFIG.UI_SETTINGS.TOOLTIP_DELAY,
+                    maxWidth: 400, duration: [150, 150], zIndex: 3050,
+                    content: UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator
+                });
+            }
+        }
+    }
+    
+    function toggleAllDetails(tableBodyId, buttonId) {
+        const tableBody = document.getElementById(tableBodyId);
+        const toggleButton = document.getElementById(buttonId);
+        if (!tableBody || !toggleButton) return;
+
+        const isExpanding = toggleButton.dataset.action === 'expand';
+        const collapseElements = tableBody.querySelectorAll('.collapse');
+
+        collapseElements.forEach(collapseEl => {
+            if (isExpanding) {
+                if (!collapseEl.classList.contains('show')) {
+                    const bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
+                    bsCollapse.show();
+                }
+            } else {
+                if (collapseEl.classList.contains('show')) {
+                    const bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
+                    bsCollapse.hide();
+                }
+            }
+        });
+
+        toggleButton.dataset.action = isExpanding ? 'collapse' : 'expand';
+        toggleButton.innerHTML = isExpanding
+            ? `Collapse All Details <i class="fas fa-chevron-up ms-1"></i>`
+            : `Expand All Details <i class="fas fa-chevron-down ms-1"></i>`;
+        toggleButton.setAttribute('data-tippy-content', isExpanding ? UI_TEXTS.tooltips.dataTab.collapseAll : UI_TEXTS.tooltips.dataTab.expandAll);
+        initializeTooltips(toggleButton); // Re-initialize tooltip for the button itself
+    }
+
+
     return Object.freeze({
         showToast,
         initializeTooltips,
@@ -493,6 +595,9 @@ const uiManager = (() => {
         updatePresentationViewUI,
         updatePublicationUI,
         updateT2CriteriaControlsUI,
-        updateBruteForceUI
+        updateBruteForceUI,
+        updateSortIcons,
+        markCriteriaSavedIndicator,
+        toggleAllDetails
     });
 })();
