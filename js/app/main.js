@@ -48,10 +48,12 @@ class App {
     checkDependencies() {
         const dependencies = { 
             state, t2CriteriaManager, studyT2CriteriaManager, dataProcessor, 
-            statisticsService, bruteForceManager, exportTab,
+            statisticsService, bruteForceManager, 
             uiManager, uiComponents, tableRenderer, chartRenderer, 
-            dataTab, analysisTab, statisticsTab, presentationTab, publicationTab,
-            eventManager, utils 
+            dataTab, analysisTab, statisticsTab, presentationTab, publicationTab, exportTab, // exportTab hinzugefügt
+            eventManager, 
+            // utils wird global über <script> Tag geladen und ist nicht Teil eines Moduls, das hier explizit geprüft werden muss
+            // Die globalen Funktionen wie getCohortDisplayName, formatNumber, cloneDeep etc. aus utils.js sind nach der Korrektur der Ladereihenfolge verfügbar
         };
         for (const dep in dependencies) {
             if (typeof dependencies[dep] === 'undefined') {
@@ -226,21 +228,20 @@ class App {
         const bfResults = bruteForceManager.getResultsForCohort(cohort);
         const criteria = t2CriteriaManager.getAppliedCriteria();
         const logic = t2CriteriaManager.getAppliedLogic();
-        const stats = statisticsService.calculateDescriptiveStats(data);
         
         switch(exportType) {
             case 'stats-csv':
                 const allCohortStats = statisticsService.calculateAllPublicationStats(this.processedData, criteria, logic, bruteForceManager.getAllResults());
-                exportTab.exportStatisticsCSV(allCohortStats[cohort], cohort, criteria, logic);
+                exportTab.exportStatistikCSV(allCohortStats[cohort], cohort, criteria, logic);
                 break;
             case 'bruteforce-txt':
                 exportTab.exportBruteForceReport(bfResults);
                 break;
             case 'datatable-md':
-                exportTab.exportMarkdownTable(data, 'data', cohort);
+                exportTab.exportTableMarkdown(data, 'daten', cohort); // 'data' to 'daten'
                 break;
             case 'analysistable-md':
-                 exportTab.exportMarkdownTable(data, 'analysis', cohort, criteria, logic);
+                 exportTab.exportTableMarkdown(data, 'auswertung', cohort, criteria, logic); // 'analysis' to 'auswertung'
                 break;
             case 'filtered-data-csv':
                 exportTab.exportFilteredDataCSV(data, cohort);
