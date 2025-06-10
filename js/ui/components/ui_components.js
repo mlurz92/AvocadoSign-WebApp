@@ -102,9 +102,9 @@ const uiComponents = (() => {
                                  <input type="number" class="form-control form-control-sm criteria-input-manual" id="input-size" min="${min}" max="${max}" step="${step}" value="${formattedThreshold}" ${isChecked ? '' : 'disabled'} style="width: 70px;" aria-label="Enter size manually" data-tippy-content="Enter threshold manually.">
                             </div>
                         `)}
-                        ${createCriteriaGroup('shape', 'Shape', 't2Form', createButtonOptions)}
-                        ${createCriteriaGroup('border', 'Border', 't2Contour', createButtonOptions)}
-                        ${createCriteriaGroup('homogeneity', 'Homogeneity', 't2Homogenitaet', createButtonOptions)}
+                        ${createCriteriaGroup('form', 'Shape', 't2Form', createButtonOptions)}
+                        ${createCriteriaGroup('kontur', 'Border', 't2Contour', createButtonOptions)}
+                        ${createCriteriaGroup('homogenitaet', 'Homogeneity', 't2Homogenitaet', createButtonOptions)}
                         ${createCriteriaGroup('signal', 'Signal', 't2Signal', createButtonOptions)}
                         <div class="col-12 d-flex justify-content-end align-items-center border-top pt-3 mt-3">
                             <button class="btn btn-sm btn-outline-secondary me-2" id="btn-reset-criteria" data-tippy-content="${UI_TEXTS.tooltips.t2Actions.reset}">
@@ -149,10 +149,92 @@ const uiComponents = (() => {
         return `<nav id="publication-sections-nav" class="nav flex-column nav-pills">${navItems}</nav>`;
     }
 
+    function createBruteForceModalContent(resultsData) {
+        if (!resultsData || !resultsData.results || resultsData.results.length === 0) {
+            return '<p class="text-center text-muted">No brute-force results available.</p>';
+        }
+
+        const formatCriteriaFunc = typeof studyT2CriteriaManager !== 'undefined' ? studyT2CriteriaManager.formatCriteriaForDisplay : (c, l) => 'N/A';
+        const { results, metric, duration, totalTested, cohort, nTotal, nPlus, nMinus } = resultsData;
+
+        let html = `
+            <div class="mb-4">
+                <h5>Optimization Summary for Cohort: ${getCohortDisplayName(cohort)}</h5>
+                <ul class="list-unstyled small mb-2">
+                    <li><strong>Target Metric:</strong> ${metric}</li>
+                    <li><strong>Total Combinations Tested:</strong> ${formatNumber(totalTested, 0)}</li>
+                    <li><strong>Duration:</strong> ${formatNumber(duration / 1000, 1, true)} seconds</li>
+                    <li><strong>Patient Count (N):</strong> ${formatNumber(nTotal, 0)} (N+: ${formatNumber(nPlus, 0)}, N-: ${formatNumber(nMinus, 0)})</li>
+                </ul>
+            </div>
+            <h5>Top 10 Results:</h5>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped small" id="bruteforce-results-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>${metric}</th>
+                            <th>Logic</th>
+                            <th>Criteria</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        let rank = 1;
+        let displayedCount = 0;
+        let lastMetricValue = -Infinity;
+        const precision = 8; // For floating point comparison
+
+        for (let i = 0; i < results.length; i++) {
+            const result = results[i];
+            if (!result || typeof result.metricValue !== 'number' || !isFinite(result.metricValue)) continue;
+
+            const currentMetricValueRounded = parseFloat(result.metricValue.toFixed(precision));
+            const lastMetricValueRounded = parseFloat(lastMetricValue.toFixed(precision));
+
+            let currentRank = rank;
+            const isNewRank = Math.abs(currentMetricValueRounded - lastMetricValueRounded) > 1e-8; // Threshold for float comparison
+
+            if (i > 0 && isNewRank) {
+                rank = displayedCount + 1;
+                currentRank = rank;
+            } else if (i > 0) {
+                currentRank = rank;
+            }
+
+            if (rank > 10 && isNewRank) break; // Limit to top 10 distinct ranks
+
+            html += `
+                <tr>
+                    <td>${currentRank}</td>
+                    <td>${formatNumber(result.metricValue, 4, true)}</td>
+                    <td>${result.logic.toUpperCase()}</td>
+                    <td>${formatCriteriaFunc(result.criteria, result.logic)}</td>
+                </tr>
+            `;
+
+            if (isNewRank || i === 0) {
+                lastMetricValue = result.metricValue;
+            }
+            displayedCount++;
+        }
+
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        return html;
+    }
+
+
     return Object.freeze({
         createDashboardCard,
         createT2CriteriaControls,
         createStatisticsCard,
-        createPublicationNav
+        createPublicationNav,
+        createBruteForceModalContent
     });
 })();
