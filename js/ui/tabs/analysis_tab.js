@@ -17,7 +17,7 @@ const analysisTab = (() => {
         let headerHTML = `<thead class="small sticky-top bg-light" id="${tableId}-header"><tr>`;
         columns.forEach(col => {
             let sortIconHTML = '<i class="fas fa-sort text-muted opacity-50 ms-1"></i>';
-            let thStyle = col.width ? `style="width: ${col.width};"` : '';
+            let thStyle = col.width ? `width: ${col.width};` : '';
             if (col.textAlign) thStyle += ` text-align: ${col.textAlign};`;
             let activeSubKey = null;
 
@@ -30,14 +30,14 @@ const analysisTab = (() => {
                 }
             }
             
-            const baseTooltipContent = APP_CONFIG.UI_TEXTS.tooltips.analysisTab[col.tooltipKey] || col.label;
+            const baseTooltipContent = APP_CONFIG.UI_TEXTS.tooltips.analysisTab[col.tooltipKey];
             const subHeaders = col.subKeys ? col.subKeys.map(sk => {
                 const isActiveSubSort = activeSubKey === sk.key;
                 const style = isActiveSubSort ? 'font-weight: bold; text-decoration: underline; color: var(--primary-color);' : '';
                 return `<span class="sortable-sub-header" data-sub-key="${sk.key}" style="cursor: pointer; ${style}" data-tippy-content="Sort by Status ${sk.label}">${sk.label}</span>`;
             }).join(' / ') : '';
             
-            const mainTooltip = col.subKeys ? `${baseTooltipContent}` : `Sort by ${col.label}.`;
+            const mainTooltip = col.subKeys ? `${baseTooltipContent}` : `Sort by ${col.label}. ${baseTooltipContent}`;
             const sortAttributes = `data-sort-key="${col.key}" ${col.subKeys || col.key === 'details' ? '' : 'style="cursor: pointer;"'}`;
             
             headerHTML += `<th scope="col" ${sortAttributes} data-tippy-content="${mainTooltip}" ${thStyle ? `style="${thStyle}"`: ''}>${col.label}${subHeaders ? ` (${subHeaders})` : ''} ${col.key !== 'details' ? sortIconHTML : ''}</th>`;
@@ -58,7 +58,7 @@ const analysisTab = (() => {
 
     function createAnalysisTableCardHTML(data, sortState, appliedCriteria, appliedLogic) {
         const tableHTML = createAnalysisTableHTML(data, sortState, appliedCriteria, appliedLogic);
-        const toggleButtonTooltip = APP_CONFIG.UI_TEXTS.tooltips.analysisTab.expandAll || 'Toggle detail views for all patients.';
+        const toggleButtonTooltip = APP_CONFIG.UI_TEXTS.tooltips.analysisTab.expandAll;
         return `
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -83,8 +83,10 @@ const analysisTab = (() => {
         }
         const histOpts = { height: 130, margin: { top: 5, right: 10, bottom: 25, left: 35 }, useCompactMargins: true };
         const pieOpts = { height: 130, margin: { top: 5, right: 5, bottom: 35, left: 5 }, innerRadiusFactor: 0.45, fontSize: '8px', useCompactMargins: true, legendBelow: true };
+        
         const genderData = [{label: APP_CONFIG.UI_TEXTS.legendLabels.male, value: stats.sex?.m ?? 0}, {label: APP_CONFIG.UI_TEXTS.legendLabels.female, value: stats.sex?.f ?? 0}];
         if(stats.sex?.unknown > 0) genderData.push({label: APP_CONFIG.UI_TEXTS.legendLabels.unknownGender, value: stats.sex.unknown });
+        
         const therapyData = [{label: APP_CONFIG.UI_TEXTS.legendLabels.direktOP, value: stats.therapy?.['direkt OP'] ?? 0}, {label: APP_CONFIG.UI_TEXTS.legendLabels.nRCT, value: stats.therapy?.nRCT ?? 0}];
         
         try {
@@ -107,8 +109,29 @@ const analysisTab = (() => {
         const metricsOverviewContainerId = 't2-metrics-overview';
         const bruteForceCardContainerId = 'brute-force-card-container';
 
+        // Pre-render dashboard cards with correct titles and initial placeholders
+        const stats = statisticsService.calculateDescriptiveStats(data);
+        const cohortDisplayName = getCohortDisplayName(currentCohort);
+
+        let dashboardCardsHTML = '';
+        if (stats && stats.patientCount > 0) {
+            const dlBtns = (baseId, titleKey) => [{id:`dl-${baseId}-png`, icon: 'fa-image', tooltip: `Download '${APP_CONFIG.UI_TEXTS.chartTitles[titleKey]}' as PNG`, format:'png', chartId: baseId, chartName: APP_CONFIG.UI_TEXTS.chartTitles[titleKey]}, {id:`dl-${baseId}-svg`, icon: 'fa-file-code', tooltip: `Download '${APP_CONFIG.UI_TEXTS.chartTitles[titleKey]}' as SVG`, format:'svg', chartId: baseId, chartName: APP_CONFIG.UI_TEXTS.chartTitles[titleKey]}];
+            
+            dashboardCardsHTML = `
+                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.ageDistribution, `<p class="mb-0 small">Median: ${formatNumber(stats.age?.median, 1)} (${formatNumber(stats.age?.min, 0)} - ${formatNumber(stats.age?.max, 0)})</p>`, 'chart-dash-age', '', '', 'p-1', dlBtns('chart-dash-age', 'ageDistribution'), cohortDisplayName)}
+                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.genderDistribution, `<p class="mb-0 small">M: ${stats.sex?.m ?? 0} F: ${stats.sex?.f ?? 0}</p>`, 'chart-dash-gender', '', '', 'p-1', dlBtns('chart-dash-gender', 'genderDistribution'), cohortDisplayName)}
+                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.therapyDistribution, `<p class="mb-0 small">Upfront: ${stats.therapy?.['direkt OP'] ?? 0} nRCT: ${stats.therapy?.nRCT ?? 0}</p>`, 'chart-dash-therapy', '', '', 'p-1', dlBtns('chart-dash-therapy', 'therapyDistribution'), cohortDisplayName)}
+                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusN, `<p class="mb-0 small">N+: ${stats.nStatus?.plus ?? 0} N-: ${stats.nStatus?.minus ?? 0}</p>`, 'chart-dash-status-n', '', '', 'p-1', dlBtns('chart-dash-status-n', 'statusN'), cohortDisplayName)}
+                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusAS, `<p class="mb-0 small">AS+: ${stats.asStatus?.plus ?? 0} AS-: ${stats.asStatus?.minus ?? 0}</p>`, 'chart-dash-status-as', '', '', 'p-1', dlBtns('chart-dash-as', 'statusAS'), cohortDisplayName)}
+                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusT2, `<p class="mb-0 small">T2+: ${stats.t2Status?.plus ?? 0} T2-: ${stats.t2Status?.minus ?? 0}</p>`, 'chart-dash-t2', '', '', 'p-1', dlBtns('chart-dash-t2', 'statusT2'), cohortDisplayName)}
+            `;
+        } else {
+            dashboardCardsHTML = '<div class="col-12"><p class="text-muted text-center small p-3">No data for dashboard.</p></div>';
+        }
+
+
         let finalHTML = `
-            <div class="row g-2 mb-3" id="${dashboardContainerId}"><div class="col-12"><p class="text-muted text-center small p-3">Loading Dashboard...</p></div></div>
+            <div class="row g-2 mb-3" id="${dashboardContainerId}">${dashboardCardsHTML}</div>
             <div class="row g-4">
                 <div class="col-12">${criteriaControlsHTML}</div>
                 <div class="col-12 mb-3" id="${metricsOverviewContainerId}"></div>
@@ -117,29 +140,15 @@ const analysisTab = (() => {
             </div>`;
 
         setTimeout(() => {
-            const stats = statisticsService.calculateDescriptiveStats(data);
-            const dashboardContainer = document.getElementById(dashboardContainerId);
-            if (dashboardContainer) {
-                if (!stats || stats.patientCount === 0) {
-                    uiManager.updateElementHTML(dashboardContainerId, '<div class="col-12"><p class="text-muted text-center small p-3">No data for dashboard.</p></div>');
-                } else {
-                    const dlBtns = (baseId, title) => [{id:`dl-${baseId}-png`, icon: 'fa-image', tooltip: `Download '${title}' as PNG`, format:'png', chartId: baseId, chartName: title}, {id:`dl-${baseId}-svg`, icon: 'fa-file-code', tooltip: `Download '${title}' as SVG`, format:'svg', chartId: baseId, chartName: title}];
-                    dashboardContainer.innerHTML = `
-                        ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.ageDistribution, `<p class="mb-0 small">Median: ${formatNumber(stats.age?.median, 1)} (${formatNumber(stats.age?.min, 0)} - ${formatNumber(stats.age?.max, 0)})</p>`, 'chart-dash-age', '', '', 'p-1', dlBtns('chart-dash-age', APP_CONFIG.UI_TEXTS.chartTitles.ageDistribution))}
-                        ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.genderDistribution, `<p class="mb-0 small">M: ${stats.sex?.m ?? 0} F: ${stats.sex?.f ?? 0}</p>`, 'chart-dash-gender', '', '', 'p-1', dlBtns('chart-dash-gender', APP_CONFIG.UI_TEXTS.chartTitles.genderDistribution))}
-                        ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.therapyDistribution, `<p class="mb-0 small">Upfront: ${stats.therapy?.['direkt OP'] ?? 0} nRCT: ${stats.therapy?.nRCT ?? 0}</p>`, 'chart-dash-therapy', '', '', 'p-1', dlBtns('chart-dash-therapy', APP_CONFIG.UI_TEXTS.chartTitles.therapyDistribution))}
-                        ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusN, `<p class="mb-0 small">N+: ${stats.nStatus?.plus ?? 0} N-: ${stats.nStatus?.minus ?? 0}</p>`, 'chart-dash-status-n', '', '', 'p-1', dlBtns('chart-dash-status-n', APP_CONFIG.UI_TEXTS.chartTitles.statusN))}
-                        ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusAS, `<p class="mb-0 small">AS+: ${stats.asStatus?.plus ?? 0} AS-: ${stats.asStatus?.minus ?? 0}</p>`, 'chart-dash-status-as', '', '', 'p-1', dlBtns('chart-dash-as', APP_CONFIG.UI_TEXTS.chartTitles.statusAS))}
-                        ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusT2, `<p class="mb-0 small">T2+: ${stats.t2Status?.plus ?? 0} T2-: ${stats.t2Status?.minus ?? 0}</p>`, 'chart-dash-t2', '', '', 'p-1', dlBtns('chart-dash-t2', APP_CONFIG.UI_TEXTS.chartTitles.statusT2))}
-                    `;
-                    renderDashboardCharts(stats);
-                }
+            if (stats && stats.patientCount > 0) {
+                renderDashboardCharts(stats);
             }
 
             const metricsOverviewContainer = document.getElementById(metricsOverviewContainerId);
             if(metricsOverviewContainer) {
                 if (currentCohortStats && currentCohortStats.performanceT2Applied) {
                     const statsT2 = currentCohortStats.performanceT2Applied;
+                    // Helper function to format CI values for the overview table
                     const fCI = (m, d=1, p=true) => {
                         const digits = (m?.name === 'auc') ? 2 : ((m?.name === 'f1') ? 3 : d);
                         return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, digits, p, '--');
