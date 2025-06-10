@@ -43,10 +43,10 @@ const uiManager = (() => {
 
     function initializeTooltips(scope = document.body) {
         if (!window.tippy || typeof scope?.querySelectorAll !== 'function') return;
-        
+
         const newInstances = tippy(scope.querySelectorAll('[data-tippy-content]'), {
             allowHTML: true, theme: 'glass', placement: 'top', animation: 'fade',
-            interactive: false, appendTo: () => document.body, 
+            interactive: false, appendTo: () => document.body,
             delay: (APP_CONFIG && APP_CONFIG.UI_SETTINGS) ? APP_CONFIG.UI_SETTINGS.TOOLTIP_DELAY : [200, 100],
             maxWidth: 400, duration: [150, 150], zIndex: 3050,
             onCreate(instance) { if (!instance.props.content || String(instance.props.content).trim() === '') { instance.disable(); } },
@@ -84,7 +84,7 @@ const uiManager = (() => {
             element.disabled = !!isDisabled;
         }
     }
-    
+
     function highlightElement(elementId, highlightClass = 'element-flash-highlight', duration = 1500) {
         const element = document.getElementById(elementId);
         if (element) {
@@ -287,7 +287,7 @@ const uiManager = (() => {
         if (viewAsVsT2) {
             viewAsVsT2.checked = currentView === 'as-vs-t2';
         }
-        
+
         const presStudySelect = document.getElementById('pres-study-select');
         if (presStudySelect) {
             presStudySelect.value = currentStudyId || '';
@@ -306,7 +306,7 @@ const uiManager = (() => {
             bfMetricSelect.value = currentBruteForceMetric;
         }
     }
-    
+
     function updateT2CriteriaControlsUI(currentCriteria, currentLogic) {
         if (!currentCriteria) return;
         const sizeRangeInput = document.getElementById('range-size');
@@ -336,7 +336,7 @@ const uiManager = (() => {
         if (logicSwitch) logicSwitch.checked = currentLogic === 'OR';
         if (logicLabel) logicLabel.textContent = APP_CONFIG.UI_TEXTS.t2LogicDisplayNames[currentLogic] || currentLogic;
     }
-    
+
     function updateBruteForceUI(status, payload = {}, isWorkerAvailable = false, currentCohort = null) {
         const container = document.getElementById('brute-force-card-container');
         if (!container) return;
@@ -365,7 +365,7 @@ const uiManager = (() => {
                 const best = bfResult.bestResult;
                 const criteriaDisplay = studyT2CriteriaManager.formatCriteriaForDisplay(best.criteria, best.logic);
                 let cohortStats = `(N=${bfResult.nTotal}, N+: ${bfResult.nPlus}, N-: ${bfResult.nMinus})`;
-                
+
                 const resultTooltipTemplate = APP_CONFIG.UI_TEXTS.tooltips.bruteForceResult.description;
                 const resultTooltip = resultTooltipTemplate
                     .replace('[N_TOTAL]', bfResult.nTotal)
@@ -387,7 +387,7 @@ const uiManager = (() => {
                 contentHTML = `<p class="text-muted small p-3">No brute-force optimization has been performed yet for cohort '${cohortDisplayName}'.</p>`;
             }
         }
-        
+
         const infoTooltipTemplate = APP_CONFIG.UI_TEXTS.tooltips.bruteForceInfo.description;
         const cardTitleTooltip = infoTooltipTemplate.replace('[COHORT_NAME]', `<strong>${cohortDisplayName}</strong>`);
         const isRunning = status === 'started' || status === 'progress';
@@ -453,21 +453,22 @@ const uiManager = (() => {
         const criteriaCard = document.getElementById('t2-criteria-card');
         if (criteriaCard) {
             criteriaCard.classList.toggle('criteria-unsaved-indicator', isUnsaved);
-            let instance = tippy.getInstance(criteriaCard);
-            if(isUnsaved && !instance) {
+            let instance = criteriaCard._tippy;
+            if (isUnsaved && !instance) {
                 tippy(criteriaCard, {
                     content: APP_CONFIG.UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator,
-                    theme: 'warning', placement: 'top',
+                    theme: 'warning',
+                    placement: 'top',
                 });
             } else if (instance) {
                 instance.setProps({
                     content: APP_CONFIG.UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator,
                 });
-                if(isUnsaved) instance.enable(); else instance.disable();
+                if (isUnsaved) instance.enable(); else instance.disable();
             }
         }
     }
-    
+
     function toggleAllDetails(tableBodyId, buttonId) {
         const tableBody = document.getElementById(tableBodyId);
         const toggleButton = document.getElementById(buttonId);
@@ -513,8 +514,5 @@ const uiManager = (() => {
         updateSortIcons,
         markCriteriaSavedIndicator,
         toggleAllDetails,
-        // The getT2IconSVG function is now centralized in utils.js
-        // and should be accessed from there. Removing the duplicate here.
-        // If other modules need it, they should import/use it from utils.js
     });
 })();
