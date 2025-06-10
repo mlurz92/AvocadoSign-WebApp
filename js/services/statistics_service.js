@@ -460,10 +460,9 @@ const statisticsService = (() => {
             }
         });
         
-        // Add interobserver agreement for 'Gesamt' cohort (based on provided summary data)
         if (results.Gesamt) {
-            results.Gesamt.interobserverKappa = 0.92; //
-            results.Gesamt.interobserverKappaCI = { lower: 0.85, upper: 0.99 }; //
+            results.Gesamt.interobserverKappa = 0.92;
+            results.Gesamt.interobserverKappaCI = { lower: 0.85, upper: 0.99 };
         }
 
         return results;
@@ -494,21 +493,18 @@ const statisticsService = (() => {
 
         ['size', 'form', 'kontur', 'homogenitaet', 'signal'].forEach(key => {
             const criterion = t2Criteria[key];
-            if (!criterion || !criterion.active) return; // Only process active criteria
+            if (!criterion) return;
             let a = 0, b = 0, c = 0, d = 0;
             data.forEach(p => {
                 if (!p.nStatus) return;
                 const actualPositive = p.nStatus === '+';
                 const hasFeature = p.t2Nodes.some(lk => {
                     if(!lk) return false;
-                    if (key === 'size') return lk.size >= criterion.threshold;
-                    // Note: 'form' is used in data.js, but 'shape' in t2_criteria_manager for some reason.
-                    // Sticking to 'form', 'kontur', 'homogenitaet', 'signal' as they appear in data.js
-                    // and used in the data processing part of the application.
-                    if (key === 'form') return lk.form === criterion.value;
-                    if (key === 'kontur') return lk.kontur === criterion.value;
-                    if (key === 'homogenitaet') return lk.homogenitaet === criterion.value;
-                    if (key === 'signal') return lk.signal === criterion.value;
+                    if (key === 'size') return criterion.active && lk.size >= criterion.threshold;
+                    if (key === 'form') return criterion.active && lk.form === criterion.value;
+                    if (key === 'kontur') return criterion.active && lk.kontur === criterion.value;
+                    if (key === 'homogenitaet') return criterion.active && lk.homogenitaet === criterion.value;
+                    if (key === 'signal') return criterion.active && lk.signal === criterion.value;
                     return false;
                 });
                 if (hasFeature && actualPositive) a++;
@@ -516,12 +512,15 @@ const statisticsService = (() => {
                 else if (!hasFeature && actualPositive) c++;
                 else if (!hasFeature && !actualPositive) d++;
             });
-            const fisher = calculateFisherExactTest(a, b, c, d);
-            results[key] = {
-                matrix: { tp: a, fp: b, fn: c, tn: d }, testName: fisher.method, pValue: fisher.pValue,
-                or: calculateORCI(a, b, c, d), rd: calculateRDCI(a, b, c, d), phi: { value: calculatePhi(a, b, c, d) },
-                featureName: `T2 ${key}=${key === 'size' ? '>=' + criterion.threshold : criterion.value}`
-            };
+            
+            if ((a + b + c + d) > 0) {
+                const fisher = calculateFisherExactTest(a, b, c, d);
+                results[key] = {
+                    matrix: { tp: a, fp: b, fn: c, tn: d }, testName: fisher.method, pValue: fisher.pValue,
+                    or: calculateORCI(a, b, c, d), rd: calculateRDCI(a, b, c, d), phi: { value: calculatePhi(a, b, c, d) },
+                    featureName: `T2 ${key}=${key === 'size' ? '>=' + criterion.threshold : criterion.value}`
+                };
+            }
         });
         return results;
     }
