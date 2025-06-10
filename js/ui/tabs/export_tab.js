@@ -3,7 +3,7 @@ const exportTab = (() => {
     const createExportButton = (config) => {
         if (!config || !config.id) return '';
         const tooltipConfigKey = config.id.replace(/-/g, '');
-        const tooltipConfig = UI_TEXTS.tooltips.exportTab[tooltipConfigKey];
+        const tooltipConfig = APP_CONFIG.UI_TEXTS.tooltips.exportTab[tooltipConfigKey];
         
         if (!tooltipConfig) {
             console.warn(`Missing tooltip config for export button: ${config.id}`);
@@ -30,7 +30,7 @@ const exportTab = (() => {
 
     function render(currentCohort) {
         const cohortDisplayName = getCohortDisplayName(currentCohort);
-        const descriptionTextTemplate = UI_TEXTS.tooltips.exportTab.description;
+        const descriptionTextTemplate = APP_CONFIG.UI_TEXTS.tooltips.exportTab.description;
         const finalDescriptionText = descriptionTextTemplate.replace('[COHORT]', `<strong>${cohortDisplayName}</strong>`);
 
         const singleExports = [
