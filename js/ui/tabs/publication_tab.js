@@ -3,87 +3,373 @@ const publicationTab = (() => {
     let allCohortStats = null;
     let rawGlobalData = null;
     let bruteForceResults = null;
+    let currentPubLang = 'en';
 
-    function _getSafeLink(elementId) {
-        return `#${elementId}`;
-    }
-
-    function _formatCIForPublication(metric) {
-        if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return 'N/A';
-        const digits = (metric.name === 'auc' || metric.name === 'f1') ? 2 : 1;
-        const isPercent = !(metric.name === 'auc' || metric.name === 'f1');
-        const valueStr = isPercent ? formatPercent(metric.value, digits) : formatNumber(metric.value, digits, 'N/A', true);
-
-        if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) {
-            return valueStr;
+    function _getSectionContent(sectionId, lang, stats, commonData) {
+        if (!UI_TEXTS.publicationContent || !UI_TEXTS.publicationContent[sectionId] || !UI_TEXTS.publicationContent[sectionId][lang]) {
+            return `<p class="text-warning">Content for section '${sectionId}' in language '${lang}' is not available.</p>`;
         }
-        const lowerStr = isPercent ? formatPercent(metric.ci.lower, digits) : formatNumber(metric.ci.lower, digits, 'N/A', true);
-        const upperStr = isPercent ? formatPercent(metric.ci.upper, digits) : formatNumber(metric.ci.upper, digits, 'N/A', true);
-
-        return `${valueStr} (95% CI: ${lowerStr}, ${upperStr})`;
+        return UI_TEXTS.publicationContent[sectionId][lang](stats, commonData);
     }
 
-    function _getAbstractText(commonData) {
-        const gesamtStats = allCohortStats?.Gesamt;
-        const asGesamt = gesamtStats?.performanceAS;
-        const bfGesamtStats = gesamtStats?.performanceT2Bruteforce;
-        const vergleichASvsBFGesamt = gesamtStats?.comparisonASvsT2Bruteforce;
+    function _getPublicationTable(tableId, tableType, data, lang, stats, commonData, options = {}) {
+        let headers = [], rows = [], caption = '';
+        const na = 'N/A';
+        const fv = (val, dig = 1, useStd = true) => formatNumber(val, dig, na, useStd);
+        const fP = (val, dig = 1) => formatPercent(val, dig, na);
+        const fCI_pub = (metric) => {
+            if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return na;
+            const digits = (metric.name === 'auc' || metric.name === 'f1') ? 2 : 1;
+            const isPercent = !(metric.name === 'auc' || metric.name === 'f1');
+            const valueStr = isPercent ? fP(metric.value, digits) : fv(metric.value, digits, true);
+            if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) {
+                return valueStr;
+            }
+            const lowerStr = isPercent ? fP(metric.ci.lower, digits) : fv(metric.ci.lower, digits, true);
+            const upperStr = isPercent ? fP(metric.ci.upper, digits) : fv(metric.ci.upper, digits, true);
+            return `${valueStr} (95% CI: ${lowerStr}, ${upperStr})`;
+        };
+        const getPValueTextForPublication = (pValue) => {
+            if (pValue === null || pValue === undefined || isNaN(pValue) || !isFinite(pValue)) return 'N/A';
+            if (pValue < 0.001) { return 'P < .001'; }
+            return `P = ${formatNumber(pValue, 3, 'N/A', true)}`;
+        };
 
-        const nGesamt = commonData.nOverall || 0;
-        const medianAge = gesamtStats?.descriptive?.age?.median !== undefined ? formatNumber(gesamtStats.descriptive.age.median, 0) : 'N/A';
-        const iqrAgeLower = gesamtStats?.descriptive?.age?.q1 !== undefined ? formatNumber(gesamtStats.descriptive.age.q1, 0) : 'N/A';
-        const iqrAgeUpper = gesamtStats?.descriptive?.age?.q3 !== undefined ? formatNumber(gesamtStats.descriptive.age.q3, 0) : 'N/A';
-        const ageRangeText = (medianAge !== 'N/A' && iqrAgeLower !== 'N/A' && iqrAgeUpper !== 'N/A') ?
-            `${medianAge} years (IQR: ${iqrAgeLower}–${iqrAgeUpper} years)` : 'not available';
-        const maleCount = gesamtStats?.descriptive?.sex?.m || 0;
-        const sexText = `${maleCount} men, ${nGesamt - maleCount} women`;
+        if (tableId === PUBLICATION_CONFIG.publicationElements.methoden.literaturT2KriterienTabelle.id) {
+            caption = PUBLICATION_CONFIG.publicationElements.methoden.literaturT2KriterienTabelle[`title${lang === 'en' ? 'En' : 'De'}`];
+            headers = ['Criteria Set (Evaluated Cohort)', 'Size Threshold', 'Shape', 'Border', 'Homogeneity', 'Signal', 'Logic', 'Reference'];
+            rows = PUBLICATION_CONFIG.literatureCriteriaSets.map(set => {
+                const studySet = studyT2CriteriaManager.getStudyCriteriaSetById(set.id);
+                if (!studySet) return null;
+                const criteria = studySet.criteria;
+                return [
+                    `${studySet.name} (${getCohortDisplayName(studySet.applicableCohort)})`,
+                    criteria.size?.active ? `${criteria.size.condition}${fv(criteria.size.threshold, 1)}mm` : 'N/A',
+                    criteria.shape?.active ? criteria.shape.value : 'N/A',
+                    criteria.border?.active ? criteria.border.value : 'N/A',
+                    criteria.homogeneity?.active ? criteria.homogeneity.value : 'N/A',
+                    criteria.signal?.active ? criteria.signal.value : 'N/A',
+                    studySet.logic,
+                    studySet.studyInfo?.reference || 'N/A'
+                ];
+            }).filter(row => row !== null);
+        } else if (tableId === PUBLICATION_CONFIG.publicationElements.ergebnisse.patientenCharakteristikaTabelle.id) {
+            caption = PUBLICATION_CONFIG.publicationElements.ergebnisse.patientenCharakteristikaTabelle[`title${lang === 'en' ? 'En' : 'De'}`];
+            headers = ['Characteristic', 'Value'];
+            const d = stats?.Gesamt?.descriptive;
+            if (d) {
+                const total = d.patientCount;
+                rows = [
+                    ['Age—mean ± SD', `${fv(d.age?.mean, 1)} ± ${fv(d.age?.sd, 1)}`],
+                    ['Male—no. (%)', `${d.sex?.m ?? 0} (${fP((d.sex?.m ?? 0) / total, 1)})`],
+                    ['Female—no. (%)', `${d.sex?.f ?? 0} (${fP((d.sex?.f ?? 0) / total, 1)})`],
+                    ['Treatment approach—no. (%)', ''],
+                    ['  Surgery alone', `${d.therapy?.['direkt OP'] ?? 0} (${fP((d.therapy?.['direkt OP'] ?? 0) / total, 1)})`],
+                    ['  Neoadjuvant therapy', `${d.therapy?.nRCT ?? 0} (${fP((d.therapy?.nRCT ?? 0) / total, 1)})`],
+                    ['N+ patients—no. (%)', `${d.nStatus?.plus ?? 0} (${fP((d.nStatus?.plus ?? 0) / total, 1)})`]
+                ];
+            } else {
+                rows = [['No data available', '']];
+            }
+        } else if (tableId === PUBLICATION_CONFIG.publicationElements.ergebnisse.diagnostischeGueteASTabelle.id) {
+            caption = PUBLICATION_CONFIG.publicationElements.ergebnisse.diagnostischeGueteASTabelle[`title${lang === 'en' ? 'En' : 'De'}`];
+            headers = ['Metric', `Overall (n = ${stats?.Gesamt?.descriptive?.patientCount || '?'})`, `Surgery alone (n = ${stats?.['direkt OP']?.descriptive?.patientCount || '?'})`, `Neoadjuvant therapy (n = ${stats?.nRCT?.descriptive?.patientCount || '?'})`];
+            const getRow = (metricKey, formatFn) => {
+                return [
+                    UI_TEXTS.statMetrics[metricKey]?.name || metricKey,
+                    formatFn(stats?.Gesamt?.performanceAS?.[metricKey]),
+                    formatFn(stats?.['direkt OP']?.performanceAS?.[metricKey]),
+                    formatFn(stats?.nRCT?.performanceAS?.[metricKey])
+                ];
+            };
+            const fCI = (metric, digits = 1, isPercent = true) => {
+                if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return na;
+                const valueStr = isPercent ? formatPercent(metric.value, digits) : fv(metric.value, digits, true);
+                if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) {
+                    return valueStr;
+                }
+                const lowerStr = isPercent ? formatPercent(metric.ci.lower, digits) : fv(metric.ci.lower, digits, true);
+                const upperStr = isPercent ? formatPercent(metric.ci.upper, digits) : fv(metric.ci.upper, digits, true);
+                return `${valueStr} (${lowerStr}–${upperStr})`;
+            };
 
-        const studyPeriod = commonData.references?.STUDY_PERIOD_2020_2023 || "January 2020 and November 2023";
+            const confusionMatrixRow = (statsObj, label) => {
+                if (!statsObj || !statsObj.matrix) return [`${label}`, ...Array(3).fill(na)];
+                return [
+                    label,
+                    `${statsObj.matrix.tp + statsObj.matrix.fp}`, // AS+
+                    `${statsObj.matrix.fn + statsObj.matrix.tn}`, // AS-
+                    `${statsObj.matrix.tp + statsObj.matrix.fn}`, // N+
+                    `${statsObj.matrix.fp + statsObj.matrix.tn}`, // N0
+                    `${statsObj.matrix.tp}`, // AS+ N+
+                    `${statsObj.matrix.fp}`, // AS+ N0
+                    `${statsObj.matrix.fn}`, // AS- N+
+                    `${statsObj.matrix.tn}` // AS- N0
+                ];
+            };
 
-        return `
-            <div class="publication-abstract-section">
-                <h2 id="abstract-title">Abstract</h2>
-                <div class="abstract-content">
-                    <p><strong>Background:</strong> Accurate pretherapeutic determination of mesorectal lymph node status (N-status) is crucial for treatment decisions in rectal cancer. Standard magnetic resonance imaging (MRI) criteria have limitations.</p>
-                    <p><strong>Purpose:</strong> To evaluate the diagnostic performance of the "Avocado Sign" (AS), a novel contrast-enhanced (CE) MRI marker, compared to literature-based and cohort-optimized T2-weighted (T2w) criteria for predicting N-status.</p>
-                    <p><strong>Materials and Methods:</strong> This retrospective, ethics committee-approved, single-center study analyzed data from consecutive patients with histologically confirmed rectal cancer enrolled between ${studyPeriod}. Two blinded radiologists evaluated the AS (hypointense core within a hyperintense lymph node on T1w CE sequences) and morphological T2w criteria. Histopathological examination of surgical specimens served as the reference standard. Sensitivity, specificity, accuracy, and area under the receiver operating characteristic curve (AUC), with 95% confidence intervals (CIs), were calculated, and AUCs were compared using the DeLong test.</p>
-                    <p><strong>Results:</strong> A total of ${formatNumber(nGesamt,0)} patients (median age, ${ageRangeText}; ${sexText}) were analyzed. The AS showed a sensitivity of ${_formatCIForPublication({value: asGesamt?.sens?.value, ci: asGesamt?.sens?.ci})}, specificity of ${_formatCIForPublication({value: asGesamt?.spec?.value, ci: asGesamt?.spec?.ci})}, and an AUC of ${formatNumber(asGesamt?.auc?.value, 2, 'N/A', true)} (95% CI: ${formatNumber(asGesamt?.auc?.ci?.lower, 2, 'N/A', true)}, ${formatNumber(asGesamt?.auc?.ci?.upper, 2, 'N/A', true)}). For optimized T2w criteria, the AUC was ${formatNumber(bfGesamtStats?.auc?.value, 2, 'N/A', true)}. The difference in AUC between AS and optimized T2w criteria was not statistically significant (${getPValueText(vergleichASvsBFGesamt?.delong?.pValue, 'en', true)}).</p>
-                    <p><strong>Conclusion:</strong> The Avocado Sign is a promising MRI marker for predicting lymph node status in rectal cancer, demonstrating high diagnostic performance comparable to cohort-optimized T2w criteria, with potential to improve preoperative staging.</p>
-                    <p class="small text-muted mt-2">Abbreviations: ACC = Accuracy, AS = Avocado Sign, AUC = Area Under the Curve, CE = Contrast-Enhanced, CI = Confidence Interval, MRI = Magnetic Resonance Imaging, N-status = Nodal status, T2w = T2-weighted.</p>
-                </div>
-            </div>
-        `;
+            // This table format is very specific to the paper. I'll recreate it based on the provided PDF structure.
+            // This requires a different header/row structure than common markdown tables.
+            let tableHtmlContent = `
+                <table class="table table-sm table-striped small">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Overall (n = ${stats?.Gesamt?.descriptive?.patientCount || '?'})</th>
+                            <th>Surgery alone (n = ${stats?.['direkt OP']?.descriptive?.patientCount || '?'})</th>
+                            <th>Neoadjuvant therapy (n = ${stats?.nRCT?.descriptive?.patientCount || '?'})</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>AS+</td><td>${stats?.Gesamt?.performanceAS?.matrix?.tp + stats?.Gesamt?.performanceAS?.matrix?.fp || na}</td><td>${stats?.['direkt OP']?.performanceAS?.matrix?.tp + stats?.['direkt OP']?.performanceAS?.matrix?.fp || na}</td><td>${stats?.nRCT?.performanceAS?.matrix?.tp + stats?.nRCT?.performanceAS?.matrix?.fp || na}</td></tr>
+                        <tr><td>AS−</td><td>${stats?.Gesamt?.performanceAS?.matrix?.fn + stats?.Gesamt?.performanceAS?.matrix?.tn || na}</td><td>${stats?.['direkt OP']?.performanceAS?.matrix?.fn + stats?.['direkt OP']?.performanceAS?.matrix?.tn || na}</td><td>${stats?.nRCT?.performanceAS?.matrix?.fn + stats?.nRCT?.performanceAS?.matrix?.tn || na}</td></tr>
+                        <tr><td>N+</td><td>${stats?.Gesamt?.performanceAS?.matrix?.tp + stats?.Gesamt?.performanceAS?.matrix?.fn || na}</td><td>${stats?.['direkt OP']?.performanceAS?.matrix?.tp + stats?.['direkt OP']?.performanceAS?.matrix?.fn || na}</td><td>${stats?.nRCT?.performanceAS?.matrix?.tp + stats?.nRCT?.performanceAS?.matrix?.fn || na}</td></tr>
+                        <tr><td>N0</td><td>${stats?.Gesamt?.performanceAS?.matrix?.fp + stats?.Gesamt?.performanceAS?.matrix?.tn || na}</td><td>${stats?.['direkt OP']?.performanceAS?.matrix?.fp + stats?.['direkt OP']?.performanceAS?.matrix?.tn || na}</td><td>${stats?.nRCT?.performanceAS?.matrix?.fp + stats?.nRCT?.performanceAS?.matrix?.tn || na}</td></tr>
+                        <tr><td>AS+ N+</td><td>${stats?.Gesamt?.performanceAS?.matrix?.tp || na}</td><td>${stats?.['direkt OP']?.performanceAS?.matrix?.tp || na}</td><td>${stats?.nRCT?.performanceAS?.matrix?.tp || na}</td></tr>
+                        <tr><td>AS+ N0</td><td>${stats?.Gesamt?.performanceAS?.matrix?.fp || na}</td><td>${stats?.['direkt OP']?.performanceAS?.matrix?.fp || na}</td><td>${stats?.nRCT?.performanceAS?.matrix?.fp || na}</td></tr>
+                        <tr><td>AS− N+</td><td>${stats?.Gesamt?.performanceAS?.matrix?.fn || na}</td><td>${stats?.['direkt OP']?.performanceAS?.matrix?.fn || na}</td><td>${stats?.nRCT?.performanceAS?.matrix?.fn || na}</td></tr>
+                        <tr><td>AS− N0</td><td>${stats?.Gesamt?.performanceAS?.matrix?.tn || na}</td><td>${stats?.['direkt OP']?.performanceAS?.matrix?.tn || na}</td><td>${stats?.nRCT?.performanceAS?.matrix?.tn || na}</td></tr>
+                        <tr><td>Sensitivity (95% CI)</td><td>${fCI(stats?.Gesamt?.performanceAS?.sens)}</td><td>${fCI(stats?.['direkt OP']?.performanceAS?.sens)}</td><td>${fCI(stats?.nRCT?.performanceAS?.sens)}</td></tr>
+                        <tr><td>Specificity (95% CI)</td><td>${fCI(stats?.Gesamt?.performanceAS?.spec)}</td><td>${fCI(stats?.['direkt OP']?.performanceAS?.spec)}</td><td>${fCI(stats?.nRCT?.performanceAS?.spec)}</td></tr>
+                        <tr><td>PPV (95% CI)</td><td>${fCI(stats?.Gesamt?.performanceAS?.ppv)}</td><td>${fCI(stats?.['direkt OP']?.performanceAS?.ppv)}</td><td>${fCI(stats?.nRCT?.performanceAS?.ppv)}</td></tr>
+                        <tr><td>NPV (95% CI)</td><td>${fCI(stats?.Gesamt?.performanceAS?.npv)}</td><td>${fCI(stats?.['direkt OP']?.performanceAS?.npv)}</td><td>${fCI(stats?.nRCT?.performanceAS?.npv)}</td></tr>
+                        <tr><td>Accuracy (95% CI)</td><td>${fCI(stats?.Gesamt?.performanceAS?.acc)}</td><td>${fCI(stats?.['direkt OP']?.performanceAS?.acc)}</td><td>${fCI(stats?.nRCT?.performanceAS?.acc)}</td></tr>
+                        <tr><td>AUC (95% CI)</td><td>${fCI(stats?.Gesamt?.performanceAS?.auc, 2, false)}</td><td>${fCI(stats?.['direkt OP']?.performanceAS?.auc, 2, false)}</td><td>${fCI(stats?.nRCT?.performanceAS?.auc, 2, false)}</td></tr>
+                    </tbody>
+                </table>
+            `;
+            return tableHtmlContent; // Return raw HTML for specific table format
+        } else if (tableId === PUBLICATION_CONFIG.publicationElements.ergebnisse.diagnostischeGueteLiteraturT2Tabelle.id) {
+            caption = PUBLICATION_CONFIG.publicationElements.ergebnisse.diagnostischeGueteLiteraturT2Tabelle[`title${lang === 'en' ? 'En' : 'De'}`];
+            headers = ['Criteria Set (Evaluated Cohort)', 'Sens. (95% CI)', 'Spec. (95% CI)', 'PPV (95% CI)', 'NPV (95% CI)', 'Acc. (95% CI)', 'AUC (95% CI)'];
+            rows = PUBLICATION_CONFIG.literatureCriteriaSets.map(set => {
+                const applicableCohort = set.applicableCohort || 'Gesamt';
+                const perfStats = stats?.[applicableCohort]?.performanceT2Literature?.[set.id];
+                if (!perfStats) return null;
+                return [
+                    `${set.name} (${getCohortDisplayName(applicableCohort)} N=${stats?.[applicableCohort]?.descriptive?.patientCount || '?'})`,
+                    fCI_pub(perfStats.sens),
+                    fCI_pub(perfStats.spec),
+                    fCI_pub(perfStats.ppv),
+                    fCI_pub(perfStats.npv),
+                    fCI_pub(perfStats.acc),
+                    fCI_pub(perfStats.auc)
+                ];
+            }).filter(row => row !== null);
+        } else if (tableId === PUBLICATION_CONFIG.publicationElements.ergebnisse.diagnostischeGueteOptimierteT2Tabelle.id) {
+            caption = PUBLICATION_CONFIG.publicationElements.ergebnisse.diagnostischeGueteOptimierteT2Tabelle[`title${lang === 'en' ? 'En' : 'De'}`.replace('{BF_METRIC}', commonData.bruteForceMetricForPublication)];
+            headers = ['Cohort', 'Optimized Metric', 'Best Value', 'Logic', 'Criteria', 'Sens. (95% CI)', 'Spec. (95% CI)', 'Acc. (95% CI)', 'AUC (95% CI)'];
+            rows = ['Gesamt', 'direkt OP', 'nRCT'].map(cohortId => {
+                const bfRes = stats?.[cohortId]?.bruteforceDefinition;
+                const perf = stats?.[cohortId]?.performanceT2Bruteforce;
+                if (!bfRes || !perf) return null;
+                return [
+                    getCohortDisplayName(cohortId),
+                    bfRes.metricName,
+                    fv(bfRes.metricValue, 4, true),
+                    bfRes.logic,
+                    studyT2CriteriaManager.formatCriteriaForDisplay(bfRes.criteria, bfRes.logic, true), // Short format for table
+                    fCI_pub(perf.sens),
+                    fCI_pub(perf.spec),
+                    fCI_pub(perf.acc),
+                    fCI_pub(perf.auc)
+                ];
+            }).filter(row => row !== null);
+        } else if (tableId === PUBLICATION_CONFIG.publicationElements.ergebnisse.statistischerVergleichAST2Tabelle.id) {
+            caption = PUBLICATION_CONFIG.publicationElements.ergebnisse.statistischerVergleichAST2Tabelle[`title${lang === 'en' ? 'En' : 'De'}`];
+            headers = ['Test', 'Statistic', 'p-Value', 'Method'];
+            rows = ['Gesamt', 'direkt OP', 'nRCT'].flatMap(cohortId => {
+                const comp = stats?.[cohortId]?.comparisonASvsT2Bruteforce;
+                if (!comp) return [];
+                return [
+                    [`${getCohortDisplayName(cohortId)} - McNemar (Accuracy)`, fv(comp.mcnemar?.statistic, 3, true) + ` (df=${comp.mcnemar?.df || na})`, getPValueTextForPublication(comp.mcnemar?.pValue), comp.mcnemar?.method || na],
+                    [`${getCohortDisplayName(cohortId)} - DeLong (AUC)`, `Z=${fv(comp.delong?.Z, 3, true)}`, getPValueTextForPublication(comp.delong?.pValue), comp.delong?.method || na]
+                ];
+            }).filter(row => row !== null);
+        }
+        
+        let tableHtml = `<div class="table-responsive"><table class="table table-sm table-striped small">`;
+        tableHtml += `<caption>${caption}</caption>`;
+        tableHtml += `<thead><tr>`;
+        headers.forEach(h => tableHtml += `<th>${h}</th>`);
+        tableHtml += `</tr></thead><tbody>`;
+
+        rows.forEach(row => {
+            tableHtml += `<tr>`;
+            row.forEach(cell => tableHtml += `<td>${cell}</td>`);
+            tableHtml += `</tr>`;
+        });
+        tableHtml += `</tbody></table></div>`;
+        return tableHtml;
     }
-    
+
+    function _getPublicationChart(chartId, stats, commonData) {
+        let chartData = [];
+        let chartTitle = '';
+        let targetId = chartId;
+        let chartType = '';
+        let options = {};
+
+        const getChartHTML = (id, title, opts = {}) => {
+            return `<div class="chart-container pub-figure" id="${id}_container" style="min-height: ${opts.height || APP_CONFIG.CHART_SETTINGS.DEFAULT_HEIGHT}px;">
+                        <p class="small text-muted">[${title}]</p>
+                        <p class="small text-muted"><strong>Figure X:</strong> ${title}</p>
+                        <div id="${id}" style="width:100%; height:100%;"></div>
+                    </div>`;
+        };
+
+        if (chartId === PUBLICATION_CONFIG.publicationElements.ergebnisse.alterVerteilungChart.id) {
+            chartData = stats?.Gesamt?.descriptive?.ageData || [];
+            chartTitle = PUBLICATION_CONFIG.publicationElements.ergebnisse.alterVerteilungChart.titleEn;
+            chartType = 'ageDistribution';
+            options = { height: 250, margin: { top: 20, right: 30, bottom: 50, left: 60 } };
+        } else if (chartId === PUBLICATION_CONFIG.publicationElements.ergebnisse.geschlechtVerteilungChart.id) {
+            const genderStats = stats?.Gesamt?.descriptive?.sex;
+            chartData = [{label: 'Male', value: genderStats?.m ?? 0}, {label: 'Female', value: genderStats?.f ?? 0}];
+            if(genderStats?.unknown > 0) chartData.push({label: 'Unknown', value: genderStats.unknown });
+            chartTitle = PUBLICATION_CONFIG.publicationElements.ergebnisse.geschlechtVerteilungChart.titleEn;
+            chartType = 'pie';
+            options = { height: 250, margin: { top: 20, right: 20, bottom: 60, left: 20 }, innerRadiusFactor: 0.5, legendBelow: true };
+        } else if (chartId.startsWith('pub-chart-vergleich')) {
+            const cohortKey = chartId.replace('pub-chart-vergleich-', '');
+            const perfAS = stats?.[cohortKey]?.performanceAS;
+            const perfT2BF = stats?.[cohortKey]?.performanceT2Bruteforce;
+            if (perfAS && perfT2BF) {
+                chartData = [
+                    { metric: 'Sens.', AS: perfAS.sens?.value || 0, T2: perfT2BF.sens?.value || 0 },
+                    { metric: 'Spec.', AS: perfAS.spec?.value || 0, T2: perfT2BF.spec?.value || 0 },
+                    { metric: 'Acc.', AS: perfAS.acc?.value || 0, T2: perfT2BF.acc?.value || 0 },
+                    { metric: 'AUC', AS: perfAS.auc?.value || 0, T2: perfT2BF.auc?.value || 0 }
+                ];
+                chartTitle = PUBLICATION_CONFIG.publicationElements.ergebnisse[`vergleichPerformanceChart${cohortKey}`].titleEn;
+                chartType = 'comparisonBar';
+                options = { height: 300, margin: { top: 20, right: 30, bottom: 70, left: 60 } };
+            }
+        } else if (chartId.startsWith('pub-chart-roc')) {
+             const cohortKey = chartId.replace('pub-chart-roc-', '');
+             const cohortData = data.filter(p => p.therapy === cohortKey || cohortKey === 'overall_cohort'); // Assuming 'overall_cohort' maps to 'Gesamt'
+             const predictionKey = 'asStatus';
+             const referenceKey = 'nStatus';
+             chartTitle = `ROC Curve for Avocado Sign - ${getCohortDisplayName(cohortKey)}`;
+             chartType = 'rocCurve';
+             // data is raw processed data for ROC, not aggregated stats
+             return `<div class="chart-container pub-figure" id="${chartId}_container" style="min-height: ${300}px;">
+                        <p class="small text-muted">[${chartTitle}]</p>
+                        <p class="small text-muted"><strong>Figure X:</strong> ${chartTitle}</p>
+                        <div id="${chartId}" style="width:100%; height:100%;"></div>
+                    </div>`;
+        } else if (chartId === 'pub-figure-avocado-sign-illustration') {
+             // This is a static image/illustration, handled directly in the content string
+             // and doesn't require D3.js rendering
+             return ''; // Content is injected directly in the HTML string.
+        } else if (chartId === PUBLICATION_CONFIG.publicationElements.methoden.flowDiagram.id) {
+            return ''; // Static image/illustration
+        }
+
+
+        if (chartData.length > 0 || chartType === 'rocCurve') {
+            const containerHtml = getChartHTML(targetId, chartTitle, options);
+            setTimeout(() => {
+                const chartElement = document.getElementById(targetId);
+                if (chartElement) {
+                    if (chartType === 'ageDistribution') {
+                        chartRenderer.renderAgeDistributionChart(chartData, targetId, options);
+                    } else if (chartType === 'pie') {
+                        chartRenderer.renderPieChart(chartData, targetId, options);
+                    } else if (chartType === 'comparisonBar') {
+                        chartRenderer.renderComparisonBarChart(chartData, targetId, options, 'Optimized T2');
+                    } else if (chartType === 'rocCurve') {
+                        chartRenderer.renderDiagnosticPerformanceChart(data.filter(p => p.therapy === cohortKey || cohortKey === 'Gesamt'), predictionKey, referenceKey, targetId, UI_TEXTS.legendLabels.avocadoSign);
+                    }
+                }
+            }, 50); // Small delay to ensure DOM is ready
+            return containerHtml;
+        }
+        return '';
+    }
+
     function render(data, currentSectionId) {
         rawGlobalData = data.rawData;
         allCohortStats = data.allCohortStats;
         bruteForceResults = data.bruteForceResults;
-        
+        currentPubLang = data.currentLanguage; // Get current language from data
+
         const commonData = {
             appName: APP_CONFIG.APP_NAME,
             appVersion: APP_CONFIG.APP_VERSION,
             nOverall: allCohortStats.Gesamt?.descriptive?.patientCount || 0,
             nUpfrontSurgery: allCohortStats['direkt OP']?.descriptive?.patientCount || 0,
             nNRCT: allCohortStats.nRCT?.descriptive?.patientCount || 0,
-            references: APP_CONFIG.REFERENCES_FOR_PUBLICATION || {}
+            references: APP_CONFIG.REFERENCES_FOR_PUBLICATION || {},
+            bruteForceMetricForPublication: state.getPublicationBruteForceMetric(),
+            currentLanguage: currentPubLang // Pass current language to text generators
         };
         
         const mainSection = PUBLICATION_CONFIG.sections.find(s => s.id === currentSectionId);
         if (!mainSection) return `<p class="text-warning">No section defined for ID '${currentSectionId}'.</p>`;
 
         let finalHTML = `<div class="row mb-3 sticky-top bg-light py-2 shadow-sm" style="top: var(--sticky-header-offset); z-index: 1015;">
-            <div class="col-md-3">${uiComponents.createPublicationNav(currentSectionId)}</div>
+            <div class="col-md-3">${uiComponents.createPublicationNav(currentSectionId)}<div class="mt-3">
+                <label for="publication-bf-metric-select" class="form-label small text-muted">${UI_TEXTS.publicationTab.bfMetricSelectLabel}</label>
+                <select class="form-select form-select-sm" id="publication-bf-metric-select">
+                    ${PUBLICATION_CONFIG.bruteForceMetricsForPublication.map(m => `<option value="${m.value}" ${m.value === commonData.bruteForceMetricForPublication ? 'selected' : ''}>${m.label}</option>`).join('')}
+                </select>
+                <div class="form-check form-switch mt-2">
+                    <input class="form-check-input" type="checkbox" role="switch" id="publication-lang-switch" ${currentPubLang === 'de' ? 'checked' : ''}>
+                    <label class="form-check-label small text-muted" for="publication-lang-switch">Deutsch / English</label>
+                </div>
+            </div></div>
             <div class="col-md-9"><div id="publication-content-area" class="bg-white p-3 border rounded">
                 <h1 class="mb-4 display-6">${UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey]}</h1>`;
 
         mainSection.subSections.forEach(subSection => {
             finalHTML += `<div class="publication-sub-section border-bottom pb-4 mb-4" id="pub-content-${subSection.id}">`;
-            if (subSection.id === 'abstract_main') {
-                finalHTML += _getAbstractText(commonData);
-            } else {
-                 finalHTML += `<p class="text-muted">Content for section '${subSection.label}' is under construction.</p>`;
+            finalHTML += `<h3>${subSection.label}</h3>`; // Sub-section title
+            const sectionContent = _getSectionContent(subSection.id, currentPubLang, allCohortStats, commonData);
+            finalHTML += sectionContent;
+
+            // Dynamically add figures and tables based on the content
+            const elementsConfig = PUBLICATION_CONFIG.publicationElements;
+
+            if (elementsConfig.methoden.flowDiagram.id === subSection.id) {
+                // This is a direct illustration, not a chart that needs rendering
+                // No specific rendering logic needed here as it's part of content.
             }
+
+            // Check for specific tables or figures to embed
+            if (currentSectionId === 'methoden') {
+                if (subSection.id === 'methoden_bildanalyse_t2_kriterien') {
+                    finalHTML += _getPublicationTable(elementsConfig.methoden.literaturT2KriterienTabelle.id, 'literaturT2KriterienTabelle', null, currentPubLang, allCohortStats, commonData);
+                }
+            } else if (currentSectionId === 'ergebnisse') {
+                if (subSection.id === 'ergebnisse_patientencharakteristika') {
+                    finalHTML += _getPublicationTable(elementsConfig.ergebnisse.patientenCharakteristikaTabelle.id, 'patientenCharakteristikaTabelle', null, currentPubLang, allCohortStats, commonData);
+                    if (elementsConfig.ergebnisse.alterVerteilungChart.id) {
+                        finalHTML += _getPublicationChart(elementsConfig.ergebnisse.alterVerteilungChart.id, allCohortStats, commonData);
+                    }
+                    if (elementsConfig.ergebnisse.geschlechtVerteilungChart.id) {
+                        finalHTML += _getPublicationChart(elementsConfig.ergebnisse.geschlechtVerteilungChart.id, allCohortStats, commonData);
+                    }
+                } else if (subSection.id === 'ergebnisse_as_diagnostische_guete') {
+                    finalHTML += _getPublicationTable(elementsConfig.ergebnisse.diagnostischeGueteASTabelle.id, 'diagnostischeGueteASTabelle', null, currentPubLang, allCohortStats, commonData);
+                    // ROC curves are rendered within the text content in this case, but typically would be separate
+                    // _getPublicationChart will render them in the specific div IDs.
+                    finalHTML += _getPublicationChart('pub-chart-roc-overall', allCohortStats, commonData);
+                    finalHTML += _getPublicationChart('pub-chart-roc-direkt OP', allCohortStats, commonData);
+                    finalHTML += _getPublicationChart('pub-chart-roc-nRCT', allCohortStats, commonData);
+                } else if (subSection.id === 'ergebnisse_t2_literatur_diagnostische_guete') {
+                    finalHTML += _getPublicationTable(elementsConfig.ergebnisse.diagnostischeGueteLiteraturT2Tabelle.id, 'diagnostischeGueteLiteraturT2Tabelle', null, currentPubLang, allCohortStats, commonData);
+                } else if (subSection.id === 'ergebnisse_t2_optimiert_diagnostische_guete') {
+                    finalHTML += _getPublicationTable(elementsConfig.ergebnisse.diagnostischeGueteOptimierteT2Tabelle.id, 'diagnostischeGueteOptimierteT2Tabelle', null, currentPubLang, allCohortStats, commonData);
+                } else if (subSection.id === 'ergebnisse_vergleich_as_vs_t2') {
+                    finalHTML += _getPublicationTable(elementsConfig.ergebnisse.statistischerVergleichAST2Tabelle.id, 'statistischerVergleichAST2Tabelle', null, currentPubLang, allCohortStats, commonData);
+                    // Render comparison charts
+                    finalHTML += _getPublicationChart(elementsConfig.ergebnisse.vergleichPerformanceChartGesamt.id, allCohortStats, commonData);
+                    finalHTML += _getPublicationChart(elementsConfig.ergebnisse.vergleichPerformanceChartdirektOP.id, allCohortStats, commonData);
+                    finalHTML += _getPublicationChart(elementsConfig.ergebnisse.vergleichPerformanceChartnRCT.id, allCohortStats, commonData);
+                }
+            }
+            
             finalHTML += `</div>`;
         });
 
@@ -91,8 +377,19 @@ const publicationTab = (() => {
         return finalHTML;
     }
 
+    // Public method to get content for export (used by export_service.js)
+    function getSectionContentForExport(sectionId, lang, allStats, commonData) {
+        return _getSectionContent(sectionId, lang, allStats, commonData);
+    }
+
+    // Public method to get table HTML for export (used by export_service.js)
+    function getTableHTMLForExport(tableId, tableType, data, lang, stats, commonData, options = {}) {
+        return _getPublicationTable(tableId, tableType, data, lang, stats, commonData, options);
+    }
+
     return {
         render,
-        _getAbstractText // Expose this function for export_service.js
+        getSectionContentForExport,
+        getTableHTMLForExport
     };
 })();
