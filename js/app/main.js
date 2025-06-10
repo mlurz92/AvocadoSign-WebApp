@@ -3,6 +3,8 @@ class App {
         this.rawData = typeof patientDataRaw !== 'undefined' ? patientDataRaw : [];
         this.processedData = [];
         this.currentCohortData = [];
+        this.presentationDataForExport = null;
+        this.allPublicationStats = null;
     }
 
     init() {
@@ -50,10 +52,8 @@ class App {
             state, t2CriteriaManager, studyT2CriteriaManager, dataProcessor, 
             statisticsService, bruteForceManager, 
             uiManager, uiComponents, tableRenderer, chartRenderer, 
-            dataTab, analysisTab, statisticsTab, presentationTab, publicationTab, exportTab, // exportTab hinzugefügt
+            dataTab, analysisTab, statisticsTab, presentationTab, publicationTab, exportTab,
             eventManager, 
-            // utils wird global über <script> Tag geladen und ist nicht Teil eines Moduls, das hier explizit geprüft werden muss
-            // Die globalen Funktionen wie getCohortDisplayName, formatNumber, cloneDeep etc. aus utils.js sind nach der Korrektur der Ladereihenfolge verfügbar
         };
         for (const dep in dependencies) {
             if (typeof dependencies[dep] === 'undefined') {
@@ -143,17 +143,90 @@ class App {
         const cohort = state.getCurrentCohort();
         const criteria = t2CriteriaManager.getAppliedCriteria();
         const logic = t2CriteriaManager.getAppliedLogic();
+        
+        // Calculate all publication stats once and store them
+        this.allPublicationStats = statisticsService.calculateAllPublicationStats(this.processedData, criteria, logic, bruteForceManager.getAllResults());
+
         const publicationData = {
             rawData: this.rawData,
-            allCohortStats: statisticsService.calculateAllPublicationStats(this.processedData, criteria, logic, bruteForceManager.getAllResults()),
-            bruteForceResults: bruteForceManager.getAllResults()
+            allCohortStats: this.allPublicationStats,
+            bruteForceResults: bruteForceResults,
+            currentLanguage: state.getCurrentPublikationLang()
         };
+
+        let currentPresentationData = null;
+        if (tabId === 'presentation') {
+            const currentPresentationView = state.getPresentationView();
+            const selectedStudyId = state.getPresentationStudyId();
+            const cohortForPresentation = state.getCurrentCohort(); 
+            const filteredDataForPresentation = dataProcessor.filterDataByCohort(this.processedData, cohortForPresentation);
+            
+            const statsCurrentCohort = this.allPublicationStats[cohortForPresentation];
+            const statsGesamt = this.allPublicationStats['Gesamt'];
+            const statsDirektOP = this.allPublicationStats['direkt OP'];
+            const statsNRCT = this.allPublicationStats['nRCT'];
+
+            let performanceT2 = null;
+            let comparisonCriteriaSet = null;
+            let t2ShortName = null;
+            let comparisonASvsT2 = null;
+
+            if (selectedStudyId === APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_STUDY_ID) {
+                performanceT2 = statsCurrentCohort?.performanceT2Applied;
+                comparisonCriteriaSet = {
+                    id: APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_STUDY_ID,
+                    name: APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_DISPLAY_NAME,
+                    displayShortName: APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_DISPLAY_NAME,
+                    criteria: criteria,
+                    logic: logic,
+                    studyInfo: {
+                        reference: 'User-defined criteria',
+                        patientCohort: `Current: ${getCohortDisplayName(cohortForPresentation)} (N=${filteredDataForPresentation.length})`,
+                        investigationType: 'Interactive analysis',
+                        focus: 'Custom T2 criteria',
+                        keyCriteriaSummary: studyT2CriteriaManager.formatCriteriaForDisplay(criteria, logic, false)
+                    }
+                };
+                t2ShortName = APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_DISPLAY_NAME;
+                comparisonASvsT2 = statsCurrentCohort?.comparisonASvsT2Applied;
+            } else if (selectedStudyId) {
+                const studySet = studyT2CriteriaManager.getStudyCriteriaSetById(selectedStudyId);
+                if (studySet) {
+                    const studyDataCohort = dataProcessor.filterDataByCohort(this.processedData, studySet.applicableCohort);
+                    const evaluatedDataStudy = studyT2CriteriaManager.applyStudyCriteriaToDataset(cloneDeep(studyDataCohort), studySet);
+                    const statsForStudyCohort = statisticsService.calculateDiagnosticPerformance(evaluatedDataStudy, 't2Status', 'nStatus');
+                    
+                    performanceT2 = statsForStudyCohort;
+                    comparisonCriteriaSet = studySet;
+                    t2ShortName = studySet.displayShortName || studySet.name;
+                    comparisonASvsT2 = statisticsService.compareDiagnosticMethods(evaluatedDataStudy, 'asStatus', 't2Status', 'nStatus');
+                }
+            }
+
+            currentPresentationData = {
+                view: currentPresentationView,
+                cohort: cohortForPresentation,
+                patientCount: filteredDataForPresentation.length,
+                statsCurrentCohort: statsCurrentCohort,
+                statsGesamt: statsGesamt,
+                statsDirektOP: statsDirektOP,
+                statsNRCT: statsNRCT,
+                performanceAS: statsCurrentCohort?.performanceAS,
+                performanceT2: performanceT2,
+                comparison: comparisonASvsT2,
+                comparisonCriteriaSet: comparisonCriteriaSet,
+                cohortForComparison: selectedStudyId ? (comparisonCriteriaSet?.applicableCohort || cohortForPresentation) : cohortForPresentation,
+                patientCountForComparison: selectedStudyId ? (dataProcessor.filterDataByCohort(this.processedData, comparisonCriteriaSet?.applicableCohort || cohortForPresentation).length) : filteredDataForPresentation.length,
+                t2ShortName: t2ShortName
+            };
+            this.presentationDataForExport = currentPresentationData; // Store for export
+        }
 
         switch (tabId) {
             case 'data': uiManager.renderTabContent(tabId, () => dataTab.render(this.currentCohortData, state.getDataTableSort())); break;
-            case 'analysis': uiManager.renderTabContent(tabId, () => analysisTab.render(this.currentCohortData, t2CriteriaManager.getCurrentCriteria(), t2CriteriaManager.getCurrentLogic(), state.getAnalysisTableSort(), cohort, bruteForceManager.isWorkerAvailable())); break;
+            case 'analysis': uiManager.renderTabContent(tabId, () => analysisTab.render(this.currentCohortData, t2CriteriaManager.getCurrentCriteria(), t2CriteriaManager.getCurrentLogic(), state.getAnalysisTableSort(), cohort, bruteForceManager.isWorkerAvailable(), this.allPublicationStats[cohort], bruteForceManager.getResultsForCohort(cohort))); break;
             case 'statistics': uiManager.renderTabContent(tabId, () => statisticsTab.render(this.processedData, criteria, logic, state.getStatsLayout(), state.getStatsCohort1(), state.getStatsCohort2(), cohort)); break;
-            case 'presentation': uiManager.renderTabContent(tabId, () => presentationTab.render(state.getPresentationView(), state.getPresentationStudyId(), cohort, this.processedData, criteria, logic)); break;
+            case 'presentation': uiManager.renderTabContent(tabId, () => presentationTab.render(state.getPresentationView(), currentPresentationData, state.getPresentationStudyId(), cohort, this.processedData, criteria, logic)); break;
             case 'publication': uiManager.renderTabContent(tabId, () => publicationTab.render(publicationData, state.getPublicationSection())); break;
             case 'export': uiManager.renderTabContent(tabId, () => exportTab.render(cohort)); break;
         }
@@ -189,8 +262,9 @@ class App {
     startBruteForceAnalysis() {
         const metric = document.getElementById('brute-force-metric')?.value || APP_CONFIG.DEFAULT_SETTINGS.BRUTE_FORCE_METRIC;
         const cohortId = state.getCurrentCohort();
-        const dataForWorker = dataProcessor.filterDataByCohort(this.processedData, cohortId).map(p => ({
-            id: p.id, nStatus: p.nStatus, t2Nodes: cloneDeep(p.t2Nodes)
+        // The rawData has German keys, which is expected by brute_force_worker.js
+        const dataForWorker = this.rawData.filter(p => p.therapie === cohortId || cohortId === 'Gesamt').map(p => ({
+            id: p.nr, n: p.n, lymphknoten_t2: cloneDeep(p.lymphknoten_t2), name: p.name // Pass relevant raw data for worker
         }));
         if (dataForWorker.length > 0) {
             bruteForceManager.startAnalysis(dataForWorker, metric, cohortId);
@@ -224,30 +298,30 @@ class App {
     
     handleSingleExport(exportType) {
         const cohort = state.getCurrentCohort();
-        const data = dataProcessor.filterDataByCohort(this.processedData, cohort);
-        const bfResults = bruteForceManager.getResultsForCohort(cohort);
+        const data = this.processedData; // Use full processed data for exports to allow filtering within export_service
+        const bfResults = bruteForceManager.getAllResults(); // Pass all BF results
         const criteria = t2CriteriaManager.getAppliedCriteria();
         const logic = t2CriteriaManager.getAppliedLogic();
         
         switch(exportType) {
             case 'stats-csv':
-                const allCohortStats = statisticsService.calculateAllPublicationStats(this.processedData, criteria, logic, bruteForceManager.getAllResults());
-                exportTab.exportStatistikCSV(allCohortStats[cohort], cohort, criteria, logic);
+                const allCohortStatsForCSV = statisticsService.calculateAllPublicationStats(data, criteria, logic, bfResults);
+                exportTab.exportStatistikCSV(allCohortStatsForCSV[cohort], cohort, criteria, logic);
                 break;
             case 'bruteforce-txt':
-                exportTab.exportBruteForceReport(bfResults);
+                exportTab.exportBruteForceReport(bfResults[cohort]);
                 break;
             case 'datatable-md':
-                exportTab.exportTableMarkdown(data, 'daten', cohort); // 'data' to 'daten'
+                exportTab.exportTableMarkdown(dataProcessor.filterDataByCohort(this.currentCohortData, cohort), 'daten', cohort);
                 break;
             case 'analysistable-md':
-                 exportTab.exportTableMarkdown(data, 'auswertung', cohort, criteria, logic); // 'analysis' to 'auswertung'
+                 exportTab.exportTableMarkdown(dataProcessor.filterDataByCohort(this.currentCohortData, cohort), 'auswertung', cohort, criteria, logic);
                 break;
             case 'filtered-data-csv':
-                exportTab.exportFilteredDataCSV(data, cohort);
+                exportTab.exportFilteredDataCSV(dataProcessor.filterDataByCohort(this.currentCohortData, cohort), cohort);
                 break;
             case 'comprehensive-report-html':
-                 exportTab.exportComprehensiveReportHTML(this.processedData, bfResults, cohort, criteria, logic);
+                 exportTab.exportComprehensiveReportHTML(data, bfResults, cohort, criteria, logic);
                  break;
         }
     }
@@ -260,6 +334,8 @@ class App {
     
     getRawData() { return this.rawData; }
     getProcessedData() { return this.processedData; }
+    getPresentationDataForExport() { return this.presentationDataForExport; } // Expose presentation data
+
 }
 
 document.addEventListener('DOMContentLoaded', () => {
