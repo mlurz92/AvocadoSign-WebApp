@@ -459,6 +459,13 @@ const statisticsService = (() => {
                 results[cohortId].bruteforceDefinition = { criteria: bfResult.bestResult.criteria, logic: bfResult.bestResult.logic, metricValue: bfResult.bestResult.metricValue, metricName: bfResult.metric };
             }
         });
+        
+        // Add interobserver agreement for 'Gesamt' cohort (based on provided summary data)
+        if (results.Gesamt) {
+            results.Gesamt.interobserverKappa = 0.92; //
+            results.Gesamt.interobserverKappaCI = { lower: 0.85, upper: 0.99 }; //
+        }
+
         return results;
     }
 
@@ -478,15 +485,16 @@ const statisticsService = (() => {
             };
         }
         
-        const sizesNplus = data.filter(p => p.nStatus === '+').flatMap(p => p.t2Nodes.map(lk => lk.size).filter(s => s !== null));
-        const sizesNminus = data.filter(p => p.nStatus === '-').flatMap(p => p.t2Nodes.map(lk => lk.size).filter(s => s !== null));
+        const sizesNplus = data.filter(p => p.nStatus === '+').flatMap(p => p.t2Nodes.map(lk => lk.size).filter(s => s !== null && !isNaN(s) && isFinite(s)));
+        const sizesNminus = data.filter(p => p.nStatus === '-').flatMap(p => p.t2Nodes.map(lk => lk.size).filter(s => s !== null && !isNaN(s) && isFinite(s)));
         if (sizesNplus.length > 0 && sizesNminus.length > 0) {
-            results.size_mwu = { ...calculateMannWhitneyUTest(sizesNplus, sizesNminus), featureName: 'LN Size (Median Comp.)' };
+            const mwuResult = calculateMannWhitneyUTest(sizesNplus, sizesNminus);
+            results.size_mwu = { pValue: mwuResult.pValue, Z: mwuResult.Z, testName: mwuResult.testName, featureName: 'LN Size (Median Comp.)' };
         }
 
-        ['size', 'shape', 'border', 'homogeneity', 'signal'].forEach(key => {
+        ['size', 'form', 'kontur', 'homogenitaet', 'signal'].forEach(key => {
             const criterion = t2Criteria[key];
-            if (!criterion) return;
+            if (!criterion || !criterion.active) return; // Only process active criteria
             let a = 0, b = 0, c = 0, d = 0;
             data.forEach(p => {
                 if (!p.nStatus) return;
@@ -494,7 +502,14 @@ const statisticsService = (() => {
                 const hasFeature = p.t2Nodes.some(lk => {
                     if(!lk) return false;
                     if (key === 'size') return lk.size >= criterion.threshold;
-                    return lk[key] === criterion.value;
+                    // Note: 'form' is used in data.js, but 'shape' in t2_criteria_manager for some reason.
+                    // Sticking to 'form', 'kontur', 'homogenitaet', 'signal' as they appear in data.js
+                    // and used in the data processing part of the application.
+                    if (key === 'form') return lk.form === criterion.value;
+                    if (key === 'kontur') return lk.kontur === criterion.value;
+                    if (key === 'homogenitaet') return lk.homogenitaet === criterion.value;
+                    if (key === 'signal') return lk.signal === criterion.value;
+                    return false;
                 });
                 if (hasFeature && actualPositive) a++;
                 else if (hasFeature && !actualPositive) b++;
