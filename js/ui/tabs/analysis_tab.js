@@ -1,7 +1,6 @@
 const analysisTab = (() => {
 
-    function createAnalysisTableHTML(data, sortState, appliedCriteria, appliedLogic) {
-        if (!Array.isArray(data)) return '<p class="text-danger">Error: Invalid data for analysis table.</p>';
+    function createAnalysisTableCardHTML(data, sortState, appliedCriteria, appliedLogic) {
         const tableId = 'analysis-table';
         const columns = [
             { key: 'id', label: 'ID', tooltipKey: 'nr' },
@@ -30,7 +29,7 @@ const analysisTab = (() => {
                 }
             }
             
-            const baseTooltipContent = APP_CONFIG.UI_TEXTS.tooltips.analysisTab[col.tooltipKey];
+            const baseTooltipContent = APP_CONFIG.UI_TEXTS.tooltips.analysisTab[col.tooltipKey] || `Sort by ${col.label}`;
             const subHeaders = col.subKeys ? col.subKeys.map(sk => {
                 const isActiveSubSort = activeSubKey === sk.key;
                 const style = isActiveSubSort ? 'font-weight: bold; text-decoration: underline; color: var(--primary-color);' : '';
@@ -45,7 +44,7 @@ const analysisTab = (() => {
         headerHTML += `</tr></thead>`;
 
         let tableHTML = `<table class="table table-sm table-hover table-striped data-table" id="${tableId}">${headerHTML}<tbody id="${tableId}-body">`;
-        if (data.length === 0) {
+        if (!Array.isArray(data) || data.length === 0) {
             tableHTML += `<tr><td colspan="${columns.length}" class="text-center text-muted">No patients found in the selected cohort.</td></tr>`;
         } else {
             data.forEach(patient => {
@@ -53,12 +52,8 @@ const analysisTab = (() => {
             });
         }
         tableHTML += `</tbody></table>`;
-        return tableHTML;
-    }
-
-    function createAnalysisTableCardHTML(data, sortState, appliedCriteria, appliedLogic) {
-        const tableHTML = createAnalysisTableHTML(data, sortState, appliedCriteria, appliedLogic);
-        const toggleButtonTooltip = APP_CONFIG.UI_TEXTS.tooltips.analysisTab.expandAll;
+        
+        const toggleButtonTooltip = APP_CONFIG.UI_TEXTS.tooltips.analysisTab.expandAll || 'Expand or collapse all details';
         return `
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -109,7 +104,6 @@ const analysisTab = (() => {
         const metricsOverviewContainerId = 't2-metrics-overview';
         const bruteForceCardContainerId = 'brute-force-card-container';
 
-        // Pre-render dashboard cards with correct titles and initial placeholders
         const stats = statisticsService.calculateDescriptiveStats(data);
         const cohortDisplayName = getCohortDisplayName(currentCohort);
 
@@ -148,7 +142,6 @@ const analysisTab = (() => {
             if(metricsOverviewContainer) {
                 if (currentCohortStats && currentCohortStats.performanceT2Applied) {
                     const statsT2 = currentCohortStats.performanceT2Applied;
-                    // Helper function to format CI values for the overview table
                     const fCI = (m, d=1, p=true) => {
                         const digits = (m?.name === 'auc') ? 2 : ((m?.name === 'f1') ? 3 : d);
                         return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, digits, p, '--');
