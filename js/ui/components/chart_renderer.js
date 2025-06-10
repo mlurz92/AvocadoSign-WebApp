@@ -69,7 +69,7 @@ const chartRenderer = (() => {
         const x = d3.scaleLinear().domain(xDomain).nice().range([0, innerWidth]);
         const tickCountX = Math.max(3, Math.min(10, Math.floor(innerWidth / 50)));
         chartArea.append("g").attr("class", "x-axis axis").attr("transform", `translate(0,${innerHeight})`).call(d3.axisBottom(x).ticks(tickCountX).tickSizeOuter(0).tickFormat(d3.format("d"))).selectAll("text").style("font-size", APP_CONFIG.CHART_SETTINGS.TICK_LABEL_FONT_SIZE);
-        svg.append("text").attr("class", "axis-label x-axis-label").attr("text-anchor", "middle").attr("x", margin.left + innerWidth / 2).attr("y", height - 5).style("font-size", APP_CONFIG.CHART_SETTINGS.AXIS_LABEL_FONT_SIZE).text(UI_TEXTS.axisLabels.age);
+        svg.append("text").attr("class", "axis-label x-axis-label").attr("text-anchor", "middle").attr("x", margin.left + innerWidth / 2).attr("y", height - 5).style("font-size", APP_CONFIG.CHART_SETTINGS.AXIS_LABEL_FONT_SIZE).text(APP_CONFIG.UI_TEXTS.axisLabels.age);
 
         const histogram = d3.histogram().value(d => d).domain(x.domain()).thresholds(x.ticks(Math.max(5, Math.min(20, Math.floor(innerWidth / 25)))));
         const bins = histogram(ageData.filter(d => !isNaN(d) && isFinite(d)));
@@ -77,7 +77,7 @@ const chartRenderer = (() => {
         const y = d3.scaleLinear().range([innerHeight, 0]).domain([0, yMax > 0 ? yMax : 1]).nice();
         const tickCountY = Math.max(2, Math.min(6, Math.floor(innerHeight / 35)));
         chartArea.append("g").attr("class", "y-axis axis").call(d3.axisLeft(y).ticks(tickCountY).tickSizeOuter(0).tickFormat(d3.format("d"))).selectAll("text").style("font-size", APP_CONFIG.CHART_SETTINGS.TICK_LABEL_FONT_SIZE);
-        svg.append("text").attr("class", "axis-label y-axis-label").attr("text-anchor", "middle").attr("transform", `translate(${margin.left / 2 - 5}, ${margin.top + innerHeight / 2}) rotate(-90)`).style("font-size", APP_CONFIG.CHART_SETTINGS.AXIS_LABEL_FONT_SIZE).text(UI_TEXTS.axisLabels.patientCount);
+        svg.append("text").attr("class", "axis-label y-axis-label").attr("text-anchor", "middle").attr("transform", `translate(${margin.left / 2 - 5}, ${margin.top + innerHeight / 2}) rotate(-90)`).style("font-size", APP_CONFIG.CHART_SETTINGS.AXIS_LABEL_FONT_SIZE).text(APP_CONFIG.UI_TEXTS.axisLabels.patientCount);
 
         if (APP_CONFIG.CHART_SETTINGS.ENABLE_GRIDLINES) {
             chartArea.append("g").attr("class", "grid y-grid").call(d3.axisLeft(y).ticks(tickCountY).tickSize(-innerWidth).tickFormat(""));
@@ -170,14 +170,14 @@ const chartRenderer = (() => {
         
         const groups = chartData.map(d => d.metric);
         const subgroups = Object.keys(chartData[0]).filter(key => key !== 'metric');
-        const subgroupDisplayNames = { 'AS': UI_TEXTS.legendLabels.avocadoSign, 'T2': t2Label };
+        const subgroupDisplayNames = { 'AS': APP_CONFIG.UI_TEXTS.legendLabels.avocadoSign, 'T2': t2Label };
         const x0 = d3.scaleBand().domain(groups).range([0, innerWidth]).paddingInner(0.35);
         const x1 = d3.scaleBand().domain(subgroups).range([0, x0.bandwidth()]).padding(0.15);
         const y = d3.scaleLinear().domain([0, 1.0]).nice().range([innerHeight, 0]);
         const color = d3.scaleOrdinal().domain(subgroups).range([APP_CONFIG.CHART_SETTINGS.AS_COLOR, APP_CONFIG.CHART_SETTINGS.T2_COLOR]);
         
         chartArea.append("g").attr("class", "y-axis axis").call(d3.axisLeft(y).ticks(5, "%").tickSizeOuter(0)).selectAll("text").style("font-size", APP_CONFIG.CHART_SETTINGS.TICK_LABEL_FONT_SIZE);
-        svg.append("text").attr("class", "axis-label y-axis-label").attr("text-anchor", "middle").attr("transform", `translate(${margin.left / 2}, ${margin.top + innerHeight / 2}) rotate(-90)`).style("font-size", APP_CONFIG.CHART_SETTINGS.AXIS_LABEL_FONT_SIZE).text(UI_TEXTS.axisLabels.metricValue);
+        svg.append("text").attr("class", "axis-label y-axis-label").attr("text-anchor", "middle").attr("transform", `translate(${margin.left / 2}, ${margin.top + innerHeight / 2}) rotate(-90)`).style("font-size", APP_CONFIG.CHART_SETTINGS.AXIS_LABEL_FONT_SIZE).text(APP_CONFIG.UI_TEXTS.axisLabels.metricValue);
         chartArea.append("g").attr("class", "x-axis axis").attr("transform", `translate(0,${innerHeight})`).call(d3.axisBottom(x0).tickSizeOuter(0)).selectAll(".tick text").style("text-anchor", "middle").style("font-size", APP_CONFIG.CHART_SETTINGS.TICK_LABEL_FONT_SIZE);
         if (APP_CONFIG.CHART_SETTINGS.ENABLE_GRIDLINES) {
             chartArea.append("g").attr("class", "grid y-grid").call(d3.axisLeft(y).ticks(5).tickSize(-innerWidth).tickFormat(""));
@@ -238,10 +238,10 @@ const chartRenderer = (() => {
         const y = d3.scaleLinear().domain([0, 1]).range([innerHeight, 0]);
 
         chartArea.append("g").attr("class", "x-axis axis").attr("transform", `translate(0,${innerHeight})`).call(d3.axisBottom(x).ticks(5).tickFormat(d3.format(".1f"))).selectAll("text").style("font-size", APP_CONFIG.CHART_SETTINGS.TICK_LABEL_FONT_SIZE);
-        svg.append("text").attr("class", "axis-label x-axis-label").attr("text-anchor", "middle").attr("x", margin.left + innerWidth / 2).attr("y", innerHeight + margin.top + 20).style("font-size", APP_CONFIG.CHART_SETTINGS.AXIS_LABEL_FONT_SIZE).text(UI_TEXTS.axisLabels.oneMinusSpecificity);
+        svg.append("text").attr("class", "axis-label x-axis-label").attr("text-anchor", "middle").attr("x", margin.left + innerWidth / 2).attr("y", innerHeight + margin.top + 20).style("font-size", APP_CONFIG.CHART_SETTINGS.AXIS_LABEL_FONT_SIZE).text(APP_CONFIG.UI_TEXTS.axisLabels.oneMinusSpecificity);
 
         chartArea.append("g").attr("class", "y-axis axis").call(d3.axisLeft(y).ticks(5).tickFormat(d3.format(".1f"))).selectAll("text").style("font-size", APP_CONFIG.CHART_SETTINGS.TICK_LABEL_FONT_SIZE);
-        svg.append("text").attr("class", "axis-label y-axis-label").attr("text-anchor", "middle").attr("transform", `translate(${margin.left / 2 - 5}, ${margin.top + innerHeight / 2}) rotate(-90)`).style("font-size", APP_CONFIG.CHART_SETTINGS.AXIS_LABEL_FONT_SIZE).text(UI_TEXTS.axisLabels.sensitivity);
+        svg.append("text").attr("class", "axis-label y-axis-label").attr("text-anchor", "middle").attr("transform", `translate(${margin.left / 2 - 5}, ${margin.top + innerHeight / 2}) rotate(-90)`).style("font-size", APP_CONFIG.CHART_SETTINGS.AXIS_LABEL_FONT_SIZE).text(APP_CONFIG.UI_TEXTS.axisLabels.sensitivity);
 
         if (APP_CONFIG.CHART_SETTINGS.ENABLE_GRIDLINES) {
             chartArea.append("g").attr("class", "grid x-grid").attr("transform", `translate(0,${innerHeight})`).call(d3.axisBottom(x).ticks(5).tickSize(-innerHeight).tickFormat(""));
