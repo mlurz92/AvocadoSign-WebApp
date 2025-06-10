@@ -79,7 +79,7 @@ const state = (() => {
 
     function getCurrentPublikationLang() { return currentState.publicationLang; }
     function setPublicationLang(newLang) {
-        if (newLang === 'en' || newLang === 'de') { // Assuming 'de' for German, adjust if needed
+        if (newLang === 'en' || newLang === 'de') {
             return _setter('publicationLang', APP_CONFIG.STORAGE_KEYS.PUBLICATION_LANG, newLang);
         }
         return false;
