@@ -424,4 +424,3 @@ const publicationTab = (() => {
         getTableHTMLForExport
     };
 })();
-
