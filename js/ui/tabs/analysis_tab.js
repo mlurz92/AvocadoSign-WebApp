@@ -98,7 +98,7 @@ const analysisTab = (() => {
         catch(error) { ids.forEach(id => uiManager.updateElementHTML(id, '<p class="text-danger small text-center p-2">Chart Error</p>')); }
     }
 
-    function render(data, currentCriteria, currentLogic, sortState, currentCohort, bfWorkerAvailable) {
+    function render(data, currentCriteria, currentLogic, sortState, currentCohort, bfWorkerAvailable, currentCohortStats, bruteForceResultForCohort) {
         if (!data || !currentCriteria || !currentLogic) throw new Error("Data or criteria for Analysis Tab not available.");
         const criteriaControlsHTML = uiComponents.createT2CriteriaControls(currentCriteria, currentLogic);
         const analysisTableCardHTML = createAnalysisTableCardHTML(data, sortState, currentCriteria, currentLogic);
@@ -111,7 +111,7 @@ const analysisTab = (() => {
             <div class="row g-2 mb-3" id="${dashboardContainerId}"><div class="col-12"><p class="text-muted text-center small p-3">Loading Dashboard...</p></div></div>
             <div class="row g-4">
                 <div class="col-12">${criteriaControlsHTML}</div>
-                <div class="col-12 mb-3" id="${metricsOverviewContainerId}"><p class="text-muted small p-3">Loading Metrics Overview...</p></div>
+                <div class="col-12 mb-3" id="${metricsOverviewContainerId}"></div>
                 <div class="col-12" id="${bruteForceCardContainerId}"></div>
                 <div class="col-12">${analysisTableCardHTML}</div>
             </div>`;
@@ -129,8 +129,8 @@ const analysisTab = (() => {
                         ${uiComponents.createDashboardCard(UI_TEXTS.chartTitles.genderDistribution, `<p class="mb-0 small">M: ${stats.sex?.m ?? 0} F: ${stats.sex?.f ?? 0}</p>`, 'chart-dash-gender', '', '', 'p-1', dlBtns('chart-dash-gender', UI_TEXTS.chartTitles.genderDistribution))}
                         ${uiComponents.createDashboardCard(UI_TEXTS.chartTitles.therapyDistribution, `<p class="mb-0 small">Upfront: ${stats.therapy?.['direkt OP'] ?? 0} nRCT: ${stats.therapy?.nRCT ?? 0}</p>`, 'chart-dash-therapy', '', '', 'p-1', dlBtns('chart-dash-therapy', UI_TEXTS.chartTitles.therapyDistribution))}
                         ${uiComponents.createDashboardCard(UI_TEXTS.chartTitles.statusN, `<p class="mb-0 small">N+: ${stats.nStatus?.plus ?? 0} N-: ${stats.nStatus?.minus ?? 0}</p>`, 'chart-dash-status-n', '', '', 'p-1', dlBtns('chart-dash-status-n', UI_TEXTS.chartTitles.statusN))}
-                        ${uiComponents.createDashboardCard(UI_TEXTS.chartTitles.statusAS, `<p class="mb-0 small">AS+: ${stats.asStatus?.plus ?? 0} AS-: ${stats.asStatus?.minus ?? 0}</p>`, 'chart-dash-status-as', '', '', 'p-1', dlBtns('chart-dash-status-as', UI_TEXTS.chartTitles.statusAS))}
-                        ${uiComponents.createDashboardCard(UI_TEXTS.chartTitles.statusT2, `<p class="mb-0 small">T2+: ${stats.t2Status?.plus ?? 0} T2-: ${stats.t2Status?.minus ?? 0}</p>`, 'chart-dash-status-t2', '', '', 'p-1', dlBtns('chart-dash-status-t2', UI_TEXTS.chartTitles.statusT2))}
+                        ${uiComponents.createDashboardCard(UI_TEXTS.chartTitles.statusAS, `<p class="mb-0 small">AS+: ${stats.asStatus?.plus ?? 0} AS-: ${stats.asStatus?.minus ?? 0}</p>`, 'chart-dash-status-as', '', '', 'p-1', dlBtns('chart-dash-as', UI_TEXTS.chartTitles.statusAS))}
+                        ${uiComponents.createDashboardCard(UI_TEXTS.chartTitles.statusT2, `<p class="mb-0 small">T2+: ${stats.t2Status?.plus ?? 0} T2-: ${stats.t2Status?.minus ?? 0}</p>`, 'chart-dash-t2', '', '', 'p-1', dlBtns('chart-dash-t2', UI_TEXTS.chartTitles.statusT2))}
                     `;
                     renderDashboardCharts(stats);
                 }
@@ -138,13 +138,51 @@ const analysisTab = (() => {
 
             const metricsOverviewContainer = document.getElementById(metricsOverviewContainerId);
             if(metricsOverviewContainer) {
-                const statsT2 = statisticsService.calculateDiagnosticPerformance(data, 't2Status', 'nStatus');
-                uiManager.updateElementHTML(metricsOverviewContainer.id, "html for t2 metrics overview will go here");
+                if (currentCohortStats && currentCohortStats.performanceT2Applied) {
+                    const statsT2 = currentCohortStats.performanceT2Applied;
+                    const fCI = (m, d=1, p=true) => formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, d, p, '--');
+                    const na = '--';
+
+                    const metricsHtml = `
+                        <div class="table-responsive">
+                            <table class="table table-sm small mb-0 table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>Value (95% CI)</th>
+                                        <th>CI Method</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>Sensitivity</td><td>${fCI(statsT2.sens)}</td><td>${statsT2.sens?.method || na}</td></tr>
+                                    <tr><td>Specificity</td><td>${fCI(statsT2.spec)}</td><td>${statsT2.spec?.method || na}</td></tr>
+                                    <tr><td>PPV</td><td>${fCI(statsT2.ppv)}</td><td>${statsT2.ppv?.method || na}</td></tr>
+                                    <tr><td>NPV</td><td>${fCI(statsT2.npv)}</td><td>${statsT2.npv?.method || na}</td></tr>
+                                    <tr><td>Accuracy</td><td>${fCI(statsT2.acc)}</td><td>${statsT2.acc?.method || na}</td></tr>
+                                    <tr><td>Balanced Accuracy</td><td>${fCI(statsT2.balAcc)}</td><td>${statsT2.balAcc?.method || na}</td></tr>
+                                    <tr><td>F1-Score</td><td>${fCI(statsT2.f1, 3, false)}</td><td>${statsT2.f1?.method || na}</td></tr>
+                                    <tr><td>AUC</td><td>${fCI(statsT2.auc, 3, false)}</td><td>${statsT2.auc?.method || na}</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    uiManager.updateElementHTML(metricsOverviewContainer.id, uiComponents.createStatisticsCard(
+                        't2-metrics-overview-card',
+                        'Diagnostic Performance (Applied T2)',
+                        metricsHtml,
+                        false,
+                        't2MetricsOverview',
+                        [{id: 'dl-t2-metrics-overview-png', icon: 'fa-image', format: 'png', tableId: 't2-metrics-overview-card-content table', tableName: `T2_Metrics_Overview_${getCohortDisplayName(currentCohort).replace(/\s+/g, '_')}`}],
+                        't2-metrics-overview-card-content table'
+                    ));
+                } else {
+                    uiManager.updateElementHTML(metricsOverviewContainer.id, `<div class="col-12"><div class="alert alert-info small p-2">No diagnostic performance data available for current T2 criteria in cohort '${getCohortDisplayName(currentCohort)}'. Apply criteria or check data.</div></div>`);
+                }
             }
             
             const bruteForceCardContainer = document.getElementById(bruteForceCardContainerId);
             if(bruteForceCardContainer) {
-                 uiManager.updateElementHTML(bruteForceCardContainerId, "html for bruteforce card will go here");
+                 uiManager.updateBruteForceUI(bruteForceManager.isRunning() ? 'progress' : 'initial', bruteForceResultForCohort, bfWorkerAvailable, currentCohort);
             }
 
             const tableBody = document.getElementById('analysis-table-body');
