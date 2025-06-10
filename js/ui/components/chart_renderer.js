@@ -216,10 +216,87 @@ const chartRenderer = (() => {
         });
     }
 
+    function renderDiagnosticPerformanceChart(data, predictionKey, referenceKey, targetElementId, methodName) {
+        const setupOptions = { margin: { top: 30, right: 40, bottom: 50, left: 70 } };
+        const containerSetup = createSvgContainer(targetElementId, setupOptions);
+        if (!containerSetup) return;
+        const { svg, chartArea, innerWidth, innerHeight, margin } = containerSetup;
+        const tooltip = createTooltip();
+
+        const performance = statisticsService.calculateDiagnosticPerformance(data, predictionKey, referenceKey);
+        if (!performance || !isFinite(performance.sens?.value) || !isFinite(performance.spec?.value)) {
+            chartArea.append('text').attr('x', innerWidth / 2).attr('y', innerHeight / 2).attr('text-anchor', 'middle').attr('class', 'text-muted small').text('No valid data for ROC chart.');
+            return;
+        }
+
+        const sensitivity = performance.sens.value;
+        const specificity = performance.spec.value;
+        const oneMinusSpecificity = 1 - specificity;
+        const auc = performance.auc.value;
+
+        const x = d3.scaleLinear().domain([0, 1]).range([0, innerWidth]);
+        const y = d3.scaleLinear().domain([0, 1]).range([innerHeight, 0]);
+
+        chartArea.append("g").attr("class", "x-axis axis").attr("transform", `translate(0,${innerHeight})`).call(d3.axisBottom(x).ticks(5).tickFormat(d3.format(".1f"))).selectAll("text").style("font-size", APP_CONFIG.CHART_SETTINGS.TICK_LABEL_FONT_SIZE);
+        svg.append("text").attr("class", "axis-label x-axis-label").attr("text-anchor", "middle").attr("x", margin.left + innerWidth / 2).attr("y", innerHeight + margin.top + 20).style("font-size", APP_CONFIG.CHART_SETTINGS.AXIS_LABEL_FONT_SIZE).text(UI_TEXTS.axisLabels.oneMinusSpecificity);
+
+        chartArea.append("g").attr("class", "y-axis axis").call(d3.axisLeft(y).ticks(5).tickFormat(d3.format(".1f"))).selectAll("text").style("font-size", APP_CONFIG.CHART_SETTINGS.TICK_LABEL_FONT_SIZE);
+        svg.append("text").attr("class", "axis-label y-axis-label").attr("text-anchor", "middle").attr("transform", `translate(${margin.left / 2 - 5}, ${margin.top + innerHeight / 2}) rotate(-90)`).style("font-size", APP_CONFIG.CHART_SETTINGS.AXIS_LABEL_FONT_SIZE).text(UI_TEXTS.axisLabels.sensitivity);
+
+        if (APP_CONFIG.CHART_SETTINGS.ENABLE_GRIDLINES) {
+            chartArea.append("g").attr("class", "grid x-grid").attr("transform", `translate(0,${innerHeight})`).call(d3.axisBottom(x).ticks(5).tickSize(-innerHeight).tickFormat(""));
+            chartArea.append("g").attr("class", "grid y-grid").call(d3.axisLeft(y).ticks(5).tickSize(-innerWidth).tickFormat(""));
+        }
+
+        chartArea.append("line").attr("class", "reference-line").attr("x1", x(0)).attr("y1", y(0)).attr("x2", x(1)).attr("y2", y(1));
+
+        const rocLine = d3.line()
+            .x(d => x(d[0]))
+            .y(d => y(d[1]))
+            .curve(d3.curveMonotoneX);
+
+        const dataPoints = [
+            [0, 0], // Origin
+            [oneMinusSpecificity, sensitivity], // Classifier's performance point
+            [1, 1]  // Top-right corner
+        ];
+
+        chartArea.append("path")
+            .datum(dataPoints)
+            .attr("class", "roc-curve")
+            .attr("fill", "none")
+            .attr("stroke", APP_CONFIG.CHART_SETTINGS.AS_COLOR)
+            .attr("stroke-width", 2)
+            .attr("d", rocLine);
+
+        chartArea.append("circle")
+            .attr("cx", x(oneMinusSpecificity))
+            .attr("cy", y(sensitivity))
+            .attr("r", 5)
+            .attr("fill", APP_CONFIG.CHART_SETTINGS.AS_COLOR)
+            .on("mouseover", (event) => {
+                tooltip.transition().duration(50).style("opacity", .95);
+                tooltip.html(`<strong>${methodName}</strong><br>Sensitivity: ${formatPercent(sensitivity, 1)}<br>1-Specificity: ${formatPercent(oneMinusSpecificity, 1)}<br>AUC: ${formatNumber(auc, 2)}`)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 15) + "px");
+            })
+            .on("mouseout", () => {
+                tooltip.transition().duration(200).style("opacity", 0);
+            });
+
+        chartArea.append("text")
+            .attr("class", "auc-label")
+            .attr("x", x(0.95))
+            .attr("y", y(0.05))
+            .attr("text-anchor", "end")
+            .text(`AUC: ${formatNumber(auc, 2)}`);
+    }
+
     return Object.freeze({
         renderAgeDistributionChart,
         renderPieChart,
-        renderComparisonBarChart
+        renderComparisonBarChart,
+        renderDiagnosticPerformanceChart
     });
 
 })();
