@@ -58,7 +58,9 @@ const uiManager = (() => {
 
     function updateElementText(elementId, text) {
         const element = document.getElementById(elementId);
-        if (element) element.textContent = text ?? '';
+        if (element) {
+            element.textContent = text ?? '';
+        }
     }
 
     function updateElementHTML(elementId, html) {
@@ -71,12 +73,16 @@ const uiManager = (() => {
 
     function toggleElementClass(elementId, className, add) {
         const element = document.getElementById(elementId);
-        if (element && className) element.classList.toggle(className, add);
+        if (element && className) {
+            element.classList.toggle(className, add);
+        }
     }
 
     function setElementDisabled(elementId, isDisabled) {
         const element = document.getElementById(elementId);
-        if (element) element.disabled = !!isDisabled;
+        if (element) {
+            element.disabled = !!isDisabled;
+        }
     }
     
     function highlightElement(elementId, highlightClass = 'element-flash-highlight', duration = 1500) {
@@ -220,6 +226,7 @@ const uiManager = (() => {
     }
 
     function updateHeaderStatsUI(stats) {
+        if (!stats) return;
         updateElementText('header-cohort', stats.cohort);
         updateElementText('header-patient-count', stats.patientCount);
         updateElementText('header-status-n', stats.statusN);
@@ -239,9 +246,9 @@ const uiManager = (() => {
     function updateExportButtonStates(activeTabId, hasBruteForceResults, hasData) {
         const bfModalExportBtn = document.getElementById('export-bruteforce-modal-txt');
         if (bfModalExportBtn) {
-            setElementDisabled('export-bruteforce-modal-txt', !hasBruteForceResults);
+            setElementDisabled(bfModalExportBtn.id, !hasBruteForceResults);
         }
-        const exportTabButtons = document.querySelectorAll('#export-tab-pane button[id^="export-"]');
+        const exportTabButtons = document.querySelectorAll('#export-pane button[id^="export-"]');
         exportTabButtons.forEach(button => {
             if (button.id.includes('bruteforce')) {
                 setElementDisabled(button.id, !hasBruteForceResults);
@@ -261,13 +268,26 @@ const uiManager = (() => {
         if (cohortSelectorsContainer) {
             cohortSelectorsContainer.style.display = layout === 'vergleich' ? 'flex' : 'none';
         }
-        document.getElementById('statistics-cohort-select-1').value = cohort1;
-        document.getElementById('statistics-cohort-select-2').value = cohort2;
+        const select1 = document.getElementById('statistics-cohort-select-1');
+        if (select1) {
+            select1.value = cohort1;
+        }
+        const select2 = document.getElementById('statistics-cohort-select-2');
+        if (select2) {
+            select2.value = cohort2;
+        }
     }
 
     function updatePresentationViewUI(currentView, currentStudyId) {
-        document.getElementById('view-as-perf').checked = currentView === 'as-pur';
-        document.getElementById('view-as-vs-t2').checked = currentView === 'as-vs-t2';
+        const viewAsPerf = document.getElementById('view-as-perf');
+        const viewAsVsT2 = document.getElementById('view-as-vs-t2');
+        if (viewAsPerf) {
+            viewAsPerf.checked = currentView === 'as-pur';
+        }
+        if (viewAsVsT2) {
+            viewAsVsT2.checked = currentView === 'as-vs-t2';
+        }
+        
         const presStudySelect = document.getElementById('pres-study-select');
         if (presStudySelect) {
             presStudySelect.value = currentStudyId || '';
@@ -277,7 +297,9 @@ const uiManager = (() => {
 
     function updatePublicationUI(currentSectionId, currentBruteForceMetric) {
         document.querySelectorAll('#publication-sections-nav .nav-link').forEach(link => {
-            link.classList.toggle('active', link.dataset.sectionId === currentSectionId);
+            if (link) {
+                link.classList.toggle('active', link.dataset.sectionId === currentSectionId);
+            }
         });
         const bfMetricSelect = document.getElementById('publication-bf-metric-select');
         if (bfMetricSelect) {
