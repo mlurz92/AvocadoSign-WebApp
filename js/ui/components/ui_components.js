@@ -8,6 +8,7 @@ const uiComponents = (() => {
                 const iconClass = btn.icon || 'fa-download';
                 let tooltip = btn.tooltip || `Download as ${String(btn.format || 'action').toUpperCase()}`;
 
+                // Sanitize defaultTitle, chartName, tableName for use in filenames/ids
                 const safeDefaultTitle = String(defaultTitle).replace(/[^a-zA-Z0-9_-\s]/gi, '').substring(0, 50);
                 const safeChartName = String(btn.chartName || safeDefaultTitle).replace(/[^a-zA-Z0-9_-\s]/gi, '').substring(0, 50);
                 const safeTableName = String(btn.tableName || safeDefaultTitle).replace(/[^a-zA-Z0-9_-\s]/gi, '').substring(0, 50);
@@ -55,16 +56,34 @@ const uiComponents = (() => {
         const defaultCriteria = getDefaultT2Criteria();
         const sizeThreshold = initialCriteria.size?.threshold ?? defaultCriteria?.size?.threshold ?? 5.0;
         const { min, max, step } = APP_CONFIG.T2_CRITERIA_SETTINGS.SIZE_RANGE;
-        const formattedThreshold = formatNumber(sizeThreshold, 1, '5.0', true);
+        // Ensure formatNumber uses true for useStandardFormat when displaying in an input/range context
+        const formattedThresholdForInput = formatNumber(sizeThreshold, 1, '5.0', true);
 
         const createButtonOptions = (key, isChecked, criterionLabel) => {
             const valuesKey = key.toUpperCase() + '_VALUES';
-            const values = APP_CONFIG.T2_CRITERIA_SETTINGS[valuesKey] || [];
+            const values = APP_CONFIG.T2_CRITERIA_SETTINGS[valuesKey];
+            if (!Array.isArray(values)) return ''; // Ensure values is an array
             const currentValue = initialCriteria[key]?.value;
+
             return values.map(value => {
                 const isActiveValue = isChecked && currentValue === value;
-                const icon = uiManager.getT2IconSVG(key, value);
-                const buttonTooltip = `Set criterion '${criterionLabel}' to '${value}'. ${isChecked ? '' : '(Criterion is currently inactive)'}`;
+                const icon = getT2IconSVG(key, value); // Use getT2IconSVG from utils.js
+                
+                // Translate value for tooltip only, not for data-value
+                let displayValueForTooltip = value;
+                switch (value) {
+                    case 'rund': displayValueForTooltip = 'round'; break;
+                    case 'oval': displayValueForTooltip = 'oval'; break;
+                    case 'scharf': displayValueForTooltip = 'sharp'; break;
+                    case 'irregulär': displayValueForTooltip = 'irregular'; break;
+                    case 'homogen': displayValueForTooltip = 'homogeneous'; break;
+                    case 'heterogen': displayValueForTooltip = 'heterogeneous'; break;
+                    case 'signalarm': displayValueForTooltip = 'low signal'; break;
+                    case 'intermediär': displayValueForTooltip = 'intermediate signal'; break;
+                    case 'signalreich': displayValueForTooltip = 'high signal'; break;
+                }
+
+                const buttonTooltip = `Set criterion '${criterionLabel}' to '${displayValueForTooltip}'. ${isChecked ? '' : '(Criterion is currently inactive)'}`;
                 return `<button class="btn t2-criteria-button criteria-icon-button ${isActiveValue ? 'active' : ''} ${isChecked ? '' : 'inactive-option'}" data-criterion="${key}" data-value="${value}" data-tippy-content="${buttonTooltip}" ${isChecked ? '' : 'disabled'}>${icon}</button>`;
             }).join('');
         };
@@ -95,7 +114,7 @@ const uiComponents = (() => {
                     <div class="form-check form-switch" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.t2Logic.description}">
                          <label class="form-check-label small me-2" for="t2-logic-switch" id="t2-logic-label-prefix">Logic:</label>
                          <input class="form-check-input" type="checkbox" role="switch" id="t2-logic-switch" ${logicChecked ? 'checked' : ''}>
-                         <label class="form-check-label fw-bold" for="t2-logic-switch" id="t2-logic-label">${initialLogic}</label>
+                         <label class="form-check-label fw-bold" for="t2-logic-switch" id="t2-logic-label">${APP_CONFIG.UI_TEXTS.t2LogicDisplayNames[initialLogic] || initialLogic}</label>
                      </div>
                 </div>
                 <div class="card-body">
@@ -103,13 +122,13 @@ const uiComponents = (() => {
                         ${createCriteriaGroup('size', 'Size', 't2Size', (key, isChecked) => `
                             <div class="d-flex align-items-center flex-wrap">
                                  <span class="me-1 small text-muted">≥</span>
-                                 <input type="range" class="form-range criteria-range flex-grow-1 me-2" id="range-size" min="${min}" max="${max}" step="${step}" value="${formattedThreshold}" ${isChecked ? '' : 'disabled'} data-tippy-content="Set short-axis diameter threshold (≥).">
+                                 <input type="range" class="form-range criteria-range flex-grow-1 me-2" id="range-size" min="${min}" max="${max}" step="${step}" value="${formattedThresholdForInput}" ${isChecked ? '' : 'disabled'} data-tippy-content="Set short-axis diameter threshold (≥).">
                                  <span class="criteria-value-display text-end me-1 fw-bold" id="value-size">${formatNumber(sizeThreshold, 1)}</span><span class="me-2 small text-muted">mm</span>
-                                 <input type="number" class="form-control form-control-sm criteria-input-manual" id="input-size" min="${min}" max="${max}" step="${step}" value="${formattedThreshold}" ${isChecked ? '' : 'disabled'} style="width: 70px;" aria-label="Enter size manually" data-tippy-content="Enter threshold manually.">
+                                 <input type="number" class="form-control form-control-sm criteria-input-manual" id="input-size" min="${min}" max="${max}" step="${step}" value="${formattedThresholdForInput}" ${isChecked ? '' : 'disabled'} style="width: 70px;" aria-label="Enter size manually" data-tippy-content="Enter threshold manually.">
                             </div>
                         `)}
                         ${createCriteriaGroup('form', 'Shape', 't2Form', createButtonOptions)}
-                        ${createCriteriaGroup('kontur', 'Border', 't2Contour', createButtonOptions)}
+                        ${createCriteriaGroup('kontur', 'Border', 't2Kontur', createButtonOptions)}
                         ${createCriteriaGroup('homogenitaet', 'Homogeneity', 't2Homogenitaet', createButtonOptions)}
                         ${createCriteriaGroup('signal', 'Signal', 't2Signal', createButtonOptions)}
                         <div class="col-12 d-flex justify-content-end align-items-center border-top pt-3 mt-3">
@@ -151,11 +170,11 @@ const uiComponents = (() => {
 
     function createPublicationNav(currentSectionId) {
         const navItems = PUBLICATION_CONFIG.sections.map(mainSection => {
-            const sectionTooltip = APP_CONFIG.UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey] || mainSection.labelKey;
+            const sectionLabel = APP_CONFIG.UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey] || mainSection.labelKey;
             return `
                 <li class="nav-item">
-                    <a class="nav-link py-2 publication-section-link ${mainSection.id === currentSectionId ? 'active' : ''}" href="#" data-section-id="${mainSection.id}" data-tippy-content="${sectionTooltip}">
-                        ${APP_CONFIG.UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey]}
+                    <a class="nav-link py-2 publication-section-link ${mainSection.id === currentSectionId ? 'active' : ''}" href="#" data-section-id="${mainSection.id}" data-tippy-content="${sectionLabel}">
+                        ${sectionLabel}
                     </a>
                 </li>`;
         }).join('');
@@ -176,7 +195,7 @@ const uiComponents = (() => {
                 <ul class="list-unstyled small mb-2">
                     <li><strong>Target Metric:</strong> ${metric}</li>
                     <li><strong>Total Combinations Tested:</strong> ${formatNumber(totalTested, 0)}</li>
-                    <li><strong>Duration:</strong> ${formatNumber(duration / 1000, 1, true)} seconds</li>
+                    <li><strong>Duration:</strong> ${formatNumber(duration / 1000, 1, 'N/A', true)} seconds</li>
                     <li><strong>Patient Count (N):</strong> ${formatNumber(nTotal, 0)} (N+: ${formatNumber(nPlus, 0)}, N-: ${formatNumber(nMinus, 0)})</li>
                 </ul>
             </div>
@@ -197,7 +216,7 @@ const uiComponents = (() => {
         let rank = 1;
         let displayedCount = 0;
         let lastMetricValue = -Infinity;
-        const precision = 8; 
+        const precision = 8; // Define precision for floating point comparison
 
         for (let i = 0; i < results.length; i++) {
             const result = results[i];
@@ -206,24 +225,28 @@ const uiComponents = (() => {
             const currentMetricValueRounded = parseFloat(result.metricValue.toFixed(precision));
             const lastMetricValueRounded = parseFloat(lastMetricValue.toFixed(precision));
 
+            // Determine rank. If current value is essentially same as last, use same rank.
             let currentRank = rank;
-            const isNewRank = Math.abs(currentMetricValueRounded - lastMetricValueRounded) > 1e-8;
+            const isNewRank = Math.abs(currentMetricValueRounded - lastMetricValueRounded) > 1e-8; // Small epsilon for float comparison
 
             if (i > 0 && isNewRank) {
-                rank = displayedCount + 1;
+                rank = displayedCount + 1; // New rank is total displayed + 1
                 currentRank = rank;
             } else if (i > 0) {
-                currentRank = rank;
+                currentRank = rank; // Same rank as previous if values are very close
             }
 
-            if (rank > 10 && isNewRank) break;
+            // Stop after 10 unique ranks are displayed, or if we go beyond rank 10 and the score is no longer the same as the 10th rank.
+            if (rank > 10 && isNewRank) {
+                break;
+            }
 
             html += `
                 <tr>
                     <td>${currentRank}</td>
                     <td>${formatNumber(result.metricValue, 4, true)}</td>
                     <td>${result.logic.toUpperCase()}</td>
-                    <td>${formatCriteriaFunc(result.criteria, result.logic)}</td>
+                    <td><code>${formatCriteriaFunc(result.criteria, result.logic)}</code></td>
                 </tr>
             `;
 
