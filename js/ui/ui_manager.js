@@ -366,7 +366,7 @@ const uiManager = (() => {
                 const criteriaDisplay = studyT2CriteriaManager.formatCriteriaForDisplay(best.criteria, best.logic);
                 let cohortStats = `(N=${bfResult.nTotal}, N+: ${bfResult.nPlus}, N-: ${bfResult.nMinus})`;
                 
-                const resultTooltipTemplate = UI_TEXTS.tooltips.bruteForceResult.description;
+                const resultTooltipTemplate = APP_CONFIG.UI_TEXTS.tooltips.bruteForceResult.description;
                 const resultTooltip = resultTooltipTemplate
                     .replace('[N_TOTAL]', bfResult.nTotal)
                     .replace('[N_PLUS]', bfResult.nPlus)
@@ -388,7 +388,7 @@ const uiManager = (() => {
             }
         }
         
-        const infoTooltipTemplate = UI_TEXTS.tooltips.bruteForceInfo.description;
+        const infoTooltipTemplate = APP_CONFIG.UI_TEXTS.tooltips.bruteForceInfo.description;
         const cardTitleTooltip = infoTooltipTemplate.replace('[COHORT_NAME]', `<strong>${cohortDisplayName}</strong>`);
         const isRunning = status === 'started' || status === 'progress';
 
@@ -397,14 +397,14 @@ const uiManager = (() => {
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span data-tippy-content="${cardTitleTooltip}">Criteria Optimization (Brute-Force)</span>
                     <div class="d-flex align-items-center">
-                        <label for="brute-force-metric" class="me-2 small text-muted" data-tippy-content="${UI_TEXTS.tooltips.bruteForceMetric.description}">Target:</label>
+                        <label for="brute-force-metric" class="me-2 small text-muted" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.bruteForceMetric.description}">Target:</label>
                         <select class="form-select form-select-sm me-2" id="brute-force-metric" ${isRunning ? 'disabled' : ''}>
                             ${['Balanced Accuracy', 'Accuracy', 'F1-Score', 'PPV', 'NPV'].map(metric => `<option value="${metric}" ${payload.metric === metric ? 'selected' : ''}>${metric}</option>`).join('')}
                         </select>
-                        <button class="btn btn-sm btn-success me-2" id="btn-start-brute-force" data-tippy-content="${UI_TEXTS.tooltips.bruteForceStart.description}" ${isRunning || !isWorkerAvailable ? 'disabled' : ''}><i class="fas fa-play me-1"></i> Start</button>
+                        <button class="btn btn-sm btn-success me-2" id="btn-start-brute-force" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.bruteForceStart.description}" ${isRunning || !isWorkerAvailable ? 'disabled' : ''}><i class="fas fa-play me-1"></i> Start</button>
                         <button class="btn btn-sm btn-danger me-2" id="btn-cancel-brute-force" ${!isRunning ? 'disabled' : ''}><i class="fas fa-stop me-1"></i> Cancel</button>
                         <button class="btn btn-sm btn-primary" id="btn-apply-best-bf-criteria" ${!showResultControls || isRunning ? 'disabled' : ''}><i class="fas fa-magic me-1"></i> Apply Best</button>
-                        <button class="btn btn-sm btn-outline-info ms-2" ${!showResultControls ? 'disabled' : ''} data-bs-toggle="modal" data-bs-target="#brute-force-modal" id="btn-show-bf-details" data-tippy-content="${UI_TEXTS.tooltips.bruteForceDetailsButton.description}"><i class="fas fa-info-circle"></i> Top 10</button>
+                        <button class="btn btn-sm btn-outline-info ms-2" ${!showResultControls ? 'disabled' : ''} data-bs-toggle="modal" data-bs-target="#brute-force-modal" id="btn-show-bf-details" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.bruteForceDetailsButton.description}"><i class="fas fa-info-circle"></i> Top 10</button>
                     </div>
                 </div>
                 <div class="card-body">
@@ -456,12 +456,12 @@ const uiManager = (() => {
             let instance = tippy.getInstance(criteriaCard);
             if(isUnsaved && !instance) {
                 tippy(criteriaCard, {
-                    content: UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator,
+                    content: APP_CONFIG.UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator,
                     theme: 'warning', placement: 'top',
                 });
             } else if (instance) {
                 instance.setProps({
-                    content: UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator,
+                    content: APP_CONFIG.UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator,
                 });
                 if(isUnsaved) instance.enable(); else instance.disable();
             }
@@ -482,8 +482,8 @@ const uiManager = (() => {
         });
 
         toggleButton.dataset.action = isExpanding ? 'collapse' : 'expand';
-        const expandAllTooltip = (typeof UI_TEXTS !== 'undefined') ? UI_TEXTS.tooltips.dataTab.expandAll : 'Expand All Details';
-        const collapseAllTooltip = (typeof UI_TEXTS !== 'undefined') ? UI_TEXTS.tooltips.dataTab.collapseAll || 'Collapse All Details' : 'Collapse All Details';
+        const expandAllTooltip = (typeof APP_CONFIG.UI_TEXTS !== 'undefined') ? APP_CONFIG.UI_TEXTS.tooltips.dataTab.expandAll : 'Expand All Details';
+        const collapseAllTooltip = (typeof APP_CONFIG.UI_TEXTS !== 'undefined') ? APP_CONFIG.UI_TEXTS.tooltips.dataTab.collapseAll || 'Collapse All Details' : 'Collapse All Details';
         toggleButton.innerHTML = isExpanding
             ? `Collapse All Details <i class="fas fa-chevron-up ms-1"></i>`
             : `Expand All Details <i class="fas fa-chevron-down ms-1"></i>`;
