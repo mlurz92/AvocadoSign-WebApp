@@ -7,6 +7,7 @@ const state = (() => {
         analysisTableSort: cloneDeep(APP_CONFIG.DEFAULT_SETTINGS.AUSWERTUNG_TABLE_SORT),
         publicationSection: APP_CONFIG.DEFAULT_SETTINGS.PUBLICATION_SECTION,
         publicationBruteForceMetric: APP_CONFIG.DEFAULT_SETTINGS.PUBLICATION_BRUTE_FORCE_METRIC,
+        publicationLang: APP_CONFIG.DEFAULT_SETTINGS.PUBLICATION_LANG,
         statsLayout: APP_CONFIG.DEFAULT_SETTINGS.STATS_LAYOUT,
         statsCohort1: APP_CONFIG.DEFAULT_SETTINGS.STATS_KOLLEKTIV1,
         statsCohort2: APP_CONFIG.DEFAULT_SETTINGS.STATS_KOLLEKTIV2,
@@ -20,6 +21,7 @@ const state = (() => {
             currentCohort: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.CURRENT_KOLLEKTIV) ?? defaultState.currentCohort,
             publicationSection: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PUBLICATION_SECTION) ?? defaultState.publicationSection,
             publicationBruteForceMetric: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PUBLICATION_BRUTE_FORCE_METRIC) ?? defaultState.publicationBruteForceMetric,
+            publicationLang: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PUBLICATION_LANG) ?? defaultState.publicationLang,
             statsLayout: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.STATS_LAYOUT) ?? defaultState.statsLayout,
             statsCohort1: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.STATS_KOLLEKTIV1) ?? defaultState.statsCohort1,
             statsCohort2: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.STATS_KOLLEKTIV2) ?? defaultState.statsCohort2,
@@ -75,6 +77,14 @@ const state = (() => {
         return isValid ? _setter('publicationBruteForceMetric', APP_CONFIG.STORAGE_KEYS.PUBLICATION_BRUTE_FORCE_METRIC, newMetric) : false;
     }
 
+    function getCurrentPublikationLang() { return currentState.publicationLang; }
+    function setPublicationLang(newLang) {
+        if (newLang === 'en' || newLang === 'de') { // Assuming 'de' for German, adjust if needed
+            return _setter('publicationLang', APP_CONFIG.STORAGE_KEYS.PUBLICATION_LANG, newLang);
+        }
+        return false;
+    }
+
     function getStatsLayout() { return currentState.statsLayout; }
     function setStatsLayout(newLayout) {
         if (newLayout === 'einzel' || newLayout === 'vergleich') {
@@ -127,6 +137,8 @@ const state = (() => {
         setPublicationSection,
         getPublicationBruteForceMetric,
         setPublicationBruteForceMetric,
+        getCurrentPublikationLang,
+        setPublicationLang,
         getStatsLayout,
         setStatsLayout,
         getStatsCohort1,
