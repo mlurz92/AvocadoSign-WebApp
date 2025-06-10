@@ -10,10 +10,10 @@ const studyT2CriteriaManager = (() => {
             if (!criterion) return '?';
             if (key === 'size') {
                 const formattedThreshold = formatNumber(criterion.threshold, 1, '?');
-                const prefix = isShort ? 'Size' : 'Size';
-                return `${prefix} ${criterion.condition || '>='} ${formattedThreshold}mm`;
+                return `Size ${criterion.condition || '>='} ${formattedThreshold}mm`;
             }
             let value = criterion.value || '?';
+            // Translate German values to English for display, especially for short format
             if (isShort) {
                 switch (value) {
                     case 'irregulär': value = 'irreg.'; break;
@@ -23,8 +23,23 @@ const studyT2CriteriaManager = (() => {
                     case 'signalarm': value = 'low sig.'; break;
                     case 'intermediär': value = 'int. sig.'; break;
                     case 'signalreich': value = 'high sig.'; break;
+                    case 'rund': value = 'round'; break;
+                    case 'oval': value = 'oval'; break;
+                }
+            } else { // Full format, just ensure translation
+                switch (value) {
+                    case 'irregulär': value = 'irregular'; break;
+                    case 'scharf': value = 'sharp'; break;
+                    case 'heterogen': value = 'heterogeneous'; break;
+                    case 'homogen': value = 'homogeneous'; break;
+                    case 'signalarm': value = 'low signal'; break;
+                    case 'intermediär': value = 'intermediate signal'; break;
+                    case 'signalreich': value = 'high signal'; break;
+                    case 'rund': value = 'round'; break;
+                    case 'oval': value = 'oval'; break;
                 }
             }
+
             let prefix = '';
             switch(key) {
                 case 'form': prefix = isShort ? 'Sh=' : 'Shape='; break;
@@ -46,18 +61,19 @@ const studyT2CriteriaManager = (() => {
             return indexA - indexB;
         });
 
+        const effectiveLogic = logic || criteria.logic || 'OR';
+        if (effectiveLogic === 'KOMBINIERT') {
+             const studySet = PUBLICATION_CONFIG.literatureCriteriaSets.find(s => s.logic === 'KOMBINIERT' && s.id === 'rutegard_et_al_esgar');
+             if (studySet?.studyInfo?.keyCriteriaSummary) {
+                 return shortFormat ? (studySet.displayShortName || studySet.name) : studySet.studyInfo.keyCriteriaSummary;
+             }
+             return criteria.note || 'Combined ESGAR Logic (see original publication for details)';
+        }
+        
         sortedActiveKeys.forEach(key => {
              parts.push(formatValue(key, criteria[key], shortFormat));
         });
 
-        const effectiveLogic = logic || criteria.logic || 'OR';
-        if (effectiveLogic === 'KOMBINIERT') {
-             const studySet = PUBLICATION_CONFIG.literatureCriteriaSets.find(s => s.logic === 'KOMBINIERT' && s.criteria.size.threshold === criteria.size.threshold);
-             if (studySet?.description) {
-                 return shortFormat ? (studySet.displayShortName || studySet.name) : studySet.description;
-             }
-             return criteria.note || 'Combined ESGAR Logic (see original publication for details)';
-        }
         const separator = (effectiveLogic === 'AND') ? ' AND ' : ' OR ';
         if (shortFormat && parts.length > 2) {
              return parts.slice(0, 2).join(separator) + ' ...';
@@ -77,42 +93,46 @@ const studyT2CriteriaManager = (() => {
 
     function _checkSingleNodeESGAR(lymphNode, criteria) {
         const checkResult = {
-             size: null, shape: null, border: null, homogeneity: null, signal: null,
-             esgarCategory: 'N/A', esgarMorphologyCount: 0, isPositive: false
+             size: null, form: null, kontur: null, homogenitaet: null, signal: null, // Basic checks
+             esgarCategory: 'N/A', esgarMorphologyCount: 0, isPositive: false // ESGAR specific
         };
         if (!lymphNode || !criteria) return checkResult;
 
         const nodeSize = (typeof lymphNode.size === 'number' && !isNaN(lymphNode.size)) ? lymphNode.size : -1;
-        const hasRoundShape = lymphNode.shape === criteria.shape?.value;
-        const hasIrregularBorder = lymphNode.border === criteria.border?.value;
-        const hasHeterogeneousSignal = lymphNode.homogeneity === criteria.homogeneity?.value;
+        
+        // Morphological suspicious features based on ESGAR 2016 from docs
+        // 1) Round shape, 2) Irregular border, and 3) Heterogeneous signal
+        // Note: The 'signal' property is not explicitly listed as a morphology feature in ESGAR's suspicious criteria for this rule.
+        // Therefore, only shape, kontur (border), and homogenitaet are considered for the morphology count.
+        const hasRoundShape = (lymphNode.shape === 'rund'); // 'rund' is from data.js
+        const hasIrregularBorder = (lymphNode.border === 'irregulär'); // 'irregulär' is from data.js
+        const hasHeterogeneousHomogeneity = (lymphNode.homogeneity === 'heterogen'); // 'heterogen' is from data.js
 
         let morphologyCount = 0;
-        if (criteria.shape?.active && hasRoundShape) morphologyCount++;
-        if (criteria.border?.active && hasIrregularBorder) morphologyCount++;
-        if (criteria.homogeneity?.active && hasHeterogeneousSignal) morphologyCount++;
+        if (hasRoundShape) morphologyCount++;
+        if (hasIrregularBorder) morphologyCount++;
+        if (hasHeterogeneousHomogeneity) morphologyCount++;
 
-        checkResult.size_val = nodeSize >= 0 ? nodeSize : null;
-        checkResult.shape_val = lymphNode.shape;
-        checkResult.border_val = lymphNode.border;
-        checkResult.homogeneity_val = lymphNode.homogeneity;
-        checkResult.signal_val = lymphNode.signal;
+        // Record individual checks for detailed display
+        checkResult.size = (criteria.size?.active && nodeSize >= (criteria.size.threshold || 9.0)); // The threshold is for >=9mm rule
+        checkResult.form = (criteria.form?.active && hasRoundShape);
+        checkResult.kontur = (criteria.kontur?.active && hasIrularBorder);
+        checkResult.homogenitaet = (criteria.homogenitaet?.active && hasHeterogeneousHomogeneity);
+        // Signal is not part of the ESGAR morphology count for this specific rule but can be recorded if active
+        checkResult.signal = (criteria.signal?.active && lymphNode.signal === criteria.signal.value);
 
-        checkResult.size = (criteria.size?.active && nodeSize >= (criteria.size.threshold || 9.0));
-        checkResult.shape = (criteria.shape?.active && hasRoundShape);
-        checkResult.border = (criteria.border?.active && hasIrregularBorder);
-        checkResult.homogeneity = (criteria.homogeneity?.active && hasHeterogeneousSignal);
         checkResult.esgarMorphologyCount = morphologyCount;
 
-        if (nodeSize >= 9.0) {
+        // Apply ESGAR 2016 combined logic
+        if (nodeSize >= 9.0) { // Short axis ≥ 9 mm: considered malignant regardless of features
             checkResult.isPositive = true;
             checkResult.esgarCategory = '≥9mm';
-        } else if (nodeSize >= 5.0 && nodeSize < 9.0) {
+        } else if (nodeSize >= 5.0 && nodeSize < 9.0) { // Short axis 5–8 mm: requires 2 suspicious features
             checkResult.esgarCategory = '5-8mm';
             if (morphologyCount >= 2) {
                 checkResult.isPositive = true;
             }
-        } else if (nodeSize >= 0 && nodeSize < 5.0) {
+        } else if (nodeSize >= 0 && nodeSize < 5.0) { // Short axis < 5 mm: requires 3 suspicious features
              checkResult.esgarCategory = '<5mm';
              if (morphologyCount >= 3) {
                  checkResult.isPositive = true;
@@ -126,6 +146,7 @@ const studyT2CriteriaManager = (() => {
     function _checkSingleNodeSimple(lymphNode, criteria) {
         const checkResult = { size: null, form: null, kontur: null, homogenitaet: null, signal: null };
         if (!lymphNode || !criteria) return checkResult;
+
         if (criteria.size?.active) {
             const threshold = criteria.size.threshold;
             const nodeSize = lymphNode.size;
@@ -141,10 +162,12 @@ const studyT2CriteriaManager = (() => {
                 }
             } else { checkResult.size = false; }
         }
+        // Direct comparison for other categorical features from data.js
         if (criteria.form?.active) checkResult.form = (lymphNode.shape === criteria.form.value);
-        if (criteria.kontur?.active) checkResult.kontur = (lymphNode.border === criteria.border.value);
-        if (criteria.homogenitaet?.active) checkResult.homogenitaet = (lymphNode.homogeneity === criteria.homogeneity.value);
-        if (criteria.signal?.active) checkResult.signal = (lymphNode.signal === criteria.signal.value);
+        if (criteria.kontur?.active) checkResult.kontur = (lymphNode.border === criteria.kontur.value);
+        if (criteria.homogenitaet?.active) checkResult.homogenitaet = (lymphNode.homogeneity === criteria.homogenitaet.value);
+        if (criteria.signal?.active) checkResult.signal = (lymphNode.signal !== null && lymphNode.signal === criteria.signal.value);
+
         return checkResult;
     }
 
@@ -153,7 +176,7 @@ const studyT2CriteriaManager = (() => {
         if (!patient || !studyCriteriaSet) return defaultReturn;
         const lymphNodes = patient.t2Nodes;
         if (!Array.isArray(lymphNodes)) {
-             return { t2Status: (Object.keys(studyCriteriaSet.criteria).filter(k => studyCriteriaSet.criteria[k]?.active).length > 0) ? '-' : null, positiveNodeCount: 0, evaluatedNodes: [] };
+             return { t2Status: (Object.keys(studyCriteriaSet.criteria).filter(k => studyCriteriaSet.criteria[k]?.active).length > 0 || studyCriteriaSet.logic === 'KOMBINIERT') ? '-' : null, positiveNodeCount: 0, evaluatedNodes: [] };
         }
 
         let patientIsPositive = false;
@@ -172,7 +195,8 @@ const studyT2CriteriaManager = (() => {
         const evaluatedNodes = lymphNodes.map(lk => {
             if (!lk) return null;
             let isNodePositive = false;
-            let checkResult = null;
+            let checkResult = {}; // Initialize to empty object
+
             if (logic === 'KOMBINIERT' && studyCriteriaSet.id === 'rutegard_et_al_esgar') {
                 checkResult = _checkSingleNodeESGAR(lk, criteria);
                 isNodePositive = checkResult.isPositive;
@@ -192,6 +216,7 @@ const studyT2CriteriaManager = (() => {
         }).filter(node => node !== null);
 
         let finalStatus = null;
+        // A patient's T2 status is defined if any criteria are active or if a combined logic is used
         if (logic === 'KOMBINIERT' || activeKeys.length > 0) {
             finalStatus = patientIsPositive ? '+' : '-';
         }
