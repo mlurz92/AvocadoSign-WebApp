@@ -104,7 +104,7 @@ const t2CriteriaManager = (() => {
     }
 
     function checkNode(lymphNode, criteria) {
-        const checkResult = { size: null, shape: null, border: null, homogeneity: null, signal: null };
+        const checkResult = { size: null, form: null, kontur: null, homogenitaet: null, signal: null };
         if (!lymphNode || !criteria) return checkResult;
 
         if (criteria.size?.active) {
@@ -125,9 +125,9 @@ const t2CriteriaManager = (() => {
             }
         }
 
-        if (criteria.form?.active) checkResult.shape = (lymphNode.shape === criteria.form.value);
-        if (criteria.kontur?.active) checkResult.border = (lymphNode.border === criteria.kontur.value);
-        if (criteria.homogenitaet?.active) checkResult.homogeneity = (lymphNode.homogeneity === criteria.homogenitaet.value);
+        if (criteria.form?.active) checkResult.form = (lymphNode.shape === criteria.form.value);
+        if (criteria.kontur?.active) checkResult.kontur = (lymphNode.border === criteria.kontur.value);
+        if (criteria.homogenitaet?.active) checkResult.homogenitaet = (lymphNode.homogeneity === criteria.homogenitaet.value);
         if (criteria.signal?.active) checkResult.signal = (lymphNode.signal === criteria.signal.value);
 
         return checkResult;
@@ -153,8 +153,8 @@ const t2CriteriaManager = (() => {
             if (!lk) return null;
             const checkResult = checkNode(lk, criteria);
             let isNodePositive = (logic === 'AND')
-                ? activeKeys.every(key => checkResult[key.replace('kontur','border').replace('homogenitaet','homogeneity').replace('form','shape')] === true)
-                : activeKeys.some(key => checkResult[key.replace('kontur','border').replace('homogenitaet','homogeneity').replace('form','shape')] === true);
+                ? activeKeys.every(key => checkResult[key] === true)
+                : activeKeys.some(key => checkResult[key] === true);
 
             if (isNodePositive) {
                 patientIsPositive = true;
