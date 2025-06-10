@@ -20,11 +20,11 @@ const tableRenderer = (() => {
             const signalIcon = getT2IconSVG('signal', lk.signal);
             const sizeIcon = getT2IconSVG('ruler-horizontal', null);
 
-            const sizeTooltip = UI_TEXTS.tooltips.t2Size?.description || 'Size (short axis)';
-            const shapeTooltip = UI_TEXTS.tooltips.t2Form?.description || 'Shape';
-            const borderTooltip = UI_TEXTS.tooltips.t2Contour?.description || 'Border';
-            const homogeneityTooltip = UI_TEXTS.tooltips.t2Homogenitaet?.description || 'Homogeneity';
-            const signalTooltip = UI_TEXTS.tooltips.t2Signal?.description || 'Signal Intensity';
+            const sizeTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Size?.description || 'Size (short axis)';
+            const shapeTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Form?.description || 'Shape';
+            const borderTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Contour?.description || 'Border';
+            const homogeneityTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Homogenitaet?.description || 'Homogeneity';
+            const signalTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Signal?.description || 'Signal Intensity';
 
             content += `<div class="sub-row-item border rounded mb-1 p-1 w-100 align-items-center small">
                            <strong class="me-2">LN ${index + 1}:</strong>
@@ -48,7 +48,7 @@ const tableRenderer = (() => {
         const naPlaceholder = '--';
         
         const notesText = escapeHTML(patient.notes || '');
-        const tooltipNotes = notesText ? notesText : (UI_TEXTS.tooltips.dataTab.notes || 'Notes');
+        const tooltipNotes = notesText ? notesText : (APP_CONFIG.UI_TEXTS.tooltips.dataTab.notes || 'Notes');
 
         const t2StatusClass = patient.t2Status === '+' ? 'plus' : patient.t2Status === '-' ? 'minus' : 'unknown';
 
@@ -66,7 +66,7 @@ const tableRenderer = (() => {
                     <span class="status-${t2StatusClass}" id="status-t2-pat-${patient.id}" data-tippy-content="T2 Status (Prediction based on applied criteria)">${patient.t2Status ?? '?'}</span>
                 </td>
                 <td data-label="Notes" class="text-truncate" style="max-width: 150px;" data-tippy-content="${tooltipNotes}">${notesText || naPlaceholder}</td>
-                <td class="text-center p-1" style="width: 30px;" data-tippy-content="${hasT2Nodes ? (UI_TEXTS.tooltips.dataTab.expandRow) : 'No T2 lymph node details available'}">
+                <td class="text-center p-1" style="width: 30px;" data-tippy-content="${hasT2Nodes ? (APP_CONFIG.UI_TEXTS.tooltips.dataTab.expandRow) : 'No T2 lymph node details available'}">
                      ${hasT2Nodes ? '<button class="btn btn-sm btn-outline-secondary p-1 row-toggle-button" aria-label="Toggle Details"><i class="fas fa-chevron-down row-toggle-icon"></i></button>' : ''}
                 </td>
             </tr>
@@ -91,7 +91,7 @@ const tableRenderer = (() => {
         const criteriaFormatted = studyT2CriteriaManager.formatCriteriaForDisplay(appliedCriteria, appliedLogic, true);
         const naPlaceholder = '--';
 
-        let content = `<h6 class="w-100 mb-2 ps-1" data-tippy-content="Shows the evaluation of each T2 lymph node based on the currently applied criteria. Fulfilled criteria contributing to a positive evaluation are highlighted.">T2 LN Evaluation (Logic: ${UI_TEXTS.t2LogicDisplayNames[appliedLogic] || appliedLogic || 'N/A'}, Criteria: ${criteriaFormatted || 'N/A'})</h6>`;
+        let content = `<h6 class="w-100 mb-2 ps-1" data-tippy-content="Shows the evaluation of each T2 lymph node based on the currently applied criteria. Fulfilled criteria contributing to a positive evaluation are highlighted.">T2 LN Evaluation (Logic: ${APP_CONFIG.UI_TEXTS.t2LogicDisplayNames[appliedLogic] || appliedLogic || 'N/A'}, Criteria: ${criteriaFormatted || 'N/A'})</h6>`;
 
         patient.t2NodesEvaluated.forEach((lk, index) => {
             if (!lk || !lk.checkResult) {
@@ -114,7 +114,7 @@ const tableRenderer = (() => {
                 const icon = getT2IconSVG(iconType || key, valueText);
                 const text = valueText || naPlaceholder;
                 const tooltipKey = 't2' + key.charAt(0).toUpperCase() + key.slice(1);
-                const tooltipBase = UI_TEXTS.tooltips[tooltipKey]?.description || `Feature ${key}`;
+                const tooltipBase = APP_CONFIG.UI_TEXTS.tooltips[tooltipKey]?.description || `Feature ${key}`;
                 const statusText = checkMet ? 'Fulfilled' : (checkFailed ? 'Not Fulfilled' : 'Not Applicable');
                 const tooltip = `${tooltipBase} | Status: ${statusText}`;
 
@@ -159,7 +159,7 @@ const tableRenderer = (() => {
                 <td data-label="N+/N total" class="text-center">${nCountsText}</td>
                 <td data-label="AS+/AS total" class="text-center">${asCountsText}</td>
                 <td data-label="T2+/T2 total" class="text-center" id="t2-counts-${patient.id}">${t2CountsText}</td>
-                <td class="text-center p-1" style="width: 30px;" data-tippy-content="${hasEvaluatedNodes ? UI_TEXTS.tooltips.analysisTab.expandRow : 'No T2 node evaluation details available'}">
+                <td class="text-center p-1" style="width: 30px;" data-tippy-content="${hasEvaluatedNodes ? APP_CONFIG.UI_TEXTS.tooltips.analysisTab.expandRow : 'No T2 node evaluation details available'}">
                      ${hasEvaluatedNodes ? '<button class="btn btn-sm btn-outline-secondary p-1 row-toggle-button" aria-label="Toggle Details"><i class="fas fa-chevron-down row-toggle-icon"></i></button>' : ''}
                 </td>
             </tr>
