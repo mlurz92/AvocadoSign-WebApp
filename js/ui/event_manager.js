@@ -42,38 +42,21 @@ const eventManager = (() => {
             const format = button.dataset.format;
             const chartName = button.dataset.chartName;
             const defaultName = button.dataset.defaultName;
-            exportTab.exportSingleChart(chartId, format, state.getCurrentCohort(), { chartName: chartName || defaultName }); 
+            exportService.exportSingleChart(chartId, format, state.getCurrentCohort(), { chartName: chartName || defaultName }); 
             return; 
         }
         if (button?.classList.contains('table-download-png-btn')) { 
             const tableId = button.dataset.tableId;
             const tableName = button.dataset.tableName;
-            exportTab.exportTablePNG(tableId, state.getCurrentCohort(), 'TABLE_PNG_EXPORT', tableName); 
+            exportService.exportTablePNG(tableId, state.getCurrentCohort(), 'TABLE_PNG_EXPORT', tableName); 
             return; 
         }
         if (button?.id === 'data-toggle-details') { uiManager.toggleAllDetails('data-table-body', button.id); return; }
         if (button?.id === 'analysis-toggle-details') { uiManager.toggleAllDetails('analysis-table-body', button.id); return; }
         if (button?.id === 'btn-quick-guide') { uiManager.showQuickGuide(); return; }
-        if (button?.id === 'export-bruteforce-modal-txt' && !button.disabled) { exportTab.exportBruteForceReport(bruteForceManager.getResultsForCohort(state.getCurrentCohort())); return; }
+        if (button?.id === 'export-bruteforce-modal-txt' && !button.disabled) { exportService.exportBruteForceReport(bruteForceManager.getResultsForCohort(state.getCurrentCohort())); return; }
         if (button?.closest('#export-tab-pane') && button.id.startsWith('export-') && !button.disabled) { handleExportClick(button); return; }
         if (button?.closest('#presentation-tab-pane') && button.id.startsWith('download-') && !button.disabled && !button.classList.contains('chart-download-btn') && !button.classList.contains('table-download-png-btn')) { 
-            presentationTab.exportPraesentationData(button.id, presentationData, state.getCurrentCohort()); // presentationData is missing here, will need to be passed from app or derived
-            // Temporäres Handling für presentationData, muss in App gelöst werden
-            // Da presentationData nicht direkt im eventManager zugänglich ist, müsste dies über den App-State gelöst werden
-            // Oder ein generischerer Export-Aufruf in export_service.js, der die Daten direkt vom App-Objekt holt.
-            // Für diesen Schritt wird davon ausgegangen, dass `presentationData` von `App` an `eventManager` übergeben wird oder `exportTab` es sich selbst holt.
-            // Da `presentationTab.handleDownloadClick` aufgerufen wird, und diese Funktion die Daten selbst aufbereitet oder von einem globalen Scope erhält,
-            // ist es hier am besten, den ursprünglichen Aufruf beizubehalten und die Datenbereitstellung in `presentationTab` zu belassen.
-            // Die Methode im presentationTab heißt `handleDownloadClick`, nicht `exportPraesentationData`.
-            // Correction: There is no `presentationTab.handleDownloadClick` or `presentationTab.exportPraesentationData` in the provided `presentation_tab.js`.
-            // The `export_service.js` has `exportPraesentationData`. This suggests a refactoring is needed.
-            // Re-evaluating: The `presentationTab` module does NOT have a `handleDownloadClick` or `exportPraesentationData`.
-            // The `export_service.js` has `exportPraesentationData`.
-            // This means the button click in `presentation_tab.js` needs to call `exportService.exportPraesentationData`.
-            // Thus, the line `presentationTab.handleDownloadClick(button.id)` should be `exportService.exportPraesentationData(button.id, app.getPresentationData(), state.getCurrentCohort());`
-            // `app.getPresentationData()` would need to be added to `main.js` to expose the currently rendered presentation data.
-            // This is a prospective change for `main.js` but needs to be noted for here.
-            // For now, I will assume the `export_service.exportPraesentationData` call, and mark that `app.getPresentationData()` needs to be implemented.
             exportService.exportPraesentationData(button.id, app.getPresentationDataForExport(), state.getCurrentCohort()); 
             return; 
         }
@@ -87,7 +70,7 @@ const eventManager = (() => {
         if (target.id === 'input-size') { debouncedUpdateSizeInput(target.value); return; }
         if (target.classList.contains('criteria-checkbox')) { handleT2CheckboxChange(target); return; }
         if (target.id === 't2-logic-switch') { handleT2LogicChange(target); return; }
-        if (target.id === 'brute-force-metric') { return; } // This is handled by main.js to refresh tab, no direct action here
+        if (target.id === 'brute-force-metric') { return; }
         if (target.id === 'statistics-cohort-select-1') { handleStatsCohortChange(target); return; }
         if (target.id === 'statistics-cohort-select-2') { handleStatsCohortChange(target); return; }
         if (target.name === 'presentationView') { handlePresentationViewChange(target.value); return; }
@@ -218,7 +201,7 @@ const eventManager = (() => {
         const exportType = button.id.replace('export-', '');
         if (exportType.endsWith('-zip')) {
              const category = exportType.replace('-zip', '');
-             exportTab.exportCategoryZip(category, app.getProcessedData(), bruteForceManager.getAllResults(), state.getCurrentCohort(), t2CriteriaManager.getAppliedCriteria(), t2CriteriaManager.getAppliedLogic());
+             exportService.exportCategoryZip(category, app.getProcessedData(), bruteForceManager.getAllResults(), state.getCurrentCohort(), t2CriteriaManager.getAppliedCriteria(), t2CriteriaManager.getAppliedLogic());
         } else {
             app.handleSingleExport(exportType);
         }
