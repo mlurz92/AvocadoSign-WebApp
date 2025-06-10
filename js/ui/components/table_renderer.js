@@ -9,20 +9,23 @@ const tableRenderer = (() => {
         patient.t2Nodes.forEach((lk, index) => {
             if (!lk) return;
             const sizeText = formatNumber(lk.size, 1, 'N/A');
-            const shapeText = lk.shape || '--';
-            const borderText = lk.border || '--';
-            const homogeneityText = lk.homogeneity || '--';
-            const signalText = lk.signal || 'N/A';
+            
+            // Translate German values from data.js to English for display
+            const shapeText = lk.shape === 'rund' ? 'round' : (lk.shape === 'oval' ? 'oval' : '--');
+            const borderText = lk.border === 'scharf' ? 'sharp' : (lk.border === 'irregulär' ? 'irregular' : '--');
+            const homogeneityText = lk.homogeneity === 'homogen' ? 'homogeneous' : (lk.homogeneity === 'heterogen' ? 'heterogeneous' : '--');
+            const signalText = lk.signal === 'signalarm' ? 'low signal' : (lk.signal === 'intermediär' ? 'intermediate signal' : (lk.signal === 'signalreich' ? 'high signal' : 'N/A'));
 
-            const shapeIcon = getT2IconSVG('shape', lk.shape);
-            const borderIcon = getT2IconSVG('border', lk.border);
-            const homogeneityIcon = getT2IconSVG('homogeneity', lk.homogeneity);
+            // Use getT2IconSVG from utils.js
+            const shapeIcon = getT2IconSVG('form', lk.form); // Use lk.form as the original key for consistency in getT2IconSVG
+            const borderIcon = getT2IconSVG('kontur', lk.kontur); // Use lk.kontur
+            const homogeneityIcon = getT2IconSVG('homogenitaet', lk.homogenitaet); // Use lk.homogenitaet
             const signalIcon = getT2IconSVG('signal', lk.signal);
-            const sizeIcon = getT2IconSVG('ruler-horizontal', null);
+            const sizeIcon = getT2IconSVG('size', null); // Use 'size' type for ruler icon
 
             const sizeTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Size?.description || 'Size (short axis)';
             const shapeTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Form?.description || 'Shape';
-            const borderTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Contour?.description || 'Border';
+            const borderTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Kontur?.description || 'Border'; // Changed from t2Contour to t2Kontur for consistency with config.js
             const homogeneityTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Homogenitaet?.description || 'Homogeneity';
             const signalTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Signal?.description || 'Signal Intensity';
 
@@ -44,11 +47,11 @@ const tableRenderer = (() => {
         const detailRowId = `data-detail-${patient.id}`;
         const hasT2Nodes = Array.isArray(patient.t2Nodes) && patient.t2Nodes.length > 0;
         const sexText = patient.sex === 'm' ? 'Male' : patient.sex === 'f' ? 'Female' : 'Unknown';
-        const therapyText = getCohortDisplayName(patient.therapy);
+        const therapyText = getCohortDisplayName(patient.therapy); // Use getCohortDisplayName for localization
         const naPlaceholder = '--';
         
         const notesText = escapeHTML(patient.notes || '');
-        const tooltipNotes = notesText ? notesText : (APP_CONFIG.UI_TEXTS.tooltips.dataTab.notes || 'Notes');
+        const tooltipNotes = notesText ? notesText : (APP_CONFIG.UI_TEXTS.tooltips.dataTab.notes); // Use predefined tooltip
 
         const t2StatusClass = patient.t2Status === '+' ? 'plus' : patient.t2Status === '-' ? 'minus' : 'unknown';
 
@@ -61,12 +64,12 @@ const tableRenderer = (() => {
                 <td data-label="Age">${formatNumber(patient.age, 0, naPlaceholder)}</td>
                 <td data-label="Therapy">${therapyText}</td>
                 <td data-label="N/AS/T2">
-                    <span class="status-${patient.nStatus === '+' ? 'plus' : 'minus'}" data-tippy-content="Pathology N-Status (Reference)">${patient.nStatus ?? '?'}</span> /
-                    <span class="status-${patient.asStatus === '+' ? 'plus' : 'minus'}" data-tippy-content="Avocado Sign Status (Prediction)">${patient.asStatus ?? '?'}</span> /
-                    <span class="status-${t2StatusClass}" id="status-t2-pat-${patient.id}" data-tippy-content="T2 Status (Prediction based on applied criteria)">${patient.t2Status ?? '?'}</span>
+                    <span class="status-${patient.nStatus === '+' ? 'plus' : 'minus'}" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.dataTab.n_as_t2.split('. ')[0]} (Reference)">${patient.nStatus ?? '?'}</span> /
+                    <span class="status-${patient.asStatus === '+' ? 'plus' : 'minus'}" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.dataTab.n_as_t2.split('. ')[1].split('(')[0]} (Prediction)">${patient.asStatus ?? '?'}</span> /
+                    <span class="status-${t2StatusClass}" id="status-t2-pat-${patient.id}" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.dataTab.n_as_t2.split('. ')[2].split('(')[0]} (Prediction based on applied criteria)">${patient.t2Status ?? '?'}</span>
                 </td>
                 <td data-label="Notes" class="text-truncate" style="max-width: 150px;" data-tippy-content="${tooltipNotes}">${notesText || naPlaceholder}</td>
-                <td class="text-center p-1" style="width: 30px;" data-tippy-content="${hasT2Nodes ? (APP_CONFIG.UI_TEXTS.tooltips.dataTab.expandRow) : 'No T2 lymph node details available'}">
+                <td class="text-center p-1" style="width: 30px;" data-tippy-content="${hasT2Nodes ? APP_CONFIG.UI_TEXTS.tooltips.dataTab.expandRow : 'No T2 lymph node details available'}">
                      ${hasT2Nodes ? '<button class="btn btn-sm btn-outline-secondary p-1 row-toggle-button" aria-label="Toggle Details"><i class="fas fa-chevron-down row-toggle-icon"></i></button>' : ''}
                 </td>
             </tr>
@@ -87,8 +90,10 @@ const tableRenderer = (() => {
         if (!Array.isArray(patient.t2NodesEvaluated) || patient.t2NodesEvaluated.length === 0) {
             return '<p class="m-0 p-2 text-muted small">No T2 lymph nodes available for evaluation or evaluation not performed.</p>';
         }
-        const activeKeys = Object.keys(appliedCriteria || {}).filter(key => key !== 'logic' && appliedCriteria[key]?.active === true);
-        const criteriaFormatted = studyT2CriteriaManager.formatCriteriaForDisplay(appliedCriteria, appliedLogic, true);
+        // Active keys should reflect what was actually considered in the evaluation
+        // Not necessarily the same as activeKeys from appliedCriteria, as the evaluation itself sets the checkResult flags.
+        // It's sufficient to check if criteria are active in general for display.
+        const criteriaFormatted = studyT2CriteriaManager.formatCriteriaForDisplay(appliedCriteria, appliedLogic, true); // Use short format for criteria display
         const naPlaceholder = '--';
 
         let content = `<h6 class="w-100 mb-2 ps-1" data-tippy-content="Shows the evaluation of each T2 lymph node based on the currently applied criteria. Fulfilled criteria contributing to a positive evaluation are highlighted.">T2 LN Evaluation (Logic: ${APP_CONFIG.UI_TEXTS.t2LogicDisplayNames[appliedLogic] || appliedLogic || 'N/A'}, Criteria: ${criteriaFormatted || 'N/A'})</h6>`;
@@ -103,17 +108,41 @@ const tableRenderer = (() => {
             const highlightClass = lk.isPositive ? 'bg-status-red-light' : '';
             let itemContent = `<strong class="me-2">LN ${index + 1}: ${lk.isPositive ? '<span class="badge bg-danger text-white ms-1" data-tippy-content="Evaluated as Positive">Pos.</span>' : '<span class="badge bg-success text-white ms-1" data-tippy-content="Evaluated as Negative">Neg.</span>'}</strong>`;
 
-            const formatCriterionCheck = (key, iconType, valueText, checkResultForLK) => {
-                if (!appliedCriteria?.[key]?.active) return '';
-                const checkMet = checkResultForLK[key.replace('border','kontur').replace('homogeneity','homogenitaet').replace('shape','form')] === true;
-                const checkFailed = checkResultForLK[key.replace('border','kontur').replace('homogeneity','homogenitaet').replace('shape','form')] === false;
+            const formatCriterionCheck = (key, iconType, valueText, checkResultForLK, originalValueInLK) => {
+                // Check if the criterion was active in the *applied criteria*
+                const criterionActive = appliedCriteria?.[key]?.active;
+                if (!criterionActive) return ''; // Only display if criterion was active
+
+                // Map 'kontur' to 'border', 'homogenitaet' to 'homogeneity' for display, etc.
+                const checkResultKey = key === 'form' ? 'form' : (key === 'kontur' ? 'kontur' : (key === 'homogenitaet' ? 'homogenitaet' : (key === 'signal' ? 'signal' : 'size')));
+                const checkMet = checkResultForLK[checkResultKey] === true;
+                const checkFailed = checkResultForLK[checkResultKey] === false;
+                
                 let hlClass = '';
                 if (lk.isPositive && checkMet) {
                     hlClass = 'highlight-suspect-feature';
                 }
-                const icon = getT2IconSVG(iconType || key, valueText);
-                const text = valueText || naPlaceholder;
-                const tooltipKey = 't2' + key.charAt(0).toUpperCase() + key.slice(1);
+                
+                const icon = getT2IconSVG(iconType || key, originalValueInLK); // Use getT2IconSVG from utils.js
+                
+                // Translate original German value for display
+                let translatedValueText = originalValueInLK;
+                switch (originalValueInLK) {
+                    case 'rund': translatedValueText = 'round'; break;
+                    case 'oval': translatedValueText = 'oval'; break;
+                    case 'scharf': translatedValueText = 'sharp'; break;
+                    case 'irregulär': translatedValueText = 'irregular'; break;
+                    case 'homogen': translatedValueText = 'homogeneous'; break;
+                    case 'heterogen': translatedValueText = 'heterogeneous'; break;
+                    case 'signalarm': translatedValueText = 'low signal'; break;
+                    case 'intermediär': translatedValueText = 'intermediate signal'; break;
+                    case 'signalreich': translatedValueText = 'high signal'; break;
+                }
+                
+                const text = key === 'size' ? `${formatNumber(originalValueInLK, 1, 'N/A')}mm` : (translatedValueText || naPlaceholder);
+                
+                // Construct tooltip based on criterion's original config key
+                const tooltipKey = 't2' + key.charAt(0).toUpperCase() + key.slice(1); // e.g., t2Size, t2Form
                 const tooltipBase = APP_CONFIG.UI_TEXTS.tooltips[tooltipKey]?.description || `Feature ${key}`;
                 const statusText = checkMet ? 'Fulfilled' : (checkFailed ? 'Not Fulfilled' : 'Not Applicable');
                 const tooltip = `${tooltipBase} | Status: ${statusText}`;
@@ -121,11 +150,13 @@ const tableRenderer = (() => {
                 return `<span class="me-2 text-nowrap ${hlClass}" data-tippy-content="${tooltip}">${icon} ${text}</span>`;
             };
 
-            itemContent += formatCriterionCheck('size', 'ruler-horizontal', `${formatNumber(lk.size, 1, 'N/A')}mm`, lk.checkResult);
-            itemContent += formatCriterionCheck('shape', null, lk.shape, lk.checkResult);
-            itemContent += formatCriterionCheck('border', null, lk.border, lk.checkResult);
-            itemContent += formatCriterionCheck('homogeneity', null, lk.homogeneity, lk.checkResult);
-            itemContent += formatCriterionCheck('signal', null, lk.signal || 'N/A', lk.checkResult);
+            // Use original keys from data.js for icon lookup in getT2IconSVG and for checkResult property.
+            // Pass original lk properties as `originalValueInLK` for translation
+            itemContent += formatCriterionCheck('size', 'size', lk.size, lk.checkResult, lk.size);
+            itemContent += formatCriterionCheck('form', 'form', lk.shape, lk.checkResult, lk.shape);
+            itemContent += formatCriterionCheck('kontur', 'kontur', lk.border, lk.checkResult, lk.border);
+            itemContent += formatCriterionCheck('homogenitaet', 'homogenitaet', lk.homogeneity, lk.checkResult, lk.homogeneity);
+            itemContent += formatCriterionCheck('signal', 'signal', lk.signal, lk.checkResult, lk.signal);
 
             content += `<div class="${baseClass} ${highlightClass}">${itemContent}</div>`;
         });
@@ -137,7 +168,7 @@ const tableRenderer = (() => {
         const rowId = `analysis-row-${patient.id}`;
         const detailRowId = `analysis-detail-${patient.id}`;
         const hasEvaluatedNodes = Array.isArray(patient.t2NodesEvaluated) && patient.t2NodesEvaluated.length > 0;
-        const therapyText = getCohortDisplayName(patient.therapy);
+        const therapyText = getCohortDisplayName(patient.therapy); // Use getCohortDisplayName
         const naPlaceholder = '--';
 
         const nCountsText = `${formatNumber(patient.countPathologyNodesPositive, 0, '-')} / ${formatNumber(patient.countPathologyNodes, 0, '-')}`;
@@ -152,13 +183,13 @@ const tableRenderer = (() => {
                 <td data-label="Name">${patient.name || naPlaceholder}</td>
                 <td data-label="Therapy">${therapyText}</td>
                 <td data-label="N/AS/T2">
-                    <span class="status-${patient.nStatus === '+' ? 'plus' : 'minus'}" data-tippy-content="Pathology N-Status (Reference)">${patient.nStatus ?? '?'}</span> /
-                    <span class="status-${patient.asStatus === '+' ? 'plus' : 'minus'}" data-tippy-content="Avocado Sign Status (Prediction)">${patient.asStatus ?? '?'}</span> /
-                    <span class="status-${t2StatusClass}" id="status-t2-analysis-${patient.id}" data-tippy-content="T2 Status (Prediction based on applied criteria)">${patient.t2Status ?? '?'}</span>
+                    <span class="status-${patient.nStatus === '+' ? 'plus' : 'minus'}" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.analysisTab.n_as_t2.split('. ')[0]} (Reference)">${patient.nStatus ?? '?'}</span> /
+                    <span class="status-${patient.asStatus === '+' ? 'plus' : 'minus'}" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.analysisTab.n_as_t2.split('. ')[1].split('(')[0]} (Prediction)">${patient.asStatus ?? '?'}</span> /
+                    <span class="status-${t2StatusClass}" id="status-t2-analysis-${patient.id}" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.analysisTab.n_as_t2.split('. ')[2].split('(')[0]} (Prediction based on applied criteria)">${patient.t2Status ?? '?'}</span>
                 </td>
-                <td data-label="N+/N total" class="text-center">${nCountsText}</td>
-                <td data-label="AS+/AS total" class="text-center">${asCountsText}</td>
-                <td data-label="T2+/T2 total" class="text-center" id="t2-counts-${patient.id}">${t2CountsText}</td>
+                <td data-label="N+/N total" class="text-center" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.analysisTab.n_counts}">${nCountsText}</td>
+                <td data-label="AS+/AS total" class="text-center" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.analysisTab.as_counts}">${asCountsText}</td>
+                <td data-label="T2+/T2 total" class="text-center" id="t2-counts-${patient.id}" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.analysisTab.t2_counts}">${t2CountsText}</td>
                 <td class="text-center p-1" style="width: 30px;" data-tippy-content="${hasEvaluatedNodes ? APP_CONFIG.UI_TEXTS.tooltips.analysisTab.expandRow : 'No T2 node evaluation details available'}">
                      ${hasEvaluatedNodes ? '<button class="btn btn-sm btn-outline-secondary p-1 row-toggle-button" aria-label="Toggle Details"><i class="fas fa-chevron-down row-toggle-icon"></i></button>' : ''}
                 </td>
