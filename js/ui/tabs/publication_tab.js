@@ -322,13 +322,13 @@ const publicationTab = (() => {
 
         let finalHTML = `<div class="row mb-3 sticky-top bg-light py-2 shadow-sm" style="top: var(--sticky-header-offset, 111px); z-index: 1015;">
             <div class="col-md-3">${uiComponents.createPublicationNav(currentSectionId)}<div class="mt-3">
-                <label for="publication-bf-metric-select" class="form-label small text-muted">${UI_TEXTS.publicationTab.bfMetricSelectLabel}</label>
+                <label for="publication-bf-metric-select" class="form-label small text-muted">${APP_CONFIG.UI_TEXTS.publicationTab.bfMetricSelectLabel}</label>
                 <select class="form-select form-select-sm" id="publication-bf-metric-select">
                     ${PUBLICATION_CONFIG.bruteForceMetricsForPublication.map(m => `<option value="${m.value}" ${m.value === commonData.bruteForceMetricForPublication ? 'selected' : ''}>${m.label}</option>`).join('')}
                 </select>
             </div></div>
             <div class="col-md-9"><div id="publication-content-area" class="bg-white p-3 border rounded">
-                <h1 class="mb-4 display-6">${UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey]}</h1>`;
+                <h1 class="mb-4 display-6">${APP_CONFIG.UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey]}</h1>`;
 
         mainSection.subSections.forEach(subSection => {
             finalHTML += `<div class="publication-sub-section border-bottom pb-4 mb-4" id="pub-content-${subSection.id}">`;
