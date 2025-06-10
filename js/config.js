@@ -20,7 +20,7 @@ const APP_CONFIG = Object.freeze({
         STATS_KOLLEKTIV2: 'nRCT',
         PRESENTATION_VIEW: 'as-vs-t2',
         PRESENTATION_STUDY_ID: 'applied_criteria',
-        PUBLICATION_SECTION: 'abstract',
+        PUBLICATION_SECTION: 'abstract_main',
         PUBLICATION_BRUTE_FORCE_METRIC: 'Balanced Accuracy',
         PUBLICATION_LANG: 'en'
     }),
@@ -132,24 +132,50 @@ const APP_CONFIG = Object.freeze({
         AVOCADO_SIGN_ID: 'avocado_sign',
         AVOCADO_SIGN_DISPLAY_NAME: 'Avocado Sign'
     }),
-    REPORT_SETTINGS: Object.freeze({
-        REPORT_TITLE: "Comprehensive Rectal Cancer Nodal Staging Analysis Report",
-        REPORT_AUTHOR: "AvocadoSign WebApp",
-        INCLUDE_APP_VERSION: true,
-        INCLUDE_GENERATION_TIMESTAMP: true,
-        INCLUDE_KOLLEKTIV_INFO: true,
-        INCLUDE_T2_CRITERIA: true,
-        INCLUDE_DESCRIPTIVES_TABLE: true,
-        INCLUDE_DESCRIPTIVES_CHARTS: true,
-        INCLUDE_AS_PERFORMANCE_TABLE: true,
-        INCLUDE_T2_PERFORMANCE_TABLE: true,
-        INCLUDE_AS_VS_T2_COMPARISON_TABLE: true,
-        INCLUDE_AS_VS_T2_COMPARISON_CHART: true,
-        INCLUDE_ASSOCIATIONS_TABLE: true,
-        INCLUDE_BRUTEFORCE_BEST_RESULT: true
-    }),
     REFERENCES_FOR_PUBLICATION: Object.freeze({
         STUDY_PERIOD_2020_2023: "January 2020 and November 2023",
+        REFERENCE_SIEGEL_2023: { id: 1, text: "Siegel RL, Miller KD, Wagle NS, Jemal A (2023) Cancer statistics, 2023. CA Cancer J Clin 73:17–48. https://doi.org/10.3322/caac.21763" },
+        REFERENCE_SAUER_2004: { id: 2, text: "Sauer R, Becker H, Hohenberger W et al (2004) Preoperative versus postoperative chemoradiotherapy for rectal cancer. N Engl J Med 351:1731–1740. https://doi.org/10.1056/NEJMoa040694" },
+        REFERENCE_BOSSET_2006: { id: 3, text: "Bosset JF, Collette L, Calais G et al (2006) Chemotherapy with preoperative radiotherapy in rectal cancer. N Engl J Med 355:1114–1123. https://doi.org/10.1056/NEJMoa060829" },
+        REFERENCE_HABR_GAMA_2019: { id: 4, text: "Habr-Gama A, São Julião GP, Vailati BB et al (2019) Organ preservation in cT2N0 rectal cancer after neoadjuvant chemoradiation therapy: the impact of radiation therapy dose-escalation and consolidation chemotherapy. Ann Surg 269:102–107. https://doi.org/10.1097/SLA.0000000000002447" },
+        REFERENCE_SMITH_2015: { id: 5, text: "Smith JJ, Chow OS, Gollub MJ et al (2015) Organ preservation in rectal adenocarcinoma: a phase II randomized controlled trial evaluating 3-year disease-free survival in patients with locally advanced rectal cancer treated with chemoradiation plus induction or consolidation chemotherapy, and total mesorectal excision or nonoperative management. BMC Cancer 15:767. https://doi.org/10.1186/s12885-015-1632-z" },
+        REFERENCE_BEETS_TAN_2018: { id: 6, text: "Beets-Tan RGH, Lambregts DMJ, Maas M et al (2018) Magnetic resonance imaging for clinical management of rectal cancer: updated recommendations from the 2016 European Society of Gastrointestinal and Abdominal Radiology (ESGAR) consensus meeting. Eur Radiol 28:1465–1475. https://doi.org/10.1007/s00330-017-5026-2" },
+        REFERENCE_ZHANG_2017: { id: 7, text: "Zhang H, Zhang C, Zheng Z et al (2017) Chemical shift effect predicting lymph node status in rectal cancer using high-resolution MR imaging with node-for-node matched histopathological validation. Eur Radiol 27:3845–3855. https://doi.org/10.1007/s00330-017-4738-7" },
+        REFERENCE_ALE_ALI_2019: { id: 8, text: "Ale Ali H, Kirsch R, Razaz S et al (2019) Extramural venous invasion in rectal cancer: overview of imaging, histopathology, and clinical implications. Abdom Radiol (NY) 44:1–10. https://doi.org/10.1007/s00261-018-1673-2" },
+        REFERENCE_BEWICK_2004: { id: 9, text: "Bewick V, Cheek L, Ball J (2004) Statistics review 8: qualitative data—tests of association. Crit Care 8:46–53. https://doi.org/10.1186/cc2428" },
+        REFERENCE_KOH_2008: { id: 10, text: "Koh DM, Chau I, Tait D, Wotherspoon A, Cunningham D, Brown G (2008) Evaluating mesorectal lymph nodes in rectal cancer before and after neoadjuvant chemoradiation using thin-section T2-weighted magnetic resonance imaging. Int J Radiat Oncol Biol Phys 71:456–461. https://doi.org/10.1016/j.ijrobp.2007.10.016" },
+        REFERENCE_AL_SUKHNI_2012: { id: 11, text: "Al-Sukhni E, Milot L, Fruitman M et al (2012) Diagnostic accuracy of MRI for assessment of T category, lymph node metastases, and circumferential resection margin involvement in patients with rectal cancer: a systematic review and meta-analysis. Ann Surg 19:2212–2223. https://doi.org/10.1245/s10434-011-2210-5" },
+        REFERENCE_STELZNER_2022: { id: 12, text: "Stelzner S, Ruppert R, Kube R et al (2022) Selection of patients with rectal cancer for neoadjuvant therapy using pre-therapeutic MRI—results from OCUM trial. Eur J Radiol 147:110113. https://doi.org/10.1016/j.ejrad.2021.110113" },
+        REFERENCE_LAMBREGTS_2013: { id: 13, text: "Lambregts DMJ, Heijnen LA, Maas M et al (2013) Gadofosveset-enhanced MRI for the assessment of rectal cancer lymph nodes: predictive criteria. Abdom Imaging 38:720–727. https://doi.org/10.1007/s00261-012-9957-4" },
+        REFERENCE_BARBARO_2024: { id: 14, text: "Barbaro B, Carafa MRP, Minordi LM et al (2024) Magnetic resonance imaging for assessment of rectal cancer nodes after chemoradiotherapy: a single center experience. Radiother Oncol 193:110124. https://doi.org/10.1016/j.radonc.2024.110124" },
+        REFERENCE_HORVAT_2023: { id: 15, text: "Horvat N, El Homsi M, Miranda J, Mazaheri Y, Gollub MJ, Paroder V (2023) Rectal MRI interpretation after neoadjuvant therapy. J Magn Reson Imaging 57:353–369. https://doi.org/10.1002/jmri.28426" },
+        REFERENCE_KENNEDY_2019: { id: 16, text: "Kennedy ED, Simunovic M, Jhaveri K et al (2019) Safety and feasibility of using magnetic resonance imaging criteria to identify patients with “good prognosis” rectal cancer eligible for primary surgery: the phase 2 nonrandomized QuickSilver clinical trial. JAMA Oncol 5:961–966. https://doi.org/10.1001/jamaoncol.2019.0186" },
+        REFERENCE_HANNA_2021: { id: 17, text: "Hanna CR, O’Cathail SM, Graham JS et al (2021) Durvalumab (MEDI 4736) in combination with extended neoadjuvant regimens in rectal cancer: a study protocol of a randomised phase II trial (PRIME-RT). Radiat Oncol 16:163. https://doi.org/10.1186/s13014-021-01888-1" },
+        REFERENCE_SCHRAG_2023: { id: 18, text: "Schrag D, Shi Q, Weiser MR et al (2023) Preoperative treatment of locally advanced rectal cancer. N Engl J Med 389:322–334. https://doi.org/10.1056/NEJMoa2303269" },
+        REFERENCE_GARCIA_AGUILAR_2022: { id: 19, text: "Garcia-Aguilar J, Patil S, Gollub MJ et al (2022) Organ preservation in patients with rectal adenocarcinoma treated with total neoadjuvant therapy. J Clin Oncol 40:2546–2556. https://doi.org/10.1200/JCO.22.00032" },
+        REFERENCE_HAO_2025: { id: 20, text: "Hao Y, Zheng J, Li W et al (2025) Ultra-high b-value DWI in rectal cancer: image quality assessment and regional lymph node prediction based on radiomics. Eur Radiol 35:49–60. https://doi.org/10.1007/s00330-024-10958-3" },
+        REFERENCE_KIM_2019: { id: 21, text: "Kim SH, Song BI, Kim BW et al (2019) Predictive value of [18F]FDG PET/CT for lymph node metastasis in rectal cancer. Sci Rep 9:4979. https://doi.org/10.1038/s41598-019-41422-8" },
+        REFERENCE_ZHOU_2021: { id: 22, text: "Zhou H, Lei PJ, Padera TP (2021) Progression of metastasis through lymphatic system. Cells 10:1–23. https://doi.org/10.3390/cells10030627" },
+        REFERENCE_LURZ_SCHAEFER_2025: { id: 23, text: "Lurz M, Schäfer AO (2025) The Avocado Sign: A novel imaging marker for nodal staging in rectal cancer. Eur Radiol. https://doi.org/10.1007/s00330-025-11462-y" },
+        REFERENCE_RUTEGARD_2025: { id: 24, text: "Rutegård J, Hallberg L, Carlsson J, Olsson J, Jarnheimer A (2025) Anatomically matched mesorectal nodal structures: evaluation of the 2016 ESGAR consensus criteria. Eur Radiol. https://doi.org/10.1007/s00330-024-11357-1" }
+    }),
+    T2_ICON_SVGS: Object.freeze({
+        SIZE: (s, sw, iconColor, c, r, sq, sqPos) => `<path d="M${sw/2} ${c} H${s-sw/2} M${c} ${sw/2} V${s-sw/2}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`,
+        FORM_RUND: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw}"/>`,
+        FORM_OVAL: (s, sw, iconColor, c, r, sq, sqPos) => `<ellipse cx="${c}" cy="${c}" rx="${r}" ry="${r * 0.65}" fill="none" stroke="${iconColor}" stroke-width="${sw}"/>`,
+        KONTUR_SCHARF: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
+        KONTUR_IRREGULAER: (s, sw, iconColor, c, r, sq, sqPos) => `<path d="M ${c + r} ${c} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${r*0.8} ${r*1.2} 0 0 1 ${c-r*0.9} ${c-r*0.3} A ${r*1.1} ${r*0.7} 0 0 1 ${c+r} ${c} Z" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
+        HOMOGENITAET_HOMOGEN: (s, sw, iconColor, c, r, sq, sqPos) => `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="${iconColor}" stroke="none" rx="1" ry="1"/>`,
+        HOMOGENITAET_HETEROGEN: (s, sw, iconColor, c, r, sq, sqPos) => {
+            let svgContent = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" rx="1" ry="1"/>`;
+            const pSize = sq / 4;
+            for(let i=0;i<3;i++){for(let j=0;j<3;j++){if((i+j)%2===0){svgContent+=`<rect x="${sqPos+i*pSize+pSize/2}" y="${sqPos+j*pSize+pSize/2}" width="${pSize}" height="${pSize}" fill="${iconColor}" stroke="none" style="opacity:0.6;"/>`;}}}
+            return svgContent;
+        },
+        SIGNAL_SIGNALARM: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#555555" stroke="rgba(0,0,0,0.1)" stroke-width="${sw * 0.75}"/>`,
+        SIGNAL_INTERMEDIAER: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#aaaaaa" stroke="rgba(0,0,0,0.1)" stroke-width="${sw * 0.75}"/>`,
+        SIGNAL_SIGNALREICH: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#f0f0f0" stroke="#333333" stroke-width="${sw * 0.75}"/>`,
+        UNKNOWN: (s, sw, iconColor, c, r, sq, sqPos) => `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" stroke-dasharray="2 2" /><line x1="${sqPos}" y1="${sqPos}" x2="${sqPos+sq}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/><line x1="${sqPos+sq}" y1="${sqPos}" x2="${sqPos}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`
     }),
     UI_TEXTS: Object.freeze({
         cohortDisplayNames: {
@@ -165,12 +191,12 @@ const APP_CONFIG = Object.freeze({
         publicationTab: {
             bfMetricSelectLabel: 'BF Optimization Metric for T2:',
             sectionLabels: {
-                abstract: 'Abstract',
-                introduction: 'Introduction',
-                methoden: 'Methods',
-                ergebnisse: 'Results',
-                discussion: 'Discussion',
-                references: 'References'
+                abstract_main: 'Abstract',
+                introduction_main: 'Introduction',
+                methoden_main: 'Methods',
+                ergebnisse_main: 'Results',
+                discussion_main: 'Discussion',
+                references_main: 'References'
             }
         },
         chartTitles: {
@@ -259,6 +285,7 @@ const APP_CONFIG = Object.freeze({
                 n_as_t2: "Direct status comparison: N (Histopathology reference), AS (Avocado Sign prediction), T2 (current criteria prediction). Click N, AS, or T2 in the column header for sub-sorting.",
                 notes: "Additional clinical or radiological notes on the case, if available.",
                 expandAll: "Expand or collapse the detail view of T2-weighted lymph node features for all patients in the current table view.",
+                collapseAll: "Collapse all detail views of T2-weighted lymph node features.",
                 expandRow: "Click here or the arrow button to show/hide details on the morphological properties of this patient's T2-weighted lymph nodes. Only available if T2 node data exists."
             },
             analysisTab: {
@@ -270,17 +297,18 @@ const APP_CONFIG = Object.freeze({
                 as_counts: "Number of Avocado Sign positive (AS+) lymph nodes / Total number of lymph nodes visible on T1-CE MRI for this patient.",
                 t2_counts: "Number of T2-positive lymph nodes (based on current criteria) / Total number of lymph nodes visible on T2-MRI for this patient.",
                 expandAll: "Expand or collapse the detail view of the evaluated T2-weighted lymph nodes and the fulfilled criteria for all patients in the current table view.",
+                collapseAll: "Collapse all detail views of the evaluated T2-weighted lymph nodes and the fulfilled criteria.",
                 expandRow: "Click here or the arrow button to show/hide the detailed evaluation of this patient's individual T2-weighted lymph nodes according to the currently applied criteria. Fulfilled positive criteria are highlighted."
             },
             t2Logic: { description: "Logical operator for active T2 criteria: <strong>AND</strong> (A lymph node is positive only if ALL active criteria are met). <strong>OR</strong> (A lymph node is positive if AT LEAST ONE active criterion is met). The choice affects the T2 status calculation." },
             t2Size: { description: "Size criterion (short axis): Lymph nodes with a diameter <strong>greater than or equal to (≥)</strong> the set threshold are considered suspicious. Adjustable range: [MIN] - [MAX] mm (step: [STEP] mm). Enable/disable with checkbox." },
             t2Form: { description: "Shape criterion: Select which shape ('round' or 'oval') is considered suspicious. Enable/disable with checkbox." },
-            t2Contour: { description: "Border criterion: Select which border ('smooth' or 'irregular') is considered suspicious. Enable/disable with checkbox." },
+            t2Kontur: { description: "Border criterion: Select which border ('sharp' or 'irregular') is considered suspicious. Enable/disable with checkbox." },
             t2Homogenitaet: { description: "Homogeneity criterion: Select whether 'homogeneous' or 'heterogeneous' internal signal on T2w is considered suspicious. Enable/disable with checkbox." },
             t2Signal: { description: "Signal criterion: Select which T2 signal intensity ('low', 'intermediate', or 'high') relative to surrounding muscle is considered suspicious. Nodes with non-assessable signal (value 'null') never fulfill this criterion. Enable/disable with checkbox." },
             t2Actions: {
                 reset: "Resets the logic and all criteria to their default settings. The changes are not yet applied.",
-                apply: "Applies the currently set T2 criteria and logic to the entire dataset. This updates the T2 columns in the tables, all statistical analyses, and charts. The setting is also saved for future sessions."
+                apply: "Apply the currently set T2 criteria and logic to the entire dataset. This updates the T2 columns in the tables, all statistical analyses, and charts. The setting is also saved for future sessions."
             },
             t2CriteriaCard: { unsavedIndicator: "<strong>Attention:</strong> There are unsaved changes to the T2 criteria or logic. Click 'Apply & Save' to update the results and save the settings." },
             t2MetricsOverview: {
@@ -383,6 +411,150 @@ const APP_CONFIG = Object.freeze({
                 svgzip: { description: "All currently visible charts (Statistics, Analysis, Presentation) as individual SVG files (ZIP archive).", type: 'SVG_ZIP', ext: "zip"}
             }
         })
+    })
+});
+
+const PUBLICATION_CONFIG = Object.freeze({
+    sections: Object.freeze([
+        { id: 'abstract_main', labelKey: 'abstract_main', subSections: [{ id: 'abstract_main', label: 'Abstract' }] },
+        { id: 'introduction_main', labelKey: 'introduction_main', subSections: [{ id: 'introduction_main', label: 'Introduction' }] },
+        {
+            id: 'methoden_main', labelKey: 'methoden_main',
+            subSections: Object.freeze([
+                { id: 'methoden_studienanlage_ethik', label: 'Study Design and Patients' },
+                { id: 'methoden_mrt_protokoll_akquisition', label: 'MRI Protocol and Acquisition' },
+                { id: 'methoden_bildanalyse_avocado_sign', label: 'Image Analysis: Avocado Sign' },
+                { id: 'methoden_bildanalyse_t2_kriterien', label: 'Image Analysis: T2 Criteria' },
+                { id: 'methoden_referenzstandard_histopathologie', label: 'Reference Standard: Histopathology' },
+                { id: 'methoden_statistische_analyse_methoden', label: 'Statistical Analysis' }
+            ])
+        },
+        {
+            id: 'ergebnisse_main', labelKey: 'ergebnisse_main',
+            subSections: Object.freeze([
+                { id: 'ergebnisse_patientencharakteristika', label: 'Patient Characteristics' },
+                { id: 'ergebnisse_as_diagnostische_guete', label: 'Diagnostic Performance of the Avocado Sign' },
+                { id: 'ergebnisse_t2_literatur_diagnostische_guete', label: 'Diagnostic Performance of Literature-Based T2 Criteria' },
+                { id: 'ergebnisse_t2_optimiert_diagnostische_guete', label: 'Diagnostic Performance of Cohort-Optimized T2 Criteria' },
+                { id: 'ergebnisse_vergleich_as_vs_t2', label: 'Comparison: Avocado Sign vs. T2 Criteria' }
+            ])
+        },
+        { id: 'discussion_main', labelKey: 'discussion_main', subSections: [{ id: 'discussion_main', label: 'Discussion' }] },
+        { id: 'references_main', labelKey: 'references_main', subSections: [{ id: 'references_main', label: 'References' }] }
+    ]),
+    bruteForceMetricsForPublication: Object.freeze([
+        { value: 'Balanced Accuracy', label: 'Balanced Accuracy' },
+        { value: 'Accuracy', label: 'Accuracy' },
+        { value: 'F1-Score', label: 'F1-Score' },
+        { value: 'PPV', label: 'PPV' },
+        { value: 'NPV', label: 'NPV' }
+    ]),
+    literatureCriteriaSets: Object.freeze([
+        {
+            id: 'rutegard_et_al_esgar',
+            name: 'ESGAR 2016 (Rutegård et al. 2025)',
+            displayShortName: 'ESGAR 2016',
+            applicableCohort: 'Gesamt', // Rutegård et al. evaluated primary staging, so Overall is most appropriate.
+            logic: 'KOMBINIERT', // Special logic handling for ESGAR
+            criteria: Object.freeze({
+                size: { active: true, threshold: 9.0, condition: '>=' },
+                form: { active: true, value: 'rund' },
+                kontur: { active: true, value: 'irregulär' },
+                homogenitaet: { active: true, value: 'heterogen' },
+                signal: { active: false, value: null } // Not explicitly part of ESGAR's core suspicious features list
+            }),
+            studyInfo: Object.freeze({
+                reference: 'Rutegård et al. (2025)',
+                patientCohort: '46 rectal cancer patients (anatomically matched nodal structures)',
+                investigationType: 'Prospective study of baseline MRI',
+                focus: 'Evaluation of 2016 ESGAR consensus criteria for malignancy',
+                keyCriteriaSummary: 'Short axis ≥ 9 mm; OR short axis 5–8 mm and ≥2 suspicious features (round, irregular, heterogeneous); OR short axis < 5 mm and all 3 suspicious features.'
+            })
+        },
+        {
+            id: 'koh_2008',
+            name: 'Koh et al. (2008)',
+            displayShortName: 'Koh 2008',
+            applicableCohort: 'Gesamt', // Evaluated both pre and post nCRT, overall is applicable
+            logic: 'OR',
+            criteria: Object.freeze({
+                size: { active: false, threshold: 5.0, condition: '>=' },
+                form: { active: false, value: null },
+                kontur: { active: true, value: 'irregulär' },
+                homogenitaet: { active: true, value: 'heterogen' },
+                signal: { active: false, value: null }
+            }),
+            studyInfo: Object.freeze({
+                reference: 'Koh et al. (2008)',
+                patientCohort: '25 patients (pre/post nCRT)',
+                investigationType: 'Prospective study',
+                focus: 'Evaluating mesorectal lymph nodes before and after nCRT using thin-section T2w MRI. Criteria based on morphology.',
+                keyCriteriaSummary: 'Irregular outlines OR internal signal heterogeneity.'
+            })
+        },
+        {
+            id: 'barbaro_2024',
+            name: 'Barbaro et al. (2024)',
+            displayShortName: 'Barbaro 2024',
+            applicableCohort: 'nRCT', // Specifically for restaging after nCRT
+            logic: 'AND', // "a specific cut-off for the short-axis diameter" implies a single, primary criterion
+            criteria: Object.freeze({
+                size: { active: true, threshold: 2.3, condition: '>=' }, // Original was 2.2mm, adjusted to 2.3mm for direct comparison in our data if needed
+                form: { active: false, value: null },
+                kontur: { active: false, value: null },
+                homogenitaet: { active: false, value: null },
+                signal: { active: false, value: null }
+            }),
+            studyInfo: Object.freeze({
+                reference: 'Barbaro et al. (2024)',
+                patientCohort: '191 LARC patients (restaging after nCRT)',
+                investigationType: 'Retrospective, single-center study',
+                focus: 'Accuracy of MRI in identifying ypN0 status after nCRT, using short-axis diameter cut-off.',
+                keyCriteriaSummary: 'Optimal cut-off for short-axis diameter ≤ 2.2mm (predicting ypN0, so nodes > 2.2mm are positive).'
+            })
+        }
+    ]),
+    publicationElements: Object.freeze({
+        methoden: {
+            literaturT2KriterienTabelle: {
+                id: 'table-methods-t2-literature',
+                titleEn: 'Table 1. Literature-Based T2-Weighted MRI Criteria for Nodal Malignancy'
+            }
+        },
+        ergebnisse: {
+            patientenCharakteristikaTabelle: {
+                id: 'table-results-patient-char',
+                titleEn: 'Table 2. Patient Demographics and Treatment Approaches'
+            },
+            diagnostischeGueteASTabelle: {
+                id: 'table-results-as-performance',
+                titleEn: 'Table 3. Diagnostic Performance and Nominal Values for the Avocado Sign in Predicting Nodal Status'
+            },
+            diagnostischeGueteOptimierteT2Tabelle: {
+                id: 'table-results-optimized-t2-performance',
+                titleEn: 'Table 4. Diagnostic Performance of Cohort-Optimized T2-Weighted Criteria by Target Metric ({BF_METRIC})'
+            },
+            vergleichASvsT2Tabelle: {
+                id: 'table-results-comparison-as-t2',
+                titleEn: 'Table 5. Statistical Comparison of Diagnostic Performance (Avocado Sign vs. Optimized T2 Criteria)'
+            },
+            rocKurveOverall: {
+                id: 'fig-results-roc-overall',
+                titleEn: 'Figure 1. ROC Curve for the Avocado Sign in the Overall Cohort'
+            },
+            rocKurveSurgeryAlone: {
+                id: 'fig-results-roc-surgery-alone',
+                titleEn: 'Figure 2. ROC Curve for the Avocado Sign in the Upfront Surgery Cohort'
+            },
+            rocKurveNRCT: {
+                id: 'fig-results-roc-nrcT',
+                titleEn: 'Figure 3. ROC Curve for the Avocado Sign in the nRCT Cohort'
+            },
+            asVsT2ComparisonChart: {
+                id: 'fig-results-as-t2-comparison',
+                titleEn: 'Figure 4. Comparison of Key Diagnostic Metrics: Avocado Sign vs. Cohort-Optimized T2 Criteria'
+            }
+        }
     })
 });
 
