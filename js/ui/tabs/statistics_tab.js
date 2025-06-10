@@ -7,7 +7,7 @@ const statisticsTab = (() => {
         const na = '--';
         const fv = (val, dig = 1, useStd = true) => formatNumber(val, dig, na, useStd);
         const fP = (val, dig = 1) => formatPercent(val, dig, na);
-        const fLK = (lkData) => `${fv(lkData?.median,1)} (${fv(lkData?.min,0)}-${fv(lkData?.max,0)}) [${fv(lkData?.mean,1)} ± ${fv(lkData?.sd,1)}]`;
+        const fLK = (lkData) => `${fv(lkData?.median,1)} (${fv(lkData?.min,0)}–${fv(lkData?.max,0)}) [${fv(lkData?.mean,1)} ± ${fv(lkData?.sd,1)}]`;
         
         const getTooltipTemplate = (key) => APP_CONFIG.UI_TEXTS.tooltips.descriptiveStatistics[key]?.description || key;
 
@@ -68,6 +68,91 @@ const statisticsTab = (() => {
             </div>`;
     }
 
+    function createCriteriaComparisonTableHTML(allStats, globalCoh) {
+        const availableSets = studyT2CriteriaManager.getAllStudyCriteriaSets().filter(s => s.applicableCohort === 'Gesamt' || s.applicableCohort === globalCoh);
+        const allTableResults = [];
+        const na_stat = '--';
+
+        const asPerf = allStats[globalCoh]?.performanceAS;
+        if (asPerf) {
+            allTableResults.push({
+                id: APP_CONFIG.SPECIAL_IDS.AVOCADO_SIGN_ID,
+                name: APP_CONFIG.SPECIAL_IDS.AVOCADO_SIGN_DISPLAY_NAME,
+                sens: asPerf.sens?.value,
+                spec: asPerf.spec?.value,
+                ppv: asPerf.ppv?.value,
+                npv: asPerf.npv?.value,
+                acc: asPerf.acc?.value,
+                auc: asPerf.auc?.value,
+                cohort: getCohortDisplayName(globalCoh),
+                n: allStats[globalCoh]?.descriptive?.patientCount || '?'
+            });
+        }
+
+        const appliedT2Perf = allStats[globalCoh]?.performanceT2Applied;
+        if (appliedT2Perf) {
+            allTableResults.push({
+                id: APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_STUDY_ID,
+                name: APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_DISPLAY_NAME,
+                sens: appliedT2Perf.sens?.value,
+                spec: appliedT2Perf.spec?.value,
+                ppv: appliedT2Perf.ppv?.value,
+                npv: appliedT2Perf.npv?.value,
+                acc: appliedT2Perf.acc?.value,
+                auc: appliedT2Perf.auc?.value,
+                cohort: getCohortDisplayName(globalCoh),
+                n: allStats[globalCoh]?.descriptive?.patientCount || '?'
+            });
+        }
+
+        availableSets.forEach(set => {
+            const perf = allStats[set.applicableCohort || 'Gesamt']?.performanceT2Literature?.[set.id];
+            if (perf) {
+                allTableResults.push({
+                    id: set.id,
+                    name: set.name,
+                    sens: perf.sens?.value,
+                    spec: perf.spec?.value,
+                    ppv: perf.ppv?.value,
+                    npv: perf.npv?.value,
+                    acc: perf.acc?.value,
+                    auc: perf.auc?.value,
+                    cohort: getCohortDisplayName(set.applicableCohort || 'Gesamt'),
+                    n: allStats[set.applicableCohort || 'Gesamt']?.descriptive?.patientCount || '?'
+                });
+            }
+        });
+
+        if (allTableResults.length === 0) return '<p class="text-muted small p-3">No criteria comparison data.</p>';
+
+        let tableHtml = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr>
+            <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSet}</th>
+            <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSens}</th>
+            <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSpec}</th>
+            <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderPPV}</th>
+            <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderNPV}</th>
+            <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAcc}</th>
+            <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAUC}</th>
+        </tr></thead><tbody>`;
+
+        allTableResults.forEach(r => {
+            const cohortInfo = (r.cohort !== getCohortDisplayName(globalCoh)) ? ` (${r.cohort} N=${r.n})` : ``;
+            tableHtml += `<tr>
+                <td>${r.name}${cohortInfo}</td>
+                <td>${formatPercent(r.sens, 1, na_stat)}</td>
+                <td>${formatPercent(r.spec, 1, na_stat)}</td>
+                <td>${formatPercent(r.ppv, 1, na_stat)}</td>
+                <td>${formatPercent(r.npv, 1, na_stat)}</td>
+                <td>${formatPercent(r.acc, 1, na_stat)}</td>
+                <td>${formatNumber(r.auc, 2, na_stat, true)}</td>
+            </tr>`;
+        });
+
+        tableHtml += `</tbody></table></div>`;
+        return tableHtml;
+    }
+
+
     function render(processedData, appliedCriteria, appliedLogic, layout, cohort1, cohort2, globalCohort) {
         if (!processedData) throw new Error("Statistics data not available.");
         let datasets = [], cohortNames = [];
@@ -101,7 +186,7 @@ const statisticsTab = (() => {
                     comparisonASvsT2: statisticsService.compareDiagnosticMethods(data, 'asStatus', 't2Status', 'nStatus'),
                     associations: statisticsService.calculateAssociations(data, appliedCriteria)
                 };
-                innerContainer.innerHTML += uiComponents.createStatisticsCard(`descriptive-stats-${i}`, 'Descriptive Statistics', createDescriptiveStatsContentHTML({descriptive: stats.descriptive}, i, cohortId));
+                innerContainer.innerHTML += uiComponents.createStatisticsCard(`descriptive-stats-${i}`, 'Descriptive Statistics', createDescriptiveStatsContentHTML({descriptive: stats.descriptive}, i, cohortId), true, 'descriptiveStatistics', [{id: `dl-desc-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `table-descriptive-demographics-${i}`, tableName: `Descriptive_Demographics_${cohortId.replace(/\s+/g, '_')}`}], `table-descriptive-demographics-${i}`);
 
                 const fCI_p_stat = (m, k) => { const d = (k === 'auc') ? 2 : ((k === 'f1') ? 3 : 1); const p = !(k === 'auc'||k==='f1'); return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, d, p, '--'); };
                 const na_stat = '--';
@@ -154,89 +239,6 @@ const statisticsTab = (() => {
                     });
                     html += `</tbody></table></div>`;
                     return html;
-                };
-
-                const createCriteriaComparisonTableHTML = (allStats, globalCoh) => {
-                    const availableSets = studyT2CriteriaManager.getAllStudyCriteriaSets().filter(s => s.applicableCohort === 'Gesamt' || s.applicableCohort === globalCoh);
-                    const allTableResults = [];
-
-                    const asPerf = allStats[globalCoh]?.performanceAS;
-                    if (asPerf) {
-                        allTableResults.push({
-                            id: APP_CONFIG.SPECIAL_IDS.AVOCADO_SIGN_ID,
-                            name: APP_CONFIG.SPECIAL_IDS.AVOCADO_SIGN_DISPLAY_NAME,
-                            sens: asPerf.sens?.value,
-                            spec: asPerf.spec?.value,
-                            ppv: asPerf.ppv?.value,
-                            npv: asPerf.npv?.value,
-                            acc: asPerf.acc?.value,
-                            auc: asPerf.auc?.value,
-                            cohort: getCohortDisplayName(globalCoh),
-                            n: allStats[globalCoh]?.descriptive?.patientCount || '?'
-                        });
-                    }
-
-                    const appliedT2Perf = allStats[globalCoh]?.performanceT2Applied;
-                    if (appliedT2Perf) {
-                        allTableResults.push({
-                            id: APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_STUDY_ID,
-                            name: APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_DISPLAY_NAME,
-                            sens: appliedT2Perf.sens?.value,
-                            spec: appliedT2Perf.spec?.value,
-                            ppv: appliedT2Perf.ppv?.value,
-                            npv: appliedT2Perf.npv?.value,
-                            acc: appliedT2Perf.acc?.value,
-                            auc: appliedT2Perf.auc?.value,
-                            cohort: getCohortDisplayName(globalCoh),
-                            n: allStats[globalCoh]?.descriptive?.patientCount || '?'
-                        });
-                    }
-
-                    availableSets.forEach(set => {
-                        const perf = allStats[set.applicableCohort || 'Gesamt']?.performanceT2Literature?.[set.id];
-                        if (perf) {
-                            allTableResults.push({
-                                id: set.id,
-                                name: set.name,
-                                sens: perf.sens?.value,
-                                spec: perf.spec?.value,
-                                ppv: perf.ppv?.value,
-                                npv: perf.npv?.value,
-                                acc: perf.acc?.value,
-                                auc: perf.auc?.value,
-                                cohort: getCohortDisplayName(set.applicableCohort || 'Gesamt'),
-                                n: allStats[set.applicableCohort || 'Gesamt']?.descriptive?.patientCount || '?'
-                            });
-                        }
-                    });
-
-                    if (allTableResults.length === 0) return '<p class="text-muted small p-3">No criteria comparison data.</p>';
-
-                    let tableHtml = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr>
-                        <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSet}</th>
-                        <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSens}</th>
-                        <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSpec}</th>
-                        <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderPPV}</th>
-                        <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderNPV}</th>
-                        <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAcc}</th>
-                        <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAUC}</th>
-                    </tr></thead><tbody>`;
-
-                    allTableResults.forEach(r => {
-                        const cohortInfo = (r.cohort !== getCohortDisplayName(globalCoh)) ? ` (${r.cohort} N=${r.n})` : ` (N=${r.n})`;
-                        tableHtml += `<tr>
-                            <td>${r.name}${cohortInfo}</td>
-                            <td>${formatPercent(r.sens, 1, na_stat)}</td>
-                            <td>${formatPercent(r.spec, 1, na_stat)}</td>
-                            <td>${formatPercent(r.ppv, 1, na_stat)}</td>
-                            <td>${formatPercent(r.npv, 1, na_stat)}</td>
-                            <td>${formatPercent(r.acc, 1, na_stat)}</td>
-                            <td>${formatNumber(r.auc, 2, na_stat, true)}</td>
-                        </tr>`;
-                    });
-
-                    tableHtml += `</tbody></table></div>`;
-                    return tableHtml;
                 };
 
                 innerContainer.innerHTML += uiComponents.createStatisticsCard(`performance-as-${i}`, 'Diagnostic Performance: Avocado Sign (AS vs. N)', createPerfTableHTML(stats.performanceAS), false, 'diagnosticPerformanceAS', [{id: `dl-as-perf-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `performance-as-${i}-content table`, tableName: `AS_Performance_${cohortId.replace(/\s+/g, '_')}`}], `performance-as-${i}-content table`);
