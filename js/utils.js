@@ -7,15 +7,18 @@ function formatNumber(num, digits = 1, placeholder = '--', useStandardFormat = f
     if (num === null || num === undefined || isNaN(number) || !isFinite(number)) {
         return placeholder;
     }
+    // For publication or strict standard format, always use toFixed
     if (useStandardFormat) {
         return number.toFixed(digits);
     }
+    // For UI display, try toLocaleString for better readability with thousands separators
     try {
         return number.toLocaleString('en-US', {
             minimumFractionDigits: digits,
             maximumFractionDigits: digits
         });
     } catch (e) {
+        // Fallback for environments where toLocaleString might fail or not be desired
         return number.toFixed(digits);
     }
 }
@@ -25,13 +28,19 @@ function formatPercent(num, digits = 1, placeholder = '--%') {
     if (num === null || num === undefined || isNaN(number) || !isFinite(number)) {
         return placeholder;
     }
+    // Multiply by 100 and then fix to specified digits
     return `${(number * 100).toFixed(digits)}%`;
 }
 
 function formatCI(value, ciLower, ciUpper, digits = 1, isPercent = false, placeholder = '--') {
-    const formatFn = isPercent ? (val, dig) => formatNumber(val * 100, dig, placeholder, true) : (val, dig) => formatNumber(val, dig, placeholder, true);
+    // Determine the formatting function based on whether it's a percentage
+    const formatFn = isPercent
+        ? (val, dig) => formatNumber(val * 100, dig, placeholder, true) // Format percentages as numbers, then add % later
+        : (val, dig) => formatNumber(val, dig, placeholder, true);    // Format as regular numbers
+
     const formattedValue = formatFn(value, digits);
 
+    // If the main value is a placeholder, return it immediately, unless it's a valid zero formatted as placeholder
     if (formattedValue === placeholder && !(value === 0 && placeholder === '--')) {
         return placeholder;
     }
@@ -39,11 +48,14 @@ function formatCI(value, ciLower, ciUpper, digits = 1, isPercent = false, placeh
     const formattedLower = formatFn(ciLower, digits);
     const formattedUpper = formatFn(ciUpper, digits);
 
+    // Construct the CI string
     if (formattedLower !== placeholder && formattedUpper !== placeholder) {
-        const ciStr = `(${formattedLower}–${formattedUpper})`;
-        return `${formattedValue}${isPercent ? '' : ''} ${ciStr}`;
+        const ciStr = `(95% CI: ${formattedLower}, ${formattedUpper})`;
+        // Append '%' only if it's a percentage and not already handled by formatFn for ranges
+        return `${formattedValue}${isPercent ? '%' : ''} ${ciStr}`;
     }
-    return `${formattedValue}${isPercent ? '' : ''}`;
+    // If CI values are not valid, return only the formatted value
+    return `${formattedValue}${isPercent ? '%' : ''}`;
 }
 
 function getCurrentDateString(format = 'YYYY-MM-DD') {
@@ -63,7 +75,6 @@ function saveToLocalStorage(key, value) {
     try {
         localStorage.setItem(key, JSON.stringify(value));
     } catch (e) {
-        console.error(`Error saving to Local Storage (Key: ${key}):`, e);
     }
 }
 
@@ -76,7 +87,6 @@ function loadFromLocalStorage(key) {
         try {
             localStorage.removeItem(key);
         } catch (removeError) {
-             console.error(`Error removing corrupted item from Local Storage (Key: ${key}):`, removeError);
         }
         return null;
     }
@@ -155,14 +165,17 @@ function getSortFunction(key, direction = 'asc', subKey = null) {
         let valA, valB;
         try {
             if (key === 'status') {
-                const getStatusValue = p => (p[subKey || 'n'] === '+') ? 1 : (p[subKey || 'n'] === '-') ? 0 : -1;
+                const getStatusValue = p => {
+                    let statusProp = p[subKey === 'nStatus' ? 'n' : (subKey === 'asStatus' ? 'as' : 't2Status')];
+                    return (statusProp === '+') ? 1 : (statusProp === '-') ? 0 : -1;
+                };
                 valA = getStatusValue(a);
                 valB = getStatusValue(b);
-            } else if (key.startsWith('anzahl_')) {
-                const type = key.replace('anzahl_', '').replace('_lk', '');
+            } else if (key.startsWith('count')) {
+                const type = key.replace('count', '').replace('Nodes', '');
                 const getCounts = (p, t) => {
-                    const plusKey = `anzahl_${t}_plus_lk`;
-                    const totalKey = `anzahl_${t}_lk`;
+                    const plusKey = `count${t}NodesPositive`;
+                    const totalKey = `count${t}Nodes`;
                     return { plus: getObjectValueByPath(p, plusKey) ?? NaN, total: getObjectValueByPath(p, totalKey) ?? NaN };
                 };
                 const countsA = getCounts(a, type);
@@ -203,25 +216,48 @@ function getStatisticalSignificanceSymbol(pValue) {
             return level.symbol;
         }
     }
-    return 'ns';
+    return 'ns'; // Not statistically significant
 }
 
-function getStatisticalSignificanceText(pValue) {
-    if (pValue === null || pValue === undefined || isNaN(pValue) || !isFinite(pValue)) return '';
-    const level = APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL;
-    return pValue < level ? 'statistically significant' : 'not statistically significant';
-}
-
-function getPValueText(pValue, lang = 'en', forPublication = false) {
+function getPValueText(pValue, forPublication = false) {
     if (pValue === null || pValue === undefined || isNaN(pValue) || !isFinite(pValue)) return 'N/A';
-    const pLessThanThreshold = 0.001;
-    if (pValue < pLessThanThreshold) {
-        return forPublication ? 'P < .001' : 'p < 0.001';
+
+    const pLessThanThreshold = 0.001; // For P < .001
+    const pDot01Threshold = 0.01;     // For two digits if P < .01, e.g. .005
+    const pDot05Threshold = 0.05;     // For three digits if P is near .05, e.g. .046
+    const pGreater099Threshold = 0.99; // For P > .99
+
+    let formattedP;
+
+    if (forPublication) {
+        const prefix = 'P'; // Use 'P' (capitalized) for publication style
+        if (pValue < pLessThanThreshold) {
+            formattedP = `${prefix} < .001`;
+        } else if (pValue >= pLessThanThreshold && pValue < pDot01Threshold) {
+            // For values like 0.005, use 3 digits
+            formattedP = `${prefix} = ${formatNumber(pValue, 3, 'N/A', true)}`;
+        } else if (pValue >= pDot01Threshold && pValue < pDot05Threshold) {
+             // For values like 0.046, use 3 digits
+             formattedP = `${prefix} = ${formatNumber(pValue, 3, 'N/A', true)}`;
+        } else if (pValue >= pDot05Threshold && pValue <= pGreater099Threshold) {
+            // For values like 0.52 or 0.06, use 2 digits
+            formattedP = `${prefix} = ${formatNumber(pValue, 2, 'N/A', true)}`;
+        } else if (pValue > pGreater099Threshold) {
+            formattedP = `${prefix} > .99`;
+        } else {
+            formattedP = `${prefix} = ${formatNumber(pValue, 2, 'N/A', true)}`; // Fallback, e.g., if somehow not covered
+        }
+    } else {
+        const prefix = 'p'; // Use 'p' (lowercase) for UI display
+        if (pValue < 0.001) {
+            formattedP = `${prefix} < 0.001`;
+        } else {
+            formattedP = `${prefix} = ${formatNumber(pValue, 3, 'N/A', true)}`;
+        }
     }
-    const pFormatted = formatNumber(pValue, 3, 'N/A', true);
-    const prefix = forPublication ? 'P' : 'p';
-    return `${prefix} = ${pFormatted}`;
+    return formattedP;
 }
+
 
 function generateUUID() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -286,38 +322,37 @@ function getT2IconSVG(type, value) {
     const sq = s - sw * 1.5;
     const sqPos = (s - sq) / 2;
     let svgContent = '';
-    let fillColor = 'none';
-    const unknownIconSVG = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" stroke-dasharray="2 2" /><line x1="${sqPos}" y1="${sqPos}" x2="${sqPos+sq}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/><line x1="${sqPos+sq}" y1="${sqPos}" x2="${sqPos}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`;
+
+    const getSvgContentFromConfig = (key, val) => {
+        const svgFactory = APP_CONFIG.T2_ICON_SVGS[`${key.toUpperCase()}_${String(val).toUpperCase().replace(/[^A-Z0-9]/g, '')}`];
+        if (svgFactory) {
+            return svgFactory(s, sw, iconColor, c, r, sq, sqPos);
+        }
+        return APP_CONFIG.T2_ICON_SVGS.UNKNOWN(s, sw, iconColor, c, r, sq, sqPos);
+    };
 
     switch (type) {
+        case 'size':
+        case 'ruler-horizontal':
+            svgContent = getSvgContentFromConfig('size', 'default');
+            break;
         case 'shape':
-            if (value === 'rund') svgContent = `<circle cx="${c}" cy="${c}" r="${r}" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw}"/>`;
-            else if (value === 'oval') svgContent = `<ellipse cx="${c}" cy="${c}" rx="${r}" ry="${r * 0.65}" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw}"/>`;
-            else svgContent = unknownIconSVG;
+        case 'form':
+            svgContent = getSvgContentFromConfig('form', value);
             break;
         case 'border':
-            if (value === 'scharf') svgContent = `<circle cx="${c}" cy="${c}" r="${r}" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`;
-            else if (value === 'irregulär') svgContent = `<path d="M ${c + r} ${c} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${r*0.8} ${r*1.2} 0 0 1 ${c-r*0.9} ${c-r*0.3} A ${r*1.1} ${r*0.7} 0 0 1 ${c+r} ${c} Z" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`;
-            else svgContent = unknownIconSVG;
+        case 'kontur':
+            svgContent = getSvgContentFromConfig('kontur', value);
             break;
         case 'homogeneity':
-            if (value === 'homogen') svgContent = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="${iconColor}" stroke="none" rx="1" ry="1"/>`;
-            else if (value === 'heterogen') { const pSize = sq / 4; svgContent = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" rx="1" ry="1"/>`; for(let i=0;i<3;i++){for(let j=0;j<3;j++){if((i+j)%2===0){svgContent+=`<rect x="${sqPos+i*pSize+pSize/2}" y="${sqPos+j*pSize+pSize/2}" width="${pSize}" height="${pSize}" fill="${iconColor}" stroke="none" style="opacity:0.6;"/>`;}}} }
-            else svgContent = unknownIconSVG;
+        case 'homogenitaet':
+            svgContent = getSvgContentFromConfig('homogenitaet', value);
             break;
         case 'signal':
-            if (value === 'signalarm') fillColor = '#555555';
-            else if (value === 'intermediär') fillColor = '#aaaaaa';
-            else if (value === 'signalreich') fillColor = '#f0f0f0';
-            else { svgContent = unknownIconSVG; break; }
-            const strokeColor = (value === 'signalreich') ? '#333333' : 'rgba(0,0,0,0.1)';
-            svgContent = `<circle cx="${c}" cy="${c}" r="${r}" fill="${fillColor}" stroke="${strokeColor}" stroke-width="${sw * 0.75}"/>`;
+            svgContent = getSvgContentFromConfig('signal', value);
             break;
-        case 'ruler-horizontal':
-            svgContent = `<path d="M${sw/2} ${c} H${s-sw/2} M${c} ${sw/2} V${s-sw/2}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`;
-            type = 'size';
-            break;
-        default: svgContent = unknownIconSVG;
+        default:
+            svgContent = APP_CONFIG.T2_ICON_SVGS.UNKNOWN(s, sw, iconColor, c, r, sq, sqPos);
     }
     return `<svg class="icon-t2 icon-${type}" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${type}: ${value || 'unknown'}">${svgContent}</svg>`;
 }
