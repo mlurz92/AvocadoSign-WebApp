@@ -47,21 +47,18 @@ class App {
     }
 
     checkDependencies() {
-        // Ensure all necessary modules are loaded and accessible
         const dependencies = { 
             state, t2CriteriaManager, studyT2CriteriaManager, dataProcessor, 
             statisticsService, bruteForceManager, 
             uiManager, uiComponents, tableRenderer, chartRenderer, 
             dataTab, analysisTab, statisticsTab, presentationTab, publicationTab, exportTab,
-            eventManager, APP_CONFIG, // APP_CONFIG is global due to script loading, but good to check presence
-            // Also implicitly depends on global patientDataRaw from data.js
+            eventManager, APP_CONFIG,
         };
         for (const dep in dependencies) {
             if (typeof dependencies[dep] === 'undefined' || dependencies[dep] === null) {
                 throw new Error(`Core module or dependency '${dep}' is not available. Check script loading order or definition.`);
             }
         }
-        // Specific check for global data, as it's not a module in the same way
         if (typeof patientDataRaw === 'undefined' || patientDataRaw === null) {
             throw new Error("Global 'patientDataRaw' is not available. Check data.js loading.");
         }
@@ -151,8 +148,6 @@ class App {
         const logic = t2CriteriaManager.getAppliedLogic();
         const bruteForceResults = bruteForceManager.getAllResults();
         
-        // Calculate all publication stats only once per render cycle, if needed by any tab
-        // This ensures consistency across different sections that might use the same stats.
         this.allPublicationStats = statisticsService.calculateAllPublicationStats(this.processedData, criteria, logic, bruteForceResults);
 
         const publicationData = {
@@ -169,7 +164,6 @@ class App {
             const cohortForPresentation = state.getCurrentCohort(); 
             const filteredDataForPresentation = dataProcessor.filterDataByCohort(this.processedData, cohortForPresentation);
             
-            // Get stats for current cohort and all subgroups from the pre-calculated allPublicationStats
             const statsCurrentCohort = this.allPublicationStats[cohortForPresentation];
             const statsGesamt = this.allPublicationStats['Gesamt'];
             const statsDirektOP = this.allPublicationStats['direkt OP'];
@@ -207,7 +201,6 @@ class App {
                     performanceT2 = statsForStudyCohort?.performanceT2Literature?.[selectedStudyId];
                     comparisonCriteriaSet = studySet;
                     t2ShortName = studySet.displayShortName || studySet.name;
-                    // Comparison stats for literature sets are also pre-calculated and stored in allPublicationStats
                     comparisonASvsT2 = statsForStudyCohort?.[`comparisonASvsT2_literature_${selectedStudyId}`];
                 }
             }
@@ -221,10 +214,10 @@ class App {
                 statsDirektOP: statsDirektOP,
                 statsNRCT: statsNRCT,
                 performanceAS: statsCurrentCohort?.performanceAS,
-                performanceT2: performanceT2, // This will be the performance of the selected studySet's T2 criteria
-                comparison: comparisonASvsT2, // This will be the comparison data for AS vs the selected studySet's T2
-                comparisonCriteriaSet: comparisonCriteriaSet, // The full study set object for display
-                cohortForComparison: selectedStudyId ? (comparisonCriteriaSet?.applicableCohort || cohortForPresentation) : cohortForPresentation, // The actual cohort the comparison criteria was evaluated on
+                performanceT2: performanceT2,
+                comparison: comparisonASvsT2,
+                comparisonCriteriaSet: comparisonCriteriaSet,
+                cohortForComparison: selectedStudyId ? (comparisonCriteriaSet?.applicableCohort || cohortForPresentation) : cohortForPresentation,
                 patientCountForComparison: selectedStudyId ? (dataProcessor.filterDataByCohort(this.processedData, comparisonCriteriaSet?.applicableCohort || cohortForPresentation).length) : filteredDataForPresentation.length,
                 t2ShortName: t2ShortName
             };
@@ -233,7 +226,7 @@ class App {
 
         switch (tabId) {
             case 'data': uiManager.renderTabContent(tabId, () => dataTab.render(this.currentCohortData, state.getDataTableSort())); break;
-            case 'analysis': uiManager.renderTabContent(tabId, () => analysisTab.render(this.currentCohortData, t2CriteriaManager.getCurrentCriteria(), t2CriteriaManager.getCurrentLogic(), state.getAnalysisTableSort(), cohort, bruteForceManager.isWorkerAvailable(), this.allPublicationStats[cohort], bruteForceResults[cohort])); break;
+            case 'analysis': uiManager.renderTabContent(tabId, () => analysisTab.render(this.currentCohortData, t2CriteriaManager.getCurrentCriteria(), t2CriteriaManager.getAppliedLogic(), state.getAnalysisTableSort(), cohort, bruteForceManager.isWorkerAvailable(), this.allPublicationStats[cohort], bruteForceResults[cohort])); break;
             case 'statistics': uiManager.renderTabContent(tabId, () => statisticsTab.render(this.processedData, criteria, logic, state.getStatsLayout(), state.getStatsCohort1(), state.getStatsCohort2(), cohort)); break;
             case 'presentation': uiManager.renderTabContent(tabId, () => presentationTab.render(state.getPresentationView(), currentPresentationData, state.getPresentationStudyId(), cohort, this.processedData, criteria, logic)); break;
             case 'publication': uiManager.renderTabContent(tabId, () => publicationTab.render(publicationData, state.getPublicationSection())); break;
@@ -267,14 +260,12 @@ class App {
     }
 
     startBruteForceAnalysis() {
-        const metric = document.getElementById('brute-force-metric')?.value || APP_CONFIG.DEFAULT_SETTINGS.BRUTE_FORCE_METRIC;
+        const metric = document.getElementById('brute-force-metric')?.value || 'Balanced Accuracy';
         const cohortId = state.getCurrentCohort();
-        // Prepare raw patient data specific to the worker's needs
-        // The worker needs lymphknoten_t2 with original German keys and n status
         const dataForWorker = this.rawData.filter(p => cohortId === 'Gesamt' || p.therapie === cohortId).map(p => ({
-            nr: p.nr, // Include nr for identification/debugging if needed in worker
-            n: p.n, // Reference standard needed for metric calculation
-            lymphknoten_t2: p.lymphknoten_t2 // Raw T2 nodes with original keys
+            nr: p.nr,
+            n: p.n,
+            lymphknoten_t2: p.lymphknoten_t2
         }));
         
         if (dataForWorker.length > 0) {
@@ -293,7 +284,7 @@ class App {
         }
         const best = bfResult.bestResult;
         Object.keys(best.criteria).forEach(key => {
-            if (key === 'logic') return; // Logic is handled separately
+            if (key === 'logic') return;
             const criterion = best.criteria[key];
             t2CriteriaManager.toggleCriterionActive(key, criterion.active);
             if (criterion.active) {
@@ -309,18 +300,15 @@ class App {
     
     handleSingleExport(exportType) {
         const cohort = state.getCurrentCohort();
-        const data = this.processedData; // Use processedData (full dataset)
+        const data = this.processedData;
         const bfResults = bruteForceManager.getAllResults();
         const criteria = t2CriteriaManager.getAppliedCriteria();
         const logic = t2CriteriaManager.getAppliedLogic();
-        const allCohortStats = this.allPublicationStats; // Use pre-calculated stats
+        const allCohortStats = this.allPublicationStats;
 
-        // Ensure data is filtered for the current cohort for cohort-specific exports
         const currentFilteredData = dataProcessor.filterDataByCohort(data, cohort);
-        // Ensure data is evaluated with applied criteria for analysis table export
         const evaluatedCurrentFilteredData = t2CriteriaManager.evaluateDataset(currentFilteredData, criteria, logic);
         
-        // Define common data for publication exports that need it
         const commonDataForPublication = {
             appName: APP_CONFIG.APP_NAME,
             appVersion: APP_CONFIG.APP_VERSION,
