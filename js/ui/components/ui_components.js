@@ -29,7 +29,7 @@ const uiComponents = (() => {
     function createDashboardCard(title, content, chartId = null, cardClasses = '', headerClasses = '', bodyClasses = '', downloadButtons = [], cohortDisplayName = '') {
         const headerButtonHtml = createHeaderButtonHTML(downloadButtons, chartId || title.replace(/[^a-z0-9]/gi, '_'), title);
         const tooltipKey = chartId ? chartId.replace(/^chart-dash-/, '') : title.toLowerCase().replace(/\s+/g, '');
-        let tooltipContent = UI_TEXTS.tooltips.descriptiveStatistics[tooltipKey]?.description || title || '';
+        let tooltipContent = APP_CONFIG.UI_TEXTS.tooltips.descriptiveStatistics[tooltipKey]?.description || title || '';
         if (cohortDisplayName) {
             tooltipContent = tooltipContent.replace('[COHORT]', `<strong>${cohortDisplayName}</strong>`);
         }
@@ -71,7 +71,7 @@ const uiComponents = (() => {
 
         const createCriteriaGroup = (key, label, tooltipKey, contentGenerator) => {
             const isChecked = initialCriteria[key]?.active === true;
-            let tooltip = UI_TEXTS.tooltips[tooltipKey]?.description || label;
+            let tooltip = APP_CONFIG.UI_TEXTS.tooltips[tooltipKey]?.description || label;
             if (tooltipKey === 't2Size') {
                 tooltip = tooltip.replace('[MIN]', min).replace('[MAX]', max).replace('[STEP]', step);
             }
@@ -92,7 +92,7 @@ const uiComponents = (() => {
             <div class="card criteria-card" id="t2-criteria-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>Define T2 Malignancy Criteria</span>
-                    <div class="form-check form-switch" data-tippy-content="${UI_TEXTS.tooltips.t2Logic.description}">
+                    <div class="form-check form-switch" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.t2Logic.description}">
                          <label class="form-check-label small me-2" for="t2-logic-switch" id="t2-logic-label-prefix">Logic:</label>
                          <input class="form-check-input" type="checkbox" role="switch" id="t2-logic-switch" ${logicChecked ? 'checked' : ''}>
                          <label class="form-check-label fw-bold" for="t2-logic-switch" id="t2-logic-label">${initialLogic}</label>
@@ -113,10 +113,10 @@ const uiComponents = (() => {
                         ${createCriteriaGroup('homogenitaet', 'Homogeneity', 't2Homogenitaet', createButtonOptions)}
                         ${createCriteriaGroup('signal', 'Signal', 't2Signal', createButtonOptions)}
                         <div class="col-12 d-flex justify-content-end align-items-center border-top pt-3 mt-3">
-                            <button class="btn btn-sm btn-outline-secondary me-2" id="btn-reset-criteria" data-tippy-content="${UI_TEXTS.tooltips.t2Actions.reset}">
+                            <button class="btn btn-sm btn-outline-secondary me-2" id="btn-reset-criteria" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.t2Actions.reset}">
                                 <i class="fas fa-undo me-1"></i> Reset to Default
                             </button>
-                            <button class="btn btn-sm btn-primary" id="btn-apply-criteria" data-tippy-content="${UI_TEXTS.tooltips.t2Actions.apply}">
+                            <button class="btn btn-sm btn-primary" id="btn-apply-criteria" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.t2Actions.apply}">
                                 <i class="fas fa-check me-1"></i> Apply & Save
                             </button>
                         </div>
@@ -127,8 +127,8 @@ const uiComponents = (() => {
 
     function createStatisticsCard(id, title, content = '', addPadding = true, tooltipKey = null, downloadButtons = [], tableId = null, cohortId = '') {
         let cardTooltipHtml = `data-tippy-content="${title}"`;
-        if (tooltipKey && UI_TEXTS.tooltips[tooltipKey]?.cardTitle) {
-            let tooltipTemplate = UI_TEXTS.tooltips[tooltipKey].cardTitle;
+        if (tooltipKey && APP_CONFIG.UI_TEXTS.tooltips[tooltipKey]?.cardTitle) {
+            let tooltipTemplate = APP_CONFIG.UI_TEXTS.tooltips[tooltipKey].cardTitle;
             let cohortName = cohortId ? getCohortDisplayName(cohortId) : 'the current cohort';
             let finalTooltip = tooltipTemplate.replace('[COHORT]', `<strong>${cohortName}</strong>`);
             cardTooltipHtml = `data-tippy-content="${finalTooltip}"`;
@@ -151,11 +151,11 @@ const uiComponents = (() => {
 
     function createPublicationNav(currentSectionId) {
         const navItems = PUBLICATION_CONFIG.sections.map(mainSection => {
-            const sectionTooltip = UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey] || mainSection.labelKey;
+            const sectionTooltip = APP_CONFIG.UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey] || mainSection.labelKey;
             return `
                 <li class="nav-item">
                     <a class="nav-link py-2 publication-section-link ${mainSection.id === currentSectionId ? 'active' : ''}" href="#" data-section-id="${mainSection.id}" data-tippy-content="${sectionTooltip}">
-                        ${UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey]}
+                        ${APP_CONFIG.UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey]}
                     </a>
                 </li>`;
         }).join('');
@@ -244,6 +244,7 @@ const uiComponents = (() => {
 
 
     return Object.freeze({
+        createHeaderButtonHTML,
         createDashboardCard,
         createT2CriteriaControls,
         createStatisticsCard,
