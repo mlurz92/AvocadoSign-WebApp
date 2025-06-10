@@ -47,17 +47,23 @@ class App {
     }
 
     checkDependencies() {
+        // Ensure all necessary modules are loaded and accessible
         const dependencies = { 
             state, t2CriteriaManager, studyT2CriteriaManager, dataProcessor, 
             statisticsService, bruteForceManager, 
             uiManager, uiComponents, tableRenderer, chartRenderer, 
             dataTab, analysisTab, statisticsTab, presentationTab, publicationTab, exportTab,
-            eventManager, 
+            eventManager, APP_CONFIG, // APP_CONFIG is global due to script loading, but good to check presence
+            // Also implicitly depends on global patientDataRaw from data.js
         };
         for (const dep in dependencies) {
-            if (typeof dependencies[dep] === 'undefined') {
-                throw new Error(`Core module '${dep}' is not available. Check script loading order.`);
+            if (typeof dependencies[dep] === 'undefined' || dependencies[dep] === null) {
+                throw new Error(`Core module or dependency '${dep}' is not available. Check script loading order or definition.`);
             }
+        }
+        // Specific check for global data, as it's not a module in the same way
+        if (typeof patientDataRaw === 'undefined' || patientDataRaw === null) {
+            throw new Error("Global 'patientDataRaw' is not available. Check data.js loading.");
         }
     }
 
@@ -145,6 +151,8 @@ class App {
         const logic = t2CriteriaManager.getAppliedLogic();
         const bruteForceResults = bruteForceManager.getAllResults();
         
+        // Calculate all publication stats only once per render cycle, if needed by any tab
+        // This ensures consistency across different sections that might use the same stats.
         this.allPublicationStats = statisticsService.calculateAllPublicationStats(this.processedData, criteria, logic, bruteForceResults);
 
         const publicationData = {
@@ -161,6 +169,7 @@ class App {
             const cohortForPresentation = state.getCurrentCohort(); 
             const filteredDataForPresentation = dataProcessor.filterDataByCohort(this.processedData, cohortForPresentation);
             
+            // Get stats for current cohort and all subgroups from the pre-calculated allPublicationStats
             const statsCurrentCohort = this.allPublicationStats[cohortForPresentation];
             const statsGesamt = this.allPublicationStats['Gesamt'];
             const statsDirektOP = this.allPublicationStats['direkt OP'];
@@ -198,6 +207,7 @@ class App {
                     performanceT2 = statsForStudyCohort?.performanceT2Literature?.[selectedStudyId];
                     comparisonCriteriaSet = studySet;
                     t2ShortName = studySet.displayShortName || studySet.name;
+                    // Comparison stats for literature sets are also pre-calculated and stored in allPublicationStats
                     comparisonASvsT2 = statsForStudyCohort?.[`comparisonASvsT2_literature_${selectedStudyId}`];
                 }
             }
@@ -211,10 +221,10 @@ class App {
                 statsDirektOP: statsDirektOP,
                 statsNRCT: statsNRCT,
                 performanceAS: statsCurrentCohort?.performanceAS,
-                performanceT2: performanceT2,
-                comparison: comparisonASvsT2,
-                comparisonCriteriaSet: comparisonCriteriaSet,
-                cohortForComparison: selectedStudyId ? (comparisonCriteriaSet?.applicableCohort || cohortForPresentation) : cohortForPresentation,
+                performanceT2: performanceT2, // This will be the performance of the selected studySet's T2 criteria
+                comparison: comparisonASvsT2, // This will be the comparison data for AS vs the selected studySet's T2
+                comparisonCriteriaSet: comparisonCriteriaSet, // The full study set object for display
+                cohortForComparison: selectedStudyId ? (comparisonCriteriaSet?.applicableCohort || cohortForPresentation) : cohortForPresentation, // The actual cohort the comparison criteria was evaluated on
                 patientCountForComparison: selectedStudyId ? (dataProcessor.filterDataByCohort(this.processedData, comparisonCriteriaSet?.applicableCohort || cohortForPresentation).length) : filteredDataForPresentation.length,
                 t2ShortName: t2ShortName
             };
@@ -259,15 +269,12 @@ class App {
     startBruteForceAnalysis() {
         const metric = document.getElementById('brute-force-metric')?.value || APP_CONFIG.DEFAULT_SETTINGS.BRUTE_FORCE_METRIC;
         const cohortId = state.getCurrentCohort();
+        // Prepare raw patient data specific to the worker's needs
+        // The worker needs lymphknoten_t2 with original German keys and n status
         const dataForWorker = this.rawData.filter(p => cohortId === 'Gesamt' || p.therapie === cohortId).map(p => ({
-            id: p.nr,
-            n: p.n,
-            groesse: p.groesse,
-            form: p.form,
-            kontur: p.kontur,
-            homogenitaet: p.homogenitaet,
-            signal: p.signal,
-            lymphknoten_t2: cloneDeep(p.lymphknoten_t2)
+            nr: p.nr, // Include nr for identification/debugging if needed in worker
+            n: p.n, // Reference standard needed for metric calculation
+            lymphknoten_t2: p.lymphknoten_t2 // Raw T2 nodes with original keys
         }));
         
         if (dataForWorker.length > 0) {
@@ -286,7 +293,7 @@ class App {
         }
         const best = bfResult.bestResult;
         Object.keys(best.criteria).forEach(key => {
-            if (key === 'logic') return;
+            if (key === 'logic') return; // Logic is handled separately
             const criterion = best.criteria[key];
             t2CriteriaManager.toggleCriterionActive(key, criterion.active);
             if (criterion.active) {
@@ -302,23 +309,43 @@ class App {
     
     handleSingleExport(exportType) {
         const cohort = state.getCurrentCohort();
-        const data = this.processedData;
+        const data = this.processedData; // Use processedData (full dataset)
         const bfResults = bruteForceManager.getAllResults();
         const criteria = t2CriteriaManager.getAppliedCriteria();
         const logic = t2CriteriaManager.getAppliedLogic();
-        const allCohortStats = this.allPublicationStats;
+        const allCohortStats = this.allPublicationStats; // Use pre-calculated stats
+
+        // Ensure data is filtered for the current cohort for cohort-specific exports
+        const currentFilteredData = dataProcessor.filterDataByCohort(data, cohort);
+        // Ensure data is evaluated with applied criteria for analysis table export
+        const evaluatedCurrentFilteredData = t2CriteriaManager.evaluateDataset(currentFilteredData, criteria, logic);
         
+        // Define common data for publication exports that need it
+        const commonDataForPublication = {
+            appName: APP_CONFIG.APP_NAME,
+            appVersion: APP_CONFIG.APP_VERSION,
+            nOverall: allCohortStats.Gesamt?.descriptive?.patientCount || 0,
+            nUpfrontSurgery: allCohortStats['direkt OP']?.descriptive?.patientCount || 0,
+            nNRCT: allCohortStats.nRCT?.descriptive?.patientCount || 0,
+            references: APP_CONFIG.REFERENCES_FOR_PUBLICATION || {},
+            bruteForceMetricForPublication: state.getPublicationBruteForceMetric(),
+            currentLanguage: state.getCurrentPublikationLang(),
+            rawData: this.rawData
+        };
+
         const exporter = {
             'stats-csv': () => exportService.exportStatistikCSV(allCohortStats[cohort], cohort, criteria, logic),
             'bruteforce-txt': () => exportService.exportBruteForceReport(bfResults[cohort]),
-            'datatable-md': () => exportService.exportTableMarkdown(this.currentCohortData, 'daten', cohort),
-            'analysistable-md': () => exportService.exportTableMarkdown(this.currentCohortData, 'auswertung', cohort, criteria, logic),
-            'filtered-data-csv': () => exportService.exportFilteredDataCSV(this.currentCohortData, cohort),
+            'datatable-md': () => exportService.exportTableMarkdown(currentFilteredData, 'daten', cohort),
+            'analysistable-md': () => exportService.exportTableMarkdown(evaluatedCurrentFilteredData, 'auswertung', cohort, criteria, logic),
+            'filtered-data-csv': () => exportService.exportFilteredDataCSV(currentFilteredData, cohort),
             'comprehensive-report-html': () => exportService.exportComprehensiveReportHTML(data, bfResults, cohort, criteria, logic)
         };
 
         if (exporter[exportType]) {
             exporter[exportType]();
+        } else {
+            uiManager.showToast(`Export type '${exportType}' not recognized or implemented.`, 'warning');
         }
     }
 
