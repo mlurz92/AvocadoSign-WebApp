@@ -5,7 +5,7 @@ const state = (() => {
         currentCohort: APP_CONFIG.DEFAULT_SETTINGS.KOLLEKTIV,
         dataTableSort: cloneDeep(APP_CONFIG.DEFAULT_SETTINGS.DATEN_TABLE_SORT),
         analysisTableSort: cloneDeep(APP_CONFIG.DEFAULT_SETTINGS.AUSWERTUNG_TABLE_SORT),
-        publicationSection: 'abstract_main', // Corrected from APP_CONFIG.DEFAULT_SETTINGS.PUBLICATION_SECTION
+        publicationSection: APP_CONFIG.DEFAULT_SETTINGS.PUBLICATION_SECTION,
         publicationBruteForceMetric: APP_CONFIG.DEFAULT_SETTINGS.PUBLICATION_BRUTE_FORCE_METRIC,
         publicationLang: APP_CONFIG.DEFAULT_SETTINGS.PUBLICATION_LANG,
         statsLayout: APP_CONFIG.DEFAULT_SETTINGS.STATS_LAYOUT,
@@ -13,13 +13,17 @@ const state = (() => {
         statsCohort2: APP_CONFIG.DEFAULT_SETTINGS.STATS_KOLLEKTIV2,
         presentationView: APP_CONFIG.DEFAULT_SETTINGS.PRESENTATION_VIEW,
         presentationStudyId: APP_CONFIG.DEFAULT_SETTINGS.PRESENTATION_STUDY_ID,
-        activeTabId: 'publication' 
+        activeTabId: 'publication'
     };
 
     function init() {
+        // Load and validate publicationSection from localStorage
+        const loadedSection = loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PUBLICATION_SECTION);
+        const isValidSection = PUBLICATION_CONFIG.sections.some(s => s.id === loadedSection);
+
         currentState = {
             currentCohort: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.CURRENT_KOLLEKTIV) ?? defaultState.currentCohort,
-            publicationSection: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PUBLICATION_SECTION) ?? defaultState.publicationSection,
+            publicationSection: isValidSection ? loadedSection : defaultState.publicationSection,
             publicationBruteForceMetric: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PUBLICATION_BRUTE_FORCE_METRIC) ?? defaultState.publicationBruteForceMetric,
             publicationLang: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PUBLICATION_LANG) ?? defaultState.publicationLang,
             statsLayout: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.STATS_LAYOUT) ?? defaultState.statsLayout,
@@ -36,7 +40,7 @@ const state = (() => {
     function _setter(key, storageKey, newValue) {
         if (currentState[key] !== newValue) {
             currentState[key] = newValue;
-            if (storageKey) { 
+            if (storageKey) {
                 saveToLocalStorage(storageKey, newValue);
             }
             return true;
@@ -97,7 +101,7 @@ const state = (() => {
 
     function getStatsCohort1() { return currentState.statsCohort1; }
     function setStatsCohort1(newCohort) { return _setter('statsCohort1', APP_CONFIG.STORAGE_KEYS.STATS_KOLLEKTIV1, newCohort); }
-    
+
     function getStatsCohort2() { return currentState.statsCohort2; }
     function setStatsCohort2(newCohort) { return _setter('statsCohort2', APP_CONFIG.STORAGE_KEYS.STATS_KOLLEKTIV2, newCohort); }
 
@@ -107,7 +111,7 @@ const state = (() => {
             if (currentState.presentationView !== newView) {
                 if (newView === 'as-pur') {
                     _setter('presentationStudyId', APP_CONFIG.STORAGE_KEYS.PRESENTATION_STUDY_ID, null);
-                } 
+                }
                 else if (newView === 'as-vs-t2' && !currentState.presentationStudyId) {
                     _setter('presentationStudyId', APP_CONFIG.STORAGE_KEYS.PRESENTATION_STUDY_ID, APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_STUDY_ID);
                 }
