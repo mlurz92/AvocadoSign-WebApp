@@ -128,7 +128,7 @@ const publicationTab = (() => {
     }
 
     function _generateResultsASPerformanceHTML(stats, commonData) {
-        const gesamtStats = stats?.Gesamt?.performanceAS;
+        const gesamtStats = stats?.Gesamt?.performanceAS; // Corrected variable name from gesaltStats to gesamtStats
         const direktOPStats = stats?.['direkt OP']?.performanceAS;
         const nRCTStats = stats?.nRCT?.performanceAS;
 
@@ -152,7 +152,7 @@ const publicationTab = (() => {
         const interobserverKappaCI = stats?.Gesamt?.interobserverKappaCI || { lower: 0.85, upper: 0.99 };
 
         return `
-            <p>In the overall cohort, the Avocado Sign was positive in ${formatNumber(gesamtStats.matrix?.tp + gesamtStats.matrix?.fp, 0)} patients and negative in ${formatNumber(gesamtStats.matrix?.fn + gesamtStats.matrix?.tn, 0)} patients. Histopathological examination revealed lymph node metastases in ${formatNumber(gesamtStats.matrix?.tp + gesaltStats.matrix?.fn, 0)} patients, while ${formatNumber(gesamtStats.matrix?.fp + gesamtStats.matrix?.tn, 0)} patients were classified N0.</p>
+            <p>In the overall cohort, the Avocado Sign was positive in ${formatNumber(gesamtStats.matrix?.tp + gesamtStats.matrix?.fp, 0)} patients and negative in ${formatNumber(gesamtStats.matrix?.fn + gesamtStats.matrix?.tn, 0)} patients. Histopathological examination revealed lymph node metastases in ${formatNumber(gesamtStats.matrix?.tp + gesamtStats.matrix?.fn, 0)} patients, while ${formatNumber(gesamtStats.matrix?.fp + gesamtStats.matrix?.tn, 0)} patients were classified N0.</p>
             <p>The Avocado Sign demonstrated high diagnostic accuracy for predicting lymph node involvement across the overall cohort and subgroups. Overall sensitivity was ${formatCIForPub(gesamtStats.sens)}, specificity was ${formatCIForPub(gesamtStats.spec)}, PPV was ${formatCIForPub(gesamtStats.ppv)}, NPV was ${formatCIForPub(gesamtStats.npv)}, and accuracy was ${formatCIForPub(gesamtStats.acc)}. The area under the ROC curve (AUC) was ${formatCIForPub(gesamtStats.auc)} for the overall cohort, indicating high diagnostic performance (Figure 1).</p>
             <p>Subgroup analysis revealed excellent performance of the Avocado Sign in patients undergoing surgery alone, with a sensitivity of ${formatCIForPub(direktOPStats?.sens)}, specificity of ${formatCIForPub(direktOPStats?.spec)}, PPV of ${formatCIForPub(direktOPStats?.ppv)}, NPV of ${formatCIForPub(direktOPStats?.npv)}, and accuracy of ${formatCIForPub(direktOPStats?.acc)}. The AUC was ${formatCIForPub(direktOPStats?.auc)} (Figure 2).</p>
             <p>In patients receiving neoadjuvant chemoradiotherapy, the Avocado Sign showed a sensitivity of ${formatCIForPub(nRCTStats?.sens)}, specificity of ${formatCIForPub(nRCTStats?.spec)}, PPV of ${formatCIForPub(nRCTStats?.ppv)}, NPV of ${formatCIForPub(nRCTStats?.npv)}, and accuracy of ${formatCIForPub(nRCTStats?.acc)}. The AUC was ${formatCIForPub(nRCTStats?.auc)} (Figure 3). Chi-square tests indicated no significant differences in diagnostic performance between subgroups (${getPValueTextForPub(stats?.Gesamt?.comparisonASvsT2Applied?.mcnemar?.pValue)}), affirming the robustness of the Avocado Sign across treatment types. An overview of nominal values and diagnostic performance metrics for overall cohort and subgroups is provided in Table 3.</p>
@@ -424,3 +424,4 @@ const publicationTab = (() => {
         getTableHTMLForExport
     };
 })();
+
