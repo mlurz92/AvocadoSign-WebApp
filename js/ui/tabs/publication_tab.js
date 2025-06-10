@@ -1,10 +1,5 @@
 const publicationTab = (() => {
 
-    let allCohortStats = null;
-    let rawGlobalData = null;
-    let bruteForceResults = null;
-    let currentPubLang = 'en';
-
     function _getSectionContent(sectionId, lang, stats, commonData) {
         if (!UI_TEXTS.publicationContent || !UI_TEXTS.publicationContent[sectionId] || !UI_TEXTS.publicationContent[sectionId][lang]) {
             return `<p class="text-warning">Content for section '${sectionId}' in language '${lang}' is not available.</p>`;
@@ -19,9 +14,10 @@ const publicationTab = (() => {
         const fP = (val, dig = 1) => formatPercent(val, dig, na);
         const fCI_pub = (metric) => {
             if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return na;
-            const digits = (metric.name === 'auc' || metric.name === 'f1') ? 2 : 1;
+            const digits = (metric.name === 'auc') ? 2 : ((metric.name === 'f1') ? 3 : 1);
             const isPercent = !(metric.name === 'auc' || metric.name === 'f1');
             const valueStr = isPercent ? fP(metric.value, digits) : fv(metric.value, digits, true);
+
             if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) {
                 return valueStr;
             }
@@ -31,8 +27,10 @@ const publicationTab = (() => {
         };
         const getPValueTextForPublication = (pValue) => {
             if (pValue === null || pValue === undefined || isNaN(pValue) || !isFinite(pValue)) return 'N/A';
-            if (pValue < 0.001) { return 'P < .001'; }
-            return `P = ${formatNumber(pValue, 3, 'N/A', true)}`;
+            const pLessThanThreshold = 0.001;
+            if (pValue < pLessThanThreshold) { return 'P < .001'; }
+            const pFormatted = formatNumber(pValue, 3, 'N/A', true);
+            return `P = ${pFormatted}`;
         };
 
         if (tableId === PUBLICATION_CONFIG.publicationElements.methoden.literaturT2KriterienTabelle.id) {
@@ -97,19 +95,17 @@ const publicationTab = (() => {
                 if (!statsObj || !statsObj.matrix) return [`${label}`, ...Array(3).fill(na)];
                 return [
                     label,
-                    `${statsObj.matrix.tp + statsObj.matrix.fp}`, // AS+
-                    `${statsObj.matrix.fn + statsObj.matrix.tn}`, // AS-
-                    `${statsObj.matrix.tp + statsObj.matrix.fn}`, // N+
-                    `${statsObj.matrix.fp + statsObj.matrix.tn}`, // N0
-                    `${statsObj.matrix.tp}`, // AS+ N+
-                    `${statsObj.matrix.fp}`, // AS+ N0
-                    `${statsObj.matrix.fn}`, // AS- N+
-                    `${statsObj.matrix.tn}` // AS- N0
+                    `${statsObj.matrix.tp + statsObj.matrix.fp}`,
+                    `${statsObj.matrix.fn + statsObj.matrix.tn}`,
+                    `${statsObj.matrix.tp + statsObj.matrix.fn}`,
+                    `${statsObj.matrix.fp + statsObj.matrix.tn}`,
+                    `${statsObj.matrix.tp}`,
+                    `${statsObj.matrix.fp}`,
+                    `${statsObj.matrix.fn}`,
+                    `${statsObj.matrix.tn}`
                 ];
             };
 
-            // This table format is very specific to the paper. I'll recreate it based on the provided PDF structure.
-            // This requires a different header/row structure than common markdown tables.
             let tableHtmlContent = `
                 <table class="table table-sm table-striped small">
                     <thead>
@@ -138,7 +134,7 @@ const publicationTab = (() => {
                     </tbody>
                 </table>
             `;
-            return tableHtmlContent; // Return raw HTML for specific table format
+            return tableHtmlContent;
         } else if (tableId === PUBLICATION_CONFIG.publicationElements.ergebnisse.diagnostischeGueteLiteraturT2Tabelle.id) {
             caption = PUBLICATION_CONFIG.publicationElements.ergebnisse.diagnostischeGueteLiteraturT2Tabelle[`title${lang === 'en' ? 'En' : 'De'}`];
             headers = ['Criteria Set (Evaluated Cohort)', 'Sens. (95% CI)', 'Spec. (95% CI)', 'PPV (95% CI)', 'NPV (95% CI)', 'Acc. (95% CI)', 'AUC (95% CI)'];
@@ -168,7 +164,7 @@ const publicationTab = (() => {
                     bfRes.metricName,
                     fv(bfRes.metricValue, 4, true),
                     bfRes.logic,
-                    studyT2CriteriaManager.formatCriteriaForDisplay(bfRes.criteria, bfRes.logic, true), // Short format for table
+                    studyT2CriteriaManager.formatCriteriaForDisplay(bfRes.criteria, bfRes.logic, true),
                     fCI_pub(perf.sens),
                     fCI_pub(perf.spec),
                     fCI_pub(perf.acc),
@@ -209,6 +205,7 @@ const publicationTab = (() => {
         let targetId = chartId;
         let chartType = '';
         let options = {};
+        let dataForROC = null; // To pass raw data for ROC curve
 
         const getChartHTML = (id, title, opts = {}) => {
             return `<div class="chart-container pub-figure" id="${id}_container" style="min-height: ${opts.height || APP_CONFIG.CHART_SETTINGS.DEFAULT_HEIGHT}px;">
@@ -247,25 +244,21 @@ const publicationTab = (() => {
             }
         } else if (chartId.startsWith('pub-chart-roc')) {
              const cohortKey = chartId.replace('pub-chart-roc-', '');
-             const cohortData = data.filter(p => p.therapy === cohortKey || cohortKey === 'overall_cohort'); // Assuming 'overall_cohort' maps to 'Gesamt'
-             const predictionKey = 'asStatus';
-             const referenceKey = 'nStatus';
-             chartTitle = `ROC Curve for Avocado Sign - ${getCohortDisplayName(cohortKey)}`;
+             dataForROC = commonData.rawData.filter(p => p.therapy === cohortKey || cohortKey === 'overall_cohort'); // Assuming 'overall_cohort' maps to 'Gesamt' for display
+             if (cohortKey === 'overall_cohort') dataForROC = commonData.rawData;
+
+             chartTitle = `ROC Curve for Avocado Sign - ${getCohortDisplayName(cohortKey === 'overall_cohort' ? 'Gesamt' : cohortKey)}`;
              chartType = 'rocCurve';
-             // data is raw processed data for ROC, not aggregated stats
              return `<div class="chart-container pub-figure" id="${chartId}_container" style="min-height: ${300}px;">
                         <p class="small text-muted">[${chartTitle}]</p>
                         <p class="small text-muted"><strong>Figure X:</strong> ${chartTitle}</p>
                         <div id="${chartId}" style="width:100%; height:100%;"></div>
                     </div>`;
         } else if (chartId === 'pub-figure-avocado-sign-illustration') {
-             // This is a static image/illustration, handled directly in the content string
-             // and doesn't require D3.js rendering
-             return ''; // Content is injected directly in the HTML string.
+             return '';
         } else if (chartId === PUBLICATION_CONFIG.publicationElements.methoden.flowDiagram.id) {
-            return ''; // Static image/illustration
+            return '';
         }
-
 
         if (chartData.length > 0 || chartType === 'rocCurve') {
             const containerHtml = getChartHTML(targetId, chartTitle, options);
@@ -278,11 +271,16 @@ const publicationTab = (() => {
                         chartRenderer.renderPieChart(chartData, targetId, options);
                     } else if (chartType === 'comparisonBar') {
                         chartRenderer.renderComparisonBarChart(chartData, targetId, options, 'Optimized T2');
-                    } else if (chartType === 'rocCurve') {
-                        chartRenderer.renderDiagnosticPerformanceChart(data.filter(p => p.therapy === cohortKey || cohortKey === 'Gesamt'), predictionKey, referenceKey, targetId, UI_TEXTS.legendLabels.avocadoSign);
+                    } else if (chartType === 'rocCurve' && dataForROC) {
+                         // The rawData needs to be processed to have t2Status and asStatus for ROC calculation
+                         // This re-processing needs to happen in the main app to ensure consistency
+                         // For now, it will use existing 'asStatus' if available in commonData.rawData
+                         // In a real scenario, this would likely be pre-processed data with necessary keys
+                         const processedDataForROC = dataProcessor.processAllData(dataForROC);
+                         chartRenderer.renderDiagnosticPerformanceChart(processedDataForROC, 'asStatus', 'nStatus', targetId, UI_TEXTS.legendLabels.avocadoSign);
                     }
                 }
-            }, 50); // Small delay to ensure DOM is ready
+            }, 50);
             return containerHtml;
         }
         return '';
@@ -292,7 +290,7 @@ const publicationTab = (() => {
         rawGlobalData = data.rawData;
         allCohortStats = data.allCohortStats;
         bruteForceResults = data.bruteForceResults;
-        currentPubLang = data.currentLanguage; // Get current language from data
+        currentPubLang = data.currentLanguage;
 
         const commonData = {
             appName: APP_CONFIG.APP_NAME,
@@ -302,7 +300,8 @@ const publicationTab = (() => {
             nNRCT: allCohortStats.nRCT?.descriptive?.patientCount || 0,
             references: APP_CONFIG.REFERENCES_FOR_PUBLICATION || {},
             bruteForceMetricForPublication: state.getPublicationBruteForceMetric(),
-            currentLanguage: currentPubLang // Pass current language to text generators
+            currentLanguage: currentPubLang,
+            rawData: rawGlobalData // Pass raw data for ROC curve generation in Charts
         };
         
         const mainSection = PUBLICATION_CONFIG.sections.find(s => s.id === currentSectionId);
@@ -324,19 +323,15 @@ const publicationTab = (() => {
 
         mainSection.subSections.forEach(subSection => {
             finalHTML += `<div class="publication-sub-section border-bottom pb-4 mb-4" id="pub-content-${subSection.id}">`;
-            finalHTML += `<h3>${subSection.label}</h3>`; // Sub-section title
+            finalHTML += `<h3>${subSection.label}</h3>`;
             const sectionContent = _getSectionContent(subSection.id, currentPubLang, allCohortStats, commonData);
             finalHTML += sectionContent;
 
-            // Dynamically add figures and tables based on the content
             const elementsConfig = PUBLICATION_CONFIG.publicationElements;
 
             if (elementsConfig.methoden.flowDiagram.id === subSection.id) {
-                // This is a direct illustration, not a chart that needs rendering
-                // No specific rendering logic needed here as it's part of content.
             }
 
-            // Check for specific tables or figures to embed
             if (currentSectionId === 'methoden') {
                 if (subSection.id === 'methoden_bildanalyse_t2_kriterien') {
                     finalHTML += _getPublicationTable(elementsConfig.methoden.literaturT2KriterienTabelle.id, 'literaturT2KriterienTabelle', null, currentPubLang, allCohortStats, commonData);
@@ -352,8 +347,6 @@ const publicationTab = (() => {
                     }
                 } else if (subSection.id === 'ergebnisse_as_diagnostische_guete') {
                     finalHTML += _getPublicationTable(elementsConfig.ergebnisse.diagnostischeGueteASTabelle.id, 'diagnostischeGueteASTabelle', null, currentPubLang, allCohortStats, commonData);
-                    // ROC curves are rendered within the text content in this case, but typically would be separate
-                    // _getPublicationChart will render them in the specific div IDs.
                     finalHTML += _getPublicationChart('pub-chart-roc-overall', allCohortStats, commonData);
                     finalHTML += _getPublicationChart('pub-chart-roc-direkt OP', allCohortStats, commonData);
                     finalHTML += _getPublicationChart('pub-chart-roc-nRCT', allCohortStats, commonData);
@@ -363,7 +356,6 @@ const publicationTab = (() => {
                     finalHTML += _getPublicationTable(elementsConfig.ergebnisse.diagnostischeGueteOptimierteT2Tabelle.id, 'diagnostischeGueteOptimierteT2Tabelle', null, currentPubLang, allCohortStats, commonData);
                 } else if (subSection.id === 'ergebnisse_vergleich_as_vs_t2') {
                     finalHTML += _getPublicationTable(elementsConfig.ergebnisse.statistischerVergleichAST2Tabelle.id, 'statistischerVergleichAST2Tabelle', null, currentPubLang, allCohortStats, commonData);
-                    // Render comparison charts
                     finalHTML += _getPublicationChart(elementsConfig.ergebnisse.vergleichPerformanceChartGesamt.id, allCohortStats, commonData);
                     finalHTML += _getPublicationChart(elementsConfig.ergebnisse.vergleichPerformanceChartdirektOP.id, allCohortStats, commonData);
                     finalHTML += _getPublicationChart(elementsConfig.ergebnisse.vergleichPerformanceChartnRCT.id, allCohortStats, commonData);
@@ -377,12 +369,10 @@ const publicationTab = (() => {
         return finalHTML;
     }
 
-    // Public method to get content for export (used by export_service.js)
     function getSectionContentForExport(sectionId, lang, allStats, commonData) {
         return _getSectionContent(sectionId, lang, allStats, commonData);
     }
 
-    // Public method to get table HTML for export (used by export_service.js)
     function getTableHTMLForExport(tableId, tableType, data, lang, stats, commonData, options = {}) {
         return _getPublicationTable(tableId, tableType, data, lang, stats, commonData, options);
     }
