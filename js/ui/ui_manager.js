@@ -334,7 +334,7 @@ const uiManager = (() => {
             }
         });
         if (logicSwitch) logicSwitch.checked = currentLogic === 'OR';
-        if (logicLabel) logicLabel.textContent = currentLogic;
+        if (logicLabel) logicLabel.textContent = APP_CONFIG.UI_TEXTS.t2LogicDisplayNames[currentLogic] || currentLogic;
     }
     
     function updateBruteForceUI(status, payload = {}, isWorkerAvailable = false, currentCohort = null) {
@@ -482,8 +482,8 @@ const uiManager = (() => {
         });
 
         toggleButton.dataset.action = isExpanding ? 'collapse' : 'expand';
-        const expandAllTooltip = (typeof APP_CONFIG.UI_TEXTS !== 'undefined') ? APP_CONFIG.UI_TEXTS.tooltips.dataTab.expandAll : 'Expand All Details';
-        const collapseAllTooltip = (typeof APP_CONFIG.UI_TEXTS !== 'undefined') ? APP_CONFIG.UI_TEXTS.tooltips.dataTab.collapseAll || 'Collapse All Details' : 'Collapse All Details';
+        const expandAllTooltip = APP_CONFIG.UI_TEXTS.tooltips.dataTab.expandAll;
+        const collapseAllTooltip = APP_CONFIG.UI_TEXTS.tooltips.dataTab.collapseAll;
         toggleButton.innerHTML = isExpanding
             ? `Collapse All Details <i class="fas fa-chevron-up ms-1"></i>`
             : `Expand All Details <i class="fas fa-chevron-down ms-1"></i>`;
@@ -513,48 +513,8 @@ const uiManager = (() => {
         updateSortIcons,
         markCriteriaSavedIndicator,
         toggleAllDetails,
-        getT2IconSVG: (type, value) => { 
-            const s = APP_CONFIG.UI_SETTINGS.ICON_SIZE;
-            const sw = APP_CONFIG.UI_SETTINGS.ICON_STROKE_WIDTH;
-            const iconColor = APP_CONFIG.UI_SETTINGS.ICON_COLOR;
-            const c = s / 2; const r = (s - sw) / 2;
-            const sq = s - sw * 1.5; const sqPos = (s - sq) / 2;
-            let svgContent = ''; let fillColor = 'none';
-            const unknownIconSVG = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" stroke-dasharray="2 2" /><line x1="${sqPos}" y1="${sqPos}" x2="${sqPos+sq}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/><line x1="${sqPos+sq}" y1="${sqPos}" x2="${sqPos}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`;
-            switch (type) {
-                case 'shape':
-                case 'form':
-                    if (value === 'rund') svgContent = `<circle cx="${c}" cy="${c}" r="${r}" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw}"/>`;
-                    else if (value === 'oval') svgContent = `<ellipse cx="${c}" cy="${c}" rx="${r}" ry="${r * 0.65}" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw}"/>`;
-                    else svgContent = unknownIconSVG;
-                    break;
-                case 'border':
-                case 'kontur':
-                    if (value === 'scharf') svgContent = `<circle cx="${c}" cy="${c}" r="${r}" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`;
-                    else if (value === 'irregulär') svgContent = `<path d="M ${c + r} ${c} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${r*0.8} ${r*1.2} 0 0 1 ${c-r*0.9} ${c-r*0.3} A ${r*1.1} ${r*0.7} 0 0 1 ${c+r} ${c} Z" fill="${fillColor}" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`;
-                    else svgContent = unknownIconSVG;
-                    break;
-                case 'homogeneity':
-                case 'homogenitaet':
-                    if (value === 'homogen') svgContent = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="${iconColor}" stroke="none" rx="1" ry="1"/>`;
-                    else if (value === 'heterogen') { const pSize = sq / 4; svgContent = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" rx="1" ry="1"/>`; for(let i=0;i<3;i++){for(let j=0;j<3;j++){if((i+j)%2===0){svgContent+=`<rect x="${sqPos+i*pSize+pSize/2}" y="${sqPos+j*pSize+pSize/2}" width="${pSize}" height="${pSize}" fill="${iconColor}" stroke="none" style="opacity:0.6;"/>`;}}} }
-                    else svgContent = unknownIconSVG;
-                    break;
-                case 'signal':
-                    if (value === 'signalarm') fillColor = '#555555';
-                    else if (value === 'intermediär') fillColor = '#aaaaaa';
-                    else if (value === 'signalreich') fillColor = '#f0f0f0';
-                    else { svgContent = unknownIconSVG; break; }
-                    const strokeColor = (value === 'signalreich') ? '#333333' : 'rgba(0,0,0,0.1)';
-                    svgContent = `<circle cx="${c}" cy="${c}" r="${r}" fill="${fillColor}" stroke="${strokeColor}" stroke-width="${sw * 0.75}"/>`;
-                    break;
-                case 'ruler-horizontal':
-                    svgContent = `<path d="M${sw/2} ${c} H${s-sw/2} M${c} ${sw/2} V${s-sw/2}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`;
-                    type = 'size';
-                    break;
-                default: svgContent = unknownIconSVG;
-            }
-            return `<svg class="icon-t2 icon-${type}" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${type}: ${value || 'unknown'}">${svgContent}</svg>`;
-        }
+        // The getT2IconSVG function is now centralized in utils.js
+        // and should be accessed from there. Removing the duplicate here.
+        // If other modules need it, they should import/use it from utils.js
     });
 })();
