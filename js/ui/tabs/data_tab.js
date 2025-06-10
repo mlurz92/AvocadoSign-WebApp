@@ -72,7 +72,7 @@ const dataTab = (() => {
         if (!data) throw new Error("Data for data tab not available.");
         const toggleButtonHTML = `
             <div class="d-flex justify-content-end mb-3" id="data-toggle-button-container">
-                <button id="data-toggle-details" class="btn btn-sm btn-outline-secondary" data-action="expand" data-tippy-content="${UI_TEXTS.tooltips.dataTab.expandAll || 'Toggle all details'}">
+                <button id="data-toggle-details" class="btn btn-sm btn-outline-secondary" data-action="expand" data-tippy-content="${UI_TEXTS.tooltips.dataTab.expandAll}">
                    Expand All Details <i class="fas fa-chevron-down ms-1"></i>
                </button>
             </div>`;
