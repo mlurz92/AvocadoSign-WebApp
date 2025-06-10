@@ -9,7 +9,7 @@ const statisticsTab = (() => {
         const fP = (val, dig = 1) => formatPercent(val, dig, na);
         const fLK = (lkData) => `${fv(lkData?.median,1)} (${fv(lkData?.min,0)}-${fv(lkData?.max,0)}) [${fv(lkData?.mean,1)} ± ${fv(lkData?.sd,1)}]`;
         
-        const getTooltipTemplate = (key) => UI_TEXTS.tooltips.descriptiveStatistics[key]?.description || key;
+        const getTooltipTemplate = (key) => APP_CONFIG.UI_TEXTS.tooltips.descriptiveStatistics[key]?.description || key;
 
         const tooltips = {
             age: getTooltipTemplate('age'),
@@ -213,13 +213,13 @@ const statisticsTab = (() => {
                     if (allTableResults.length === 0) return '<p class="text-muted small p-3">No criteria comparison data.</p>';
 
                     let tableHtml = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr>
-                        <th>${UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSet}</th>
-                        <th>${UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSens}</th>
-                        <th>${UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSpec}</th>
-                        <th>${UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderPPV}</th>
-                        <th>${UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderNPV}</th>
-                        <th>${UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAcc}</th>
-                        <th>${UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAUC}</th>
+                        <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSet}</th>
+                        <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSens}</th>
+                        <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSpec}</th>
+                        <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderPPV}</th>
+                        <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderNPV}</th>
+                        <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAcc}</th>
+                        <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAUC}</th>
                     </tr></thead><tbody>`;
 
                     allTableResults.forEach(r => {
