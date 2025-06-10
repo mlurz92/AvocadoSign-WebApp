@@ -26,15 +26,18 @@ const uiComponents = (() => {
         return headerButtonHtml;
     }
 
-    function createDashboardCard(title, content, chartId = null, cardClasses = '', headerClasses = '', bodyClasses = '', downloadButtons = []) {
+    function createDashboardCard(title, content, chartId = null, cardClasses = '', headerClasses = '', bodyClasses = '', downloadButtons = [], cohortDisplayName = '') {
         const headerButtonHtml = createHeaderButtonHTML(downloadButtons, chartId || title.replace(/[^a-z0-9]/gi, '_'), title);
         const tooltipKey = chartId ? chartId.replace(/^chart-dash-/, '') : title.toLowerCase().replace(/\s+/g, '');
-        const tooltipContent = UI_TEXTS.tooltips.descriptiveStatistics[tooltipKey]?.description || title || '';
+        let tooltipContent = UI_TEXTS.tooltips.descriptiveStatistics[tooltipKey]?.description || title || '';
+        if (cohortDisplayName) {
+            tooltipContent = tooltipContent.replace('[COHORT]', `<strong>${cohortDisplayName}</strong>`);
+        }
 
         return `
             <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 dashboard-card-col ${cardClasses}">
                 <div class="card h-100 dashboard-card">
-                    <div class="card-header ${headerClasses} d-flex justify-content-between align-items-center" data-tippy-content="${tooltipContent.replace('[COHORT]', '<strong>the current cohort</strong>')}">
+                    <div class="card-header ${headerClasses} d-flex justify-content-between align-items-center" data-tippy-content="${tooltipContent}">
                         <span class="text-truncate">${title}</span>
                         <span class="card-header-buttons flex-shrink-0 ps-1">${headerButtonHtml}</span>
                     </div>
@@ -49,8 +52,8 @@ const uiComponents = (() => {
     function createT2CriteriaControls(initialCriteria, initialLogic) {
         if (!initialCriteria || !initialLogic) return '<p class="text-danger">Error: Could not load initial criteria.</p>';
         const logicChecked = initialLogic === 'OR';
-        const defaultCriteriaForSize = getDefaultT2Criteria();
-        const sizeThreshold = initialCriteria.size?.threshold ?? defaultCriteriaForSize?.size?.threshold ?? 5.0;
+        const defaultCriteria = getDefaultT2Criteria();
+        const sizeThreshold = initialCriteria.size?.threshold ?? defaultCriteria?.size?.threshold ?? 5.0;
         const { min, max, step } = APP_CONFIG.T2_CRITERIA_SETTINGS.SIZE_RANGE;
         const formattedThreshold = formatNumber(sizeThreshold, 1, '5.0', true);
 
@@ -68,7 +71,10 @@ const uiComponents = (() => {
 
         const createCriteriaGroup = (key, label, tooltipKey, contentGenerator) => {
             const isChecked = initialCriteria[key]?.active === true;
-            const tooltip = UI_TEXTS.tooltips[tooltipKey]?.description || label;
+            let tooltip = UI_TEXTS.tooltips[tooltipKey]?.description || label;
+            if (tooltipKey === 't2Size') {
+                tooltip = tooltip.replace('[MIN]', min).replace('[MAX]', max).replace('[STEP]', step);
+            }
             return `
                 <div class="col-md-6 criteria-group">
                     <div class="form-check mb-2">
@@ -119,8 +125,15 @@ const uiComponents = (() => {
             </div>`;
     }
 
-    function createStatisticsCard(id, title, content = '', addPadding = true, tooltipKey = null, downloadButtons = [], tableId = null) {
-        const cardTooltipHtml = tooltipKey && UI_TEXTS.tooltips[tooltipKey]?.cardTitle ? `data-tippy-content="${UI_TEXTS.tooltips[tooltipKey].cardTitle.replace('[COHORT]', '<strong>[COHORT_PLACEHOLDER]</strong>')}"` : `data-tippy-content="${title}"`;
+    function createStatisticsCard(id, title, content = '', addPadding = true, tooltipKey = null, downloadButtons = [], tableId = null, cohortId = '') {
+        let cardTooltipHtml = `data-tippy-content="${title}"`;
+        if (tooltipKey && UI_TEXTS.tooltips[tooltipKey]?.cardTitle) {
+            let tooltipTemplate = UI_TEXTS.tooltips[tooltipKey].cardTitle;
+            let cohortName = cohortId ? getCohortDisplayName(cohortId) : 'the current cohort';
+            let finalTooltip = tooltipTemplate.replace('[COHORT]', `<strong>${cohortName}</strong>`);
+            cardTooltipHtml = `data-tippy-content="${finalTooltip}"`;
+        }
+        
         const headerButtonHtml = createHeaderButtonHTML(downloadButtons, id + '-content', title);
         return `
             <div class="col-12 stat-card" id="${id}-card-container">
@@ -138,7 +151,7 @@ const uiComponents = (() => {
 
     function createPublicationNav(currentSectionId) {
         const navItems = PUBLICATION_CONFIG.sections.map(mainSection => {
-            const sectionTooltip = UI_TEXTS.tooltips.publicationTab[mainSection.id]?.main || UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey] || mainSection.labelKey;
+            const sectionTooltip = UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey] || mainSection.labelKey;
             return `
                 <li class="nav-item">
                     <a class="nav-link py-2 publication-section-link ${mainSection.id === currentSectionId ? 'active' : ''}" href="#" data-section-id="${mainSection.id}" data-tippy-content="${sectionTooltip}">
@@ -184,7 +197,7 @@ const uiComponents = (() => {
         let rank = 1;
         let displayedCount = 0;
         let lastMetricValue = -Infinity;
-        const precision = 8; // For floating point comparison
+        const precision = 8; 
 
         for (let i = 0; i < results.length; i++) {
             const result = results[i];
@@ -194,7 +207,7 @@ const uiComponents = (() => {
             const lastMetricValueRounded = parseFloat(lastMetricValue.toFixed(precision));
 
             let currentRank = rank;
-            const isNewRank = Math.abs(currentMetricValueRounded - lastMetricValueRounded) > 1e-8; // Threshold for float comparison
+            const isNewRank = Math.abs(currentMetricValueRounded - lastMetricValueRounded) > 1e-8;
 
             if (i > 0 && isNewRank) {
                 rank = displayedCount + 1;
@@ -203,7 +216,7 @@ const uiComponents = (() => {
                 currentRank = rank;
             }
 
-            if (rank > 10 && isNewRank) break; // Limit to top 10 distinct ranks
+            if (rank > 10 && isNewRank) break;
 
             html += `
                 <tr>
