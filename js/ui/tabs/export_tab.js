@@ -2,10 +2,17 @@ const exportTab = (() => {
 
     const createExportButton = (config) => {
         if (!config || !config.id) return '';
-        const tooltipConfig = UI_TEXTS.tooltips.exportTab[config.id.replace(/-/g, '')];
-        const description = tooltipConfig?.description || 'No description available.';
-        const type = tooltipConfig?.type || 'UNKNOWN';
-        const ext = tooltipConfig?.ext || 'EXT';
+        const tooltipConfigKey = config.id.replace(/-/g, '');
+        const tooltipConfig = UI_TEXTS.tooltips.exportTab[tooltipConfigKey];
+        
+        if (!tooltipConfig) {
+            console.warn(`Missing tooltip config for export button: ${config.id}`);
+            return '';
+        }
+
+        const description = tooltipConfig.description || 'No description available.';
+        const type = tooltipConfig.type || 'UNKNOWN';
+        const ext = tooltipConfig.ext || 'EXT';
 
         return `
             <div class="col-md-6 mb-3">
@@ -23,6 +30,8 @@ const exportTab = (() => {
 
     function render(currentCohort) {
         const cohortDisplayName = getCohortDisplayName(currentCohort);
+        const descriptionTextTemplate = UI_TEXTS.tooltips.exportTab.description;
+        const finalDescriptionText = descriptionTextTemplate.replace('[COHORT]', `<strong>${cohortDisplayName}</strong>`);
 
         const singleExports = [
             { id: 'stats-csv', label: 'Statistics', icon: 'fa-chart-pie' },
@@ -41,8 +50,8 @@ const exportTab = (() => {
             { id: 'svg-zip', label: 'SVG Graphics', icon: 'fa-vector-square' }
         ];
 
-        let singleExportsHTML = singleExports.map(createExportButton).join('');
-        let packageExportsHTML = packageExports.map(createExportButton).join('');
+        const singleExportsHTML = singleExports.map(createExportButton).join('');
+        const packageExportsHTML = packageExports.map(createExportButton).join('');
 
         return `
             <div class="container-fluid">
@@ -50,7 +59,7 @@ const exportTab = (() => {
                     <div class="col-12">
                         <div class="alert alert-info small" role="alert">
                             <i class="fas fa-info-circle me-2"></i>
-                            All exports are generated based on the currently selected global cohort (<strong>${cohortDisplayName}</strong>) and the last applied T2 criteria from the 'Analysis' tab. Buttons for unavailable exports (e.g., Brute-Force report before running the analysis) are automatically disabled.
+                            ${finalDescriptionText}
                         </div>
                     </div>
                 </div>
