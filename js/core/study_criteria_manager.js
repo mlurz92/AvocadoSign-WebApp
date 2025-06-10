@@ -110,13 +110,13 @@ const studyT2CriteriaManager = (() => {
 
         let morphologyCount = 0;
         if (hasRoundShape) morphologyCount++;
-        if (hasIrregularBorder) morphologyCount++;
+        if (hasIrregularBorder) morphologyCount++; // Corrected variable name: hasIrregularBorder
         if (hasHeterogeneousHomogeneity) morphologyCount++;
 
         // Record individual checks for detailed display
         checkResult.size = (criteria.size?.active && nodeSize >= (criteria.size.threshold || 9.0)); // The threshold is for >=9mm rule
         checkResult.form = (criteria.form?.active && hasRoundShape);
-        checkResult.kontur = (criteria.kontur?.active && hasIrularBorder);
+        checkResult.kontur = (criteria.kontur?.active && hasIrregularBorder); // Corrected variable name
         checkResult.homogenitaet = (criteria.homogenitaet?.active && hasHeterogeneousHomogeneity);
         // Signal is not part of the ESGAR morphology count for this specific rule but can be recorded if active
         checkResult.signal = (criteria.signal?.active && lymphNode.signal === criteria.signal.value);
