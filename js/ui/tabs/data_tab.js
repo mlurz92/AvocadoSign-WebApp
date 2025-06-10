@@ -31,7 +31,7 @@ const dataTab = (() => {
                 }
             }
             
-            const baseTooltipContent = APP_CONFIG.UI_TEXTS.tooltips.dataTab[col.tooltipKey] || col.label;
+            const baseTooltipContent = APP_CONFIG.UI_TEXTS.tooltips.dataTab[col.tooltipKey];
             const subHeaders = col.subKeys ? col.subKeys.map(sk => {
                 const isActiveSubSort = activeSubKey === sk.key;
                 const style = isActiveSubSort ? 'font-weight: bold; text-decoration: underline; color: var(--primary-color);' : '';
@@ -84,6 +84,8 @@ const dataTab = (() => {
             const tableHeader = document.getElementById('data-table-header');
             if (tableBody && data.length > 0) uiManager.attachRowCollapseListeners(tableBody.id);
             if (tableHeader) uiManager.updateSortIcons(tableHeader.id, sortState);
+            // Re-initialize tooltips specifically for this rendered content
+            uiManager.initializeTooltips(document.getElementById('data-pane'));
         }, 0);
 
         return finalHTML;
