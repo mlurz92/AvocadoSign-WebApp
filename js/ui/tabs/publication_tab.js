@@ -92,6 +92,7 @@ const publicationTab = (() => {
     }
 
     return {
-        render
+        render,
+        _getAbstractText // Expose this function for export_service.js
     };
 })();
