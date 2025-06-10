@@ -392,6 +392,128 @@ const APP_CONFIG = Object.freeze({
     })
 });
 
+const PUBLICATION_CONFIG = Object.freeze({
+    bruteForceMetricsForPublication: Object.freeze([
+        { value: 'Balanced Accuracy', label: 'Balanced Accuracy' },
+        { value: 'Accuracy', label: 'Accuracy' },
+        { value: 'F1-Score', label: 'F1-Score' }
+    ]),
+    sections: Object.freeze([
+        { id: 'abstract', labelKey: 'abstract', subSections: [{ id: 'abstract_main', label: 'Abstract' }] },
+        { id: 'introduction', labelKey: 'introduction', subSections: [{ id: 'introduction_main', label: 'Introduction' }] },
+        { id: 'methoden', labelKey: 'methoden', subSections: [
+            { id: 'methoden_studienanlage_ethik', label: 'Study Design and Patients' },
+            { id: 'methoden_mrt_protokoll_akquisition', label: 'MRI Protocol' },
+            { id: 'methoden_bildanalyse_avocado_sign', label: 'Image Analysis: Avocado Sign' },
+            { id: 'methoden_bildanalyse_t2_kriterien', label: 'Image Analysis: T2 Criteria' },
+            { id: 'methoden_referenzstandard_histopathologie', label: 'Reference Standard' },
+            { id: 'methoden_statistische_analyse_methoden', label: 'Statistical Analysis' }
+        ]},
+        { id: 'ergebnisse', labelKey: 'ergebnisse', subSections: [
+            { id: 'ergebnisse_patientencharakteristika', label: 'Patient Characteristics' },
+            { id: 'ergebnisse_as_diagnostische_guete', label: 'Diagnostic Performance of the Avocado Sign' },
+            { id: 'ergebnisse_t2_literatur_diagnostische_guete', label: 'Performance of Literature-Based T2 Criteria' },
+            { id: 'ergebnisse_t2_optimiert_diagnostische_guete', label: 'Performance of Cohort-Optimized T2 Criteria' },
+            { id: 'ergebnisse_vergleich_as_vs_t2', label: 'Comparison of Avocado Sign vs. Optimized T2 Criteria' }
+        ]},
+        { id: 'discussion', labelKey: 'discussion', subSections: [{ id: 'discussion_main', label: 'Discussion' }] },
+        { id: 'references', labelKey: 'references', subSections: [{ id: 'references_main', label: 'References' }] }
+    ]),
+    literatureCriteriaSets: Object.freeze([
+        {
+            id: 'rutegard_et_al_esgar',
+            name: 'Rutegård et al. (2025) / ESGAR 2016',
+            displayShortName: 'ESGAR 2016',
+            context: 'Primary Staging (Baseline MRI)',
+            applicableCohort: 'direkt OP',
+            criteria: {
+                size: { active: true, threshold: 9.0, condition: '>=' },
+                shape: { active: true, value: 'rund' },
+                border: { active: true, value: 'irregulär' },
+                homogeneity: { active: true, value: 'heterogen' },
+                signal: { active: false, value: null }
+            },
+            logic: 'KOMBINIERT',
+            description: 'ESGAR 2016 criteria for primary staging: Size ≥ 9mm OR (Size 5-8mm AND ≥2 features [round, irregular, heterogeneous]) OR (Size < 5mm AND ALL 3 features [round, irregular, heterogeneous]).',
+            studyInfo: {
+                reference: "Rutegård et al., Eur Radiol (2025); Beets-Tan et al., Eur Radiol (2018) [ESGAR Consensus]",
+                patientCohort: "Rutegård: N=46 (27 upfront surgery, 19 nRCT) - analysis on baseline MRI. ESGAR: Consensus.",
+                investigationType: "Primary Staging",
+                focus: "Validation of ESGAR 2016 criteria (Rutegård) and consensus recommendation (ESGAR).",
+                keyCriteriaSummary: "Size ≥ 9mm OR (5-8mm AND ≥2 of [round, irregular, heterogeneous]) OR (<5mm AND 3 of [round, irregular, heterogeneous])."
+            }
+        },
+        {
+            id: 'koh_2008_morphology',
+            name: 'Koh et al. (2008)',
+            displayShortName: 'Koh et al.',
+            context: 'Primary & Restaging (Orig. study focused on post-nCRT)',
+            applicableCohort: 'Gesamt',
+            criteria: {
+                size: { active: false, threshold: null, condition: null },
+                shape: { active: false, value: null },
+                border: { active: true, value: 'irregulär' },
+                homogeneity: { active: true, value: 'heterogen' },
+                signal: { active: false, value: null }
+            },
+            logic: 'OR',
+            description: 'Koh et al. (2008): Morphological criteria - Irregular border OR heterogeneous signal. Evaluated on the overall cohort in this application.',
+            studyInfo: {
+                reference: "Koh et al., Int J Radiat Oncol Biol Phys (2008)",
+                patientCohort: "Original study: N=25 (all nCRT, 'poor-risk'). Application in this tool: Overall cohort.",
+                investigationType: "Before and after nCRT (original accuracy analysis post-nCRT)",
+                focus: "Originally: Assessment of LNs before and after nCRT using morphology. In this tool: Comparability with Avocado Sign in the overall cohort.",
+                keyCriteriaSummary: "Irregular border OR heterogeneous signal."
+            }
+        },
+        {
+            id: 'barbaro_2024_restaging',
+            name: 'Barbaro et al. (2024)',
+            displayShortName: 'Barbaro et al.',
+            context: 'Restaging after nCRT',
+            applicableCohort: 'nRCT',
+            criteria: {
+                size: { active: true, threshold: 2.3, condition: '>=' },
+                shape: { active: false, value: null },
+                border: { active: false, value: null },
+                homogeneity: { active: false, value: null },
+                signal: { active: false, value: null }
+            },
+            logic: 'OR',
+            description: 'Barbaro et al. (2024): Optimal cut-off for short axis in restaging after nCRT: ≥ 2.3mm (original 2.2mm).',
+            studyInfo: {
+                reference: "Barbaro et al., Radiother Oncol (2024)",
+                patientCohort: "N=191 (all nCRT, LARC)",
+                investigationType: "Restaging after nCRT",
+                focus: "MRI assessment of N-status after nCRT using size (optimal cut-off).",
+                keyCriteriaSummary: "Short axis ≥ 2.3 mm (based on study: 2.2mm)."
+            }
+        }
+    ]),
+    publicationElements: {
+        methoden: {
+            literaturT2KriterienTabelle: {
+                id: 'table-methods-literature-t2',
+                titleEn: 'Table 2: Overview of Literature-Based T2-Weighted Criteria Sets'
+            }
+        },
+        ergebnisse: {
+            patientenCharakteristikaTabelle: {
+                id: 'table-results-demographics',
+                titleEn: 'Table 1: Patient Demographics and Treatment Approaches'
+            },
+            diagnostischeGueteASTabelle: {
+                id: 'table-results-as-performance',
+                titleEn: 'Table 3: Diagnostic Performance and Nominal Values for the Avocado Sign'
+            },
+            diagnostischeGueteOptimierteT2Tabelle: {
+                id: 'table-results-bf-t2-performance',
+                titleEn: 'Table 5: Performance of Cohort-Optimized T2-Weighted Criteria (Target: {BF_METRIC})'
+            }
+        }
+    }
+});
+
 function getDefaultT2Criteria() {
     return DEFAULT_T2_CRITERIA;
 }
