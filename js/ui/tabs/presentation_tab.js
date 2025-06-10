@@ -64,7 +64,7 @@ const presentationTab = (() => {
         if (selectedStudyId && comparisonCriteriaSet) {
             const studyInfo = comparisonCriteriaSet.studyInfo;
             comparisonBasisName = comparisonCriteriaSet.displayShortName || comparisonCriteriaSet.name || (isApplied ? appliedName : selectedStudyId);
-            let criteriaHTML = studyCriteriaSet.logic === 'KOMBINIERT' ? (studyInfo?.keyCriteriaSummary || studyCriteriaSet.description) : studyT2CriteriaManager.formatCriteriaForDisplay(comparisonCriteriaSet.criteria, comparisonCriteriaSet.logic, false);
+            let criteriaHTML = comparisonCriteriaSet.logic === 'KOMBINIERT' ? (studyInfo?.keyCriteriaSummary || comparisonCriteriaSet.description) : studyT2CriteriaManager.formatCriteriaForDisplay(comparisonCriteriaSet.criteria, comparisonCriteriaSet.logic, false);
             comparisonInfoHTML = `<dl class="row small mb-0"><dt class="col-sm-4">Reference:</dt><dd class="col-sm-8">${studyInfo?.reference || (isApplied ? 'User-defined (currently in Analysis Tab)' : 'N/A')}</dd><dt class="col-sm-4">Basis Cohort:</dt><dd class="col-sm-8">${studyInfo?.patientCohort || `Current: ${displayCohortForComparison} (N=${patientCountForComparison || '?'})`}</dd><dt class="col-sm-4">Criteria:</dt><dd class="col-sm-8">${criteriaHTML}</dd></dl>`;
         }
 
@@ -127,7 +127,30 @@ const presentationTab = (() => {
         return `<div class="row mb-4"><div class="col-12"><h4 class="text-center mb-1">Comparison: Avocado Sign vs. T2 Criteria</h4><p class="text-center text-muted small mb-3">Current comparison cohort: <strong>${displayCohortForComparison}</strong> ${cohortNotice}</p><div class="row justify-content-center"><div class="col-md-9 col-lg-7"><div class="input-group input-group-sm"><label class="input-group-text" for="pres-study-select">T2 Comparison Basis:</label><select class="form-select" id="pres-study-select"><option value="" ${!selectedStudyId ? 'selected' : ''} disabled>-- Please select --</option>${appliedOptionHTML}<option value="" disabled>--- Published Criteria ---</option>${studyOptionsHTML}</select></div></div></div></div></div><div id="presentation-as-vs-t2-results">${resultsHTML}</div>`;
     }
 
-    function render(view, presentationData, selectedStudyId, currentGlobalCohort) {
+    function render(view, presentationData, selectedStudyId, currentGlobalCohort, processedData, criteria, logic) { // Hinzugefügte Parameter
+        // Innerhalb der render Funktion von presentationTab:
+        // Die presentationData wird jetzt in app.js aufbereitet und an presentationTab.render übergeben
+        // Diese Daten können dann für die Charts verwendet werden.
+
+        // Hier ist der Code, der die Chart-Daten für den Vergleichsbalkendiagramm vorbereitet
+        let chartDataForComparison = [];
+        let t2ShortNameEffectiveForChart = "T2";
+
+        if (presentationData && presentationData.performanceAS && presentationData.performanceT2) {
+            const performanceAS = presentationData.performanceAS;
+            const performanceT2 = presentationData.performanceT2;
+            t2ShortNameEffectiveForChart = presentationData.t2ShortName || (presentationData.comparisonCriteriaSet?.displayShortName || 'T2');
+
+            // Erstelle die Daten für das Balkendiagramm
+            chartDataForComparison = [
+                { metric: 'Sens.', AS: performanceAS.sens?.value || 0, T2: performanceT2.sens?.value || 0 },
+                { metric: 'Spec.', AS: performanceAS.spec?.value || 0, T2: performanceT2.spec?.value || 0 },
+                { metric: 'Acc.', AS: performanceAS.acc?.value || 0, T2: performanceT2.acc?.value || 0 },
+                { metric: 'AUC', AS: performanceAS.auc?.value || 0, T2: performanceT2.auc?.value || 0 }
+            ];
+        }
+
+
         let viewSelectorHTML = `
             <div class="row mb-4">
                 <div class="col-12 d-flex justify-content-center">
@@ -144,8 +167,31 @@ const presentationTab = (() => {
             ? _createASPerformanceViewHTML(presentationData)
             : _createASvsT2ComparisonViewHTML(presentationData, selectedStudyId, currentGlobalCohort);
         
+        // Nach dem Rendern des HTML den Chart rendern (asynchron)
+        setTimeout(() => {
+            uiManager.initializeTooltips(document.getElementById('presentation-content-area')); // Tooltips für den gesamten Tab initialisieren
+
+            if (view === 'as-pur' && presentationData?.statsCurrentCohort) {
+                // Rendering des ROC-Charts, falls relevant
+                const chartId = "pres-as-perf-chart";
+                const dataForROC = processedData.filter(p => p.therapy === presentationData.cohort); // Filter the global processedData for the current cohort
+                if (document.getElementById(chartId) && dataForROC.length > 0) {
+                    chartRenderer.renderDiagnosticPerformanceChart(dataForROC, 'asStatus', 'nStatus', chartId, UI_TEXTS.legendLabels.avocadoSign);
+                } else if (document.getElementById(chartId)) {
+                    uiManager.updateElementHTML(chartId, `<p class="text-center text-muted p-3">No data for chart (${getCohortDisplayName(presentationData.cohort)}).</p>`);
+                }
+            } else if (view === 'as-vs-t2' && presentationData?.performanceAS && presentationData?.performanceT2) {
+                const chartContainerId = "pres-comp-chart-container";
+                if (document.getElementById(chartContainerId)) {
+                    chartRenderer.renderComparisonBarChart(chartDataForComparison, chartContainerId, {}, t2ShortNameEffectiveForChart);
+                }
+            }
+        }, 100); // Eine kleine Verzögerung, um sicherzustellen, dass das DOM gerendert ist
+
         return viewSelectorHTML + `<div id="presentation-content-area">${contentHTML}</div>`;
     }
     
-    return { render };
+    return {
+        render
+    };
 })();
