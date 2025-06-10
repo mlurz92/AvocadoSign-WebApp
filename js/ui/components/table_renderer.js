@@ -1,183 +1,240 @@
-const tableRenderer = (() => {
+const uiComponents = (() => {
 
-    function _createDataDetailRowContent(patient) {
-        if (!Array.isArray(patient.t2Nodes) || patient.t2Nodes.length === 0) {
-            return '<p class="m-0 p-2 text-muted small">No T2-weighted lymph nodes recorded for this patient.</p>';
+    function createHeaderButtonHTML(buttons, targetId, defaultTitle = 'Element') {
+        let headerButtonHtml = '';
+        if (buttons && buttons.length > 0 && targetId) {
+            headerButtonHtml = buttons.map(btn => {
+                const btnId = btn.id || `dl-${targetId.replace(/[^a-zA-Z0-9_-]/g, '')}-${btn.format || 'action'}`;
+                const iconClass = btn.icon || 'fa-download';
+                let tooltip = btn.tooltip || `Download as ${String(btn.format || 'action').toUpperCase()}`;
+
+                const safeDefaultTitle = String(defaultTitle).replace(/[^a-zA-Z0-9_-\s]/gi, '').substring(0, 50);
+                const safeChartName = String(btn.chartName || safeDefaultTitle).replace(/[^a-zA-Z0-9_-\s]/gi, '').substring(0, 50);
+                const safeTableName = String(btn.tableName || safeDefaultTitle).replace(/[^a-zA-Z0-9_-\s]/gi, '').substring(0, 50);
+
+                const dataAttributes = [];
+                if (btn.chartId) dataAttributes.push(`data-chart-id="${btn.chartId}"`);
+                if (btn.tableId) dataAttributes.push(`data-table-id="${btn.tableId}"`);
+                if (btn.tableName) dataAttributes.push(`data-table-name="${safeTableName.replace(/\s/g, '_')}"`);
+                else if (btn.chartId) dataAttributes.push(`data-chart-name="${safeChartName.replace(/\s/g, '_')}"`);
+                else dataAttributes.push(`data-default-name="${safeDefaultTitle.replace(/\s/g, '_')}"`);
+                if (btn.format) dataAttributes.push(`data-format="${btn.format}"`);
+
+                return `<button class="btn btn-sm btn-outline-secondary p-0 px-1 border-0 ${btn.tableId ? 'table-download-png-btn' : (btn.chartId ? 'chart-download-btn' : '')}" id="${btnId}" ${dataAttributes.join(' ')} data-tippy-content="${tooltip}"><i class="fas ${iconClass}"></i></button>`;
+            }).join('');
         }
-
-        let content = '<h6 class="w-100 mb-2 ps-1">T2 Lymph Node Features:</h6>';
-        patient.t2Nodes.forEach((lk, index) => {
-            if (!lk) return;
-            const sizeText = formatNumber(lk.size, 1, 'N/A');
-            const shapeText = lk.shape || '--';
-            const borderText = lk.border || '--';
-            const homogeneityText = lk.homogeneity || '--';
-            const signalText = lk.signal || 'N/A';
-
-            const shapeIcon = uiManager.getT2IconSVG('shape', lk.shape);
-            const borderIcon = uiManager.getT2IconSVG('border', lk.border);
-            const homogeneityIcon = uiManager.getT2IconSVG('homogeneity', lk.homogeneity);
-            const signalIcon = uiManager.getT2IconSVG('signal', lk.signal);
-            const sizeIcon = uiManager.getT2IconSVG('ruler-horizontal', null);
-
-            const sizeTooltip = UI_TEXTS.tooltips.t2Size?.description || 'Size (short axis)';
-            const shapeTooltip = UI_TEXTS.tooltips.t2Form?.description || 'Shape';
-            const borderTooltip = UI_TEXTS.tooltips.t2Contour?.description || 'Border';
-            const homogeneityTooltip = UI_TEXTS.tooltips.t2Homogenitaet?.description || 'Homogeneity';
-            const signalTooltip = UI_TEXTS.tooltips.t2Signal?.description || 'Signal Intensity';
-
-            content += `<div class="sub-row-item border rounded mb-1 p-1 w-100 align-items-center small">
-                           <strong class="me-2">LN ${index + 1}:</strong>
-                           <span class="me-2 text-nowrap" data-tippy-content="${sizeTooltip}">${sizeIcon}${sizeText !== 'N/A' ? sizeText + 'mm' : sizeText}</span>
-                           <span class="me-2 text-nowrap" data-tippy-content="${shapeTooltip}">${shapeIcon}${shapeText}</span>
-                           <span class="me-2 text-nowrap" data-tippy-content="${borderTooltip}">${borderIcon}${borderText}</span>
-                           <span class="me-2 text-nowrap" data-tippy-content="${homogeneityTooltip}">${homogeneityIcon}${homogeneityText}</span>
-                           <span class="me-2 text-nowrap" data-tippy-content="${signalTooltip}">${signalIcon}${signalText}</span>
-                        </div>`;
-        });
-        return content;
+        return headerButtonHtml;
     }
 
-    function createDataTableRow(patient) {
-        if (!patient || typeof patient.id !== 'number') return '';
-        const rowId = `data-row-${patient.id}`;
-        const detailRowId = `data-detail-${patient.id}`;
-        const hasT2Nodes = Array.isArray(patient.t2Nodes) && patient.t2Nodes.length > 0;
-        const sexText = patient.sex === 'm' ? 'Male' : patient.sex === 'f' ? 'Female' : 'Unknown';
-        const therapyText = getCohortDisplayName(patient.therapy);
-        const naPlaceholder = '--';
-        
-        const notesText = uiManager.escapeHTML(patient.notes || '');
-        const tooltipNotes = notesText ? notesText : (UI_TEXTS.tooltips.dataTab.notes || 'Notes');
-
-        const t2StatusClass = patient.t2Status === '+' ? 'plus' : patient.t2Status === '-' ? 'minus' : 'unknown';
+    function createDashboardCard(title, content, chartId = null, cardClasses = '', headerClasses = '', bodyClasses = '', downloadButtons = []) {
+        const headerButtonHtml = createHeaderButtonHTML(downloadButtons, chartId || title.replace(/[^a-z0-9]/gi, '_'), title);
+        const tooltipKey = chartId ? chartId.replace(/^chart-dash-/, '') : title.toLowerCase().replace(/\s+/g, '');
+        const tooltipContent = UI_TEXTS.tooltips.descriptiveStatistics[tooltipKey]?.description || title || '';
 
         return `
-            <tr id="${rowId}" ${hasT2Nodes ? `class="clickable-row"` : ''} ${hasT2Nodes ? `data-bs-toggle="collapse"` : ''} data-bs-target="#${detailRowId}" aria-expanded="false" aria-controls="${detailRowId}">
-                <td data-label="ID">${patient.id}</td>
-                <td data-label="Last Name">${patient.name || naPlaceholder}</td>
-                <td data-label="First Name">${patient.firstName || naPlaceholder}</td>
-                <td data-label="Sex">${sexText}</td>
-                <td data-label="Age">${formatNumber(patient.age, 0, naPlaceholder)}</td>
-                <td data-label="Therapy">${therapyText}</td>
-                <td data-label="N/AS/T2">
-                    <span class="status-${patient.nStatus === '+' ? 'plus' : 'minus'}" data-tippy-content="Pathology N-Status (Reference)">${patient.nStatus ?? '?'}</span> /
-                    <span class="status-${patient.asStatus === '+' ? 'plus' : 'minus'}" data-tippy-content="Avocado Sign Status (Prediction)">${patient.asStatus ?? '?'}</span> /
-                    <span class="status-${t2StatusClass}" id="status-t2-pat-${patient.id}" data-tippy-content="T2 Status (Prediction based on applied criteria)">${patient.t2Status ?? '?'}</span>
-                </td>
-                <td data-label="Notes" class="text-truncate" style="max-width: 150px;" data-tippy-content="${tooltipNotes}">${notesText || naPlaceholder}</td>
-                <td class="text-center p-1" style="width: 30px;" data-tippy-content="${hasT2Nodes ? (UI_TEXTS.tooltips.dataTab.expandRow) : 'No T2 lymph node details available'}">
-                     ${hasT2Nodes ? '<button class="btn btn-sm btn-outline-secondary p-1 row-toggle-button" aria-label="Toggle Details"><i class="fas fa-chevron-down row-toggle-icon"></i></button>' : ''}
-                </td>
-            </tr>
-            ${hasT2Nodes ? `
-            <tr class="sub-row">
-                 <td colspan="9" class="p-0 border-0">
-                    <div class="collapse" id="${detailRowId}">
-                        <div class="sub-row-content p-2 bg-light border-top border-bottom">
-                            ${_createDataDetailRowContent(patient)}
-                        </div>
+            <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 dashboard-card-col ${cardClasses}">
+                <div class="card h-100 dashboard-card">
+                    <div class="card-header ${headerClasses} d-flex justify-content-between align-items-center" data-tippy-content="${tooltipContent.replace('[COHORT]', '<strong>the current cohort</strong>')}">
+                        <span class="text-truncate">${title}</span>
+                        <span class="card-header-buttons flex-shrink-0 ps-1">${headerButtonHtml}</span>
                     </div>
-                 </td>
-            </tr>` : ''}
-        `;
+                    <div class="card-body d-flex flex-column justify-content-between ${bodyClasses}">
+                        <div class="dashboard-card-content">${content}</div>
+                        ${chartId ? `<div id="${chartId}" class="mt-1 w-100 dashboard-chart-container"></div>` : ''}
+                    </div>
+                </div>
+            </div>`;
     }
 
-    function _createAnalysisDetailRowContent(patient, appliedCriteria, appliedLogic) {
-        if (!Array.isArray(patient.t2NodesEvaluated) || patient.t2NodesEvaluated.length === 0) {
-            return '<p class="m-0 p-2 text-muted small">No T2 lymph nodes available for evaluation or evaluation not performed.</p>';
+    function createT2CriteriaControls(initialCriteria, initialLogic) {
+        if (!initialCriteria || !initialLogic) return '<p class="text-danger">Error: Could not load initial criteria.</p>';
+        const logicChecked = initialLogic === 'OR';
+        const defaultCriteriaForSize = getDefaultT2Criteria();
+        const sizeThreshold = initialCriteria.size?.threshold ?? defaultCriteriaForSize?.size?.threshold ?? 5.0;
+        const { min, max, step } = APP_CONFIG.T2_CRITERIA_SETTINGS.SIZE_RANGE;
+        const formattedThreshold = formatNumber(sizeThreshold, 1, '5.0', true);
+
+        const createButtonOptions = (key, isChecked, criterionLabel) => {
+            const valuesKey = key.toUpperCase() + '_VALUES';
+            const values = APP_CONFIG.T2_CRITERIA_SETTINGS[valuesKey] || [];
+            const currentValue = initialCriteria[key]?.value;
+            return values.map(value => {
+                const isActiveValue = isChecked && currentValue === value;
+                const icon = getT2IconSVG(key, value);
+                const buttonTooltip = `Set criterion '${criterionLabel}' to '${value}'. ${isChecked ? '' : '(Criterion is currently inactive)'}`;
+                return `<button class="btn t2-criteria-button criteria-icon-button ${isActiveValue ? 'active' : ''} ${isChecked ? '' : 'inactive-option'}" data-criterion="${key}" data-value="${value}" data-tippy-content="${buttonTooltip}" ${isChecked ? '' : 'disabled'}>${icon}</button>`;
+            }).join('');
+        };
+
+        const createCriteriaGroup = (key, label, tooltipKey, contentGenerator) => {
+            const isChecked = initialCriteria[key]?.active === true;
+            const tooltip = UI_TEXTS.tooltips[tooltipKey]?.description || label;
+            return `
+                <div class="col-md-6 criteria-group">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input criteria-checkbox" type="checkbox" value="${key}" id="check-${key}" ${isChecked ? 'checked' : ''}>
+                        <label class="form-check-label fw-bold" for="check-${key}">${label}</label>
+                         <span data-tippy-content="${tooltip}"> <i class="fas fa-info-circle text-muted ms-1"></i></span>
+                    </div>
+                    <div class="criteria-options-container ps-3">
+                        ${contentGenerator(key, isChecked, label)}
+                    </div>
+                </div>`;
+        };
+
+        return `
+            <div class="card criteria-card" id="t2-criteria-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Define T2 Malignancy Criteria</span>
+                    <div class="form-check form-switch" data-tippy-content="${UI_TEXTS.tooltips.t2Logic.description}">
+                         <label class="form-check-label small me-2" for="t2-logic-switch" id="t2-logic-label-prefix">Logic:</label>
+                         <input class="form-check-input" type="checkbox" role="switch" id="t2-logic-switch" ${logicChecked ? 'checked' : ''}>
+                         <label class="form-check-label fw-bold" for="t2-logic-switch" id="t2-logic-label">${initialLogic}</label>
+                     </div>
+                </div>
+                <div class="card-body">
+                     <div class="row g-4">
+                        ${createCriteriaGroup('size', 'Size', 't2Size', (key, isChecked) => `
+                            <div class="d-flex align-items-center flex-wrap">
+                                 <span class="me-1 small text-muted">≥</span>
+                                 <input type="range" class="form-range criteria-range flex-grow-1 me-2" id="range-size" min="${min}" max="${max}" step="${step}" value="${formattedThreshold}" ${isChecked ? '' : 'disabled'} data-tippy-content="Set short-axis diameter threshold (≥).">
+                                 <span class="criteria-value-display text-end me-1 fw-bold" id="value-size">${formatNumber(sizeThreshold, 1)}</span><span class="me-2 small text-muted">mm</span>
+                                 <input type="number" class="form-control form-control-sm criteria-input-manual" id="input-size" min="${min}" max="${max}" step="${step}" value="${formattedThreshold}" ${isChecked ? '' : 'disabled'} style="width: 70px;" aria-label="Enter size manually" data-tippy-content="Enter threshold manually.">
+                            </div>
+                        `)}
+                        ${createCriteriaGroup('form', 'Shape', 't2Form', createButtonOptions)}
+                        ${createCriteriaGroup('kontur', 'Border', 't2Contour', createButtonOptions)}
+                        ${createCriteriaGroup('homogenitaet', 'Homogeneity', 't2Homogenitaet', createButtonOptions)}
+                        ${createCriteriaGroup('signal', 'Signal', 't2Signal', createButtonOptions)}
+                        <div class="col-12 d-flex justify-content-end align-items-center border-top pt-3 mt-3">
+                            <button class="btn btn-sm btn-outline-secondary me-2" id="btn-reset-criteria" data-tippy-content="${UI_TEXTS.tooltips.t2Actions.reset}">
+                                <i class="fas fa-undo me-1"></i> Reset to Default
+                            </button>
+                            <button class="btn btn-sm btn-primary" id="btn-apply-criteria" data-tippy-content="${UI_TEXTS.tooltips.t2Actions.apply}">
+                                <i class="fas fa-check me-1"></i> Apply & Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    function createStatisticsCard(id, title, content = '', addPadding = true, tooltipKey = null, downloadButtons = [], tableId = null) {
+        const cardTooltipHtml = tooltipKey && UI_TEXTS.tooltips[tooltipKey]?.cardTitle ? `data-tippy-content="${UI_TEXTS.tooltips[tooltipKey].cardTitle.replace('[COHORT]', '<strong>[COHORT_PLACEHOLDER]</strong>')}"` : `data-tippy-content="${title}"`;
+        const headerButtonHtml = createHeaderButtonHTML(downloadButtons, id + '-content', title);
+        return `
+            <div class="col-12 stat-card" id="${id}-card-container">
+                <div class="card h-100">
+                    <div class="card-header" ${cardTooltipHtml}>
+                         ${title}
+                         <span class="float-end card-header-buttons">${headerButtonHtml}</span>
+                     </div>
+                    <div class="card-body ${addPadding ? '' : 'p-0'}" style="overflow-y: auto; overflow-x: hidden;">
+                        <div id="${id}-content">${content}</div>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    function createPublicationNav(currentSectionId) {
+        const navItems = PUBLICATION_CONFIG.sections.map(mainSection => {
+            const sectionTooltip = UI_TEXTS.tooltips.publicationTab[mainSection.id]?.main || UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey] || mainSection.labelKey;
+            return `
+                <li class="nav-item">
+                    <a class="nav-link py-2 publication-section-link ${mainSection.id === currentSectionId ? 'active' : ''}" href="#" data-section-id="${mainSection.id}" data-tippy-content="${sectionTooltip}">
+                        ${UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey]}
+                    </a>
+                </li>`;
+        }).join('');
+        return `<nav id="publication-sections-nav" class="nav flex-column nav-pills">${navItems}</nav>`;
+    }
+
+    function createBruteForceModalContent(resultsData) {
+        if (!resultsData || !resultsData.results || resultsData.results.length === 0) {
+            return '<p class="text-center text-muted">No brute-force results available.</p>';
         }
-        const activeKeys = Object.keys(appliedCriteria || {}).filter(key => key !== 'logic' && appliedCriteria[key]?.active === true);
-        const criteriaFormatted = studyT2CriteriaManager.formatCriteriaForDisplay(appliedCriteria, appliedLogic, true);
-        const naPlaceholder = '--';
 
-        let content = `<h6 class="w-100 mb-2 ps-1" data-tippy-content="Shows the evaluation of each T2 lymph node based on the currently applied criteria. Fulfilled criteria contributing to a positive evaluation are highlighted.">T2 LN Evaluation (Logic: ${UI_TEXTS.t2LogicDisplayNames[appliedLogic] || appliedLogic || 'N/A'}, Criteria: ${criteriaFormatted || 'N/A'})</h6>`;
+        const formatCriteriaFunc = typeof studyT2CriteriaManager !== 'undefined' ? studyT2CriteriaManager.formatCriteriaForDisplay : (c, l) => 'N/A';
+        const { results, metric, duration, totalTested, cohort, nTotal, nPlus, nMinus } = resultsData;
 
-        patient.t2NodesEvaluated.forEach((lk, index) => {
-            if (!lk || !lk.checkResult) {
-                content += `<div class="sub-row-item border rounded mb-1 p-1 w-100 align-items-center small fst-italic text-muted">LN ${index + 1}: Invalid evaluation data</div>`;
-                return;
+        let html = `
+            <div class="mb-4">
+                <h5>Optimization Summary for Cohort: ${getCohortDisplayName(cohort)}</h5>
+                <ul class="list-unstyled small mb-2">
+                    <li><strong>Target Metric:</strong> ${metric}</li>
+                    <li><strong>Total Combinations Tested:</strong> ${formatNumber(totalTested, 0)}</li>
+                    <li><strong>Duration:</strong> ${formatNumber(duration / 1000, 1, true)} seconds</li>
+                    <li><strong>Patient Count (N):</strong> ${formatNumber(nTotal, 0)} (N+: ${formatNumber(nPlus, 0)}, N-: ${formatNumber(nMinus, 0)})</li>
+                </ul>
+            </div>
+            <h5>Top 10 Results:</h5>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped small" id="bruteforce-results-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>${metric}</th>
+                            <th>Logic</th>
+                            <th>Criteria</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        let rank = 1;
+        let displayedCount = 0;
+        let lastMetricValue = -Infinity;
+        const precision = 8;
+
+        for (let i = 0; i < results.length; i++) {
+            const result = results[i];
+            if (!result || typeof result.metricValue !== 'number' || !isFinite(result.metricValue)) continue;
+
+            const currentMetricValueRounded = parseFloat(result.metricValue.toFixed(precision));
+            const lastMetricValueRounded = parseFloat(lastMetricValue.toFixed(precision));
+
+            let currentRank = rank;
+            const isNewRank = Math.abs(currentMetricValueRounded - lastMetricValueRounded) > 1e-8;
+
+            if (i > 0 && isNewRank) {
+                rank = displayedCount + 1;
+                currentRank = rank;
+            } else if (i > 0) {
+                currentRank = rank;
             }
 
-            const baseClass = "sub-row-item border rounded mb-1 p-1 w-100 align-items-center small";
-            const highlightClass = lk.isPositive ? 'bg-status-red-light' : '';
-            let itemContent = `<strong class="me-2">LN ${index + 1}: ${lk.isPositive ? '<span class="badge bg-danger text-white ms-1" data-tippy-content="Evaluated as Positive">Pos.</span>' : '<span class="badge bg-success text-white ms-1" data-tippy-content="Evaluated as Negative">Neg.</span>'}</strong>`;
+            if (rank > 10 && isNewRank) break;
 
-            const formatCriterionCheck = (key, iconType, valueText, checkResultForLK) => {
-                if (!appliedCriteria?.[key]?.active) return '';
-                const checkMet = checkResultForLK[key.replace('border','kontur').replace('homogeneity','homogenitaet').replace('shape','form')] === true;
-                const checkFailed = checkResultForLK[key.replace('border','kontur').replace('homogeneity','homogenitaet').replace('shape','form')] === false;
-                let hlClass = '';
-                if (lk.isPositive && checkMet) {
-                    hlClass = 'highlight-suspect-feature';
-                }
-                const icon = uiManager.getT2IconSVG(iconType || key, valueText);
-                const text = valueText || naPlaceholder;
-                const tooltipKey = 't2' + key.charAt(0).toUpperCase() + key.slice(1);
-                const tooltipBase = UI_TEXTS.tooltips[tooltipKey]?.description || `Feature ${key}`;
-                const statusText = checkMet ? 'Fulfilled' : (checkFailed ? 'Not Fulfilled' : 'Not Applicable');
-                const tooltip = `${tooltipBase} | Status: ${statusText}`;
+            html += `
+                <tr>
+                    <td>${currentRank}</td>
+                    <td>${formatNumber(result.metricValue, 4, true)}</td>
+                    <td>${result.logic.toUpperCase()}</td>
+                    <td>${formatCriteriaFunc(result.criteria, result.logic)}</td>
+                </tr>
+            `;
 
-                return `<span class="me-2 text-nowrap ${hlClass}" data-tippy-content="${tooltip}">${icon} ${text}</span>`;
-            };
+            if (isNewRank || i === 0) {
+                lastMetricValue = result.metricValue;
+            }
+            displayedCount++;
+        }
 
-            itemContent += formatCriterionCheck('size', 'ruler-horizontal', `${formatNumber(lk.size, 1, 'N/A')}mm`, lk.checkResult);
-            itemContent += formatCriterionCheck('shape', null, lk.shape, lk.checkResult);
-            itemContent += formatCriterionCheck('border', null, lk.border, lk.checkResult);
-            itemContent += formatCriterionCheck('homogeneity', null, lk.homogeneity, lk.checkResult);
-            itemContent += formatCriterionCheck('signal', null, lk.signal || 'N/A', lk.checkResult);
-
-            content += `<div class="${baseClass} ${highlightClass}">${itemContent}</div>`;
-        });
-        return content;
-    }
-
-    function createAnalysisTableRow(patient, appliedCriteria, appliedLogic) {
-        if (!patient || typeof patient.id !== 'number') return '';
-        const rowId = `analysis-row-${patient.id}`;
-        const detailRowId = `analysis-detail-${patient.id}`;
-        const hasEvaluatedNodes = Array.isArray(patient.t2NodesEvaluated) && patient.t2NodesEvaluated.length > 0;
-        const therapyText = getCohortDisplayName(patient.therapy);
-        const naPlaceholder = '--';
-
-        const nCountsText = `${formatNumber(patient.countPathologyNodesPositive, 0, '-')} / ${formatNumber(patient.countPathologyNodes, 0, '-')}`;
-        const asCountsText = `${formatNumber(patient.countASNodesPositive, 0, '-')} / ${formatNumber(patient.countASNodes, 0, '-')}`;
-        const t2CountsText = `${formatNumber(patient.countT2NodesPositive, 0, '-')} / ${formatNumber(patient.countT2Nodes, 0, '-')}`;
-
-        const t2StatusClass = patient.t2Status === '+' ? 'plus' : patient.t2Status === '-' ? 'minus' : 'unknown';
-
-        return `
-            <tr id="${rowId}" ${hasEvaluatedNodes ? `class="clickable-row"` : ''} ${hasEvaluatedNodes ? `data-bs-toggle="collapse"` : ''} data-bs-target="#${detailRowId}" aria-expanded="false" aria-controls="${detailRowId}">
-                <td data-label="ID">${patient.id}</td>
-                <td data-label="Name">${patient.name || naPlaceholder}</td>
-                <td data-label="Therapy">${therapyText}</td>
-                <td data-label="N/AS/T2">
-                    <span class="status-${patient.nStatus === '+' ? 'plus' : 'minus'}" data-tippy-content="Pathology N-Status (Reference)">${patient.nStatus ?? '?'}</span> /
-                    <span class="status-${patient.asStatus === '+' ? 'plus' : 'minus'}" data-tippy-content="Avocado Sign Status (Prediction)">${patient.asStatus ?? '?'}</span> /
-                    <span class="status-${t2StatusClass}" id="status-t2-analysis-${patient.id}" data-tippy-content="T2 Status (Prediction based on applied criteria)">${patient.t2Status ?? '?'}</span>
-                </td>
-                <td data-label="N+/N total" class="text-center">${nCountsText}</td>
-                <td data-label="AS+/AS total" class="text-center">${asCountsText}</td>
-                <td data-label="T2+/T2 total" class="text-center" id="t2-counts-${patient.id}">${t2CountsText}</td>
-                <td class="text-center p-1" style="width: 30px;" data-tippy-content="${hasEvaluatedNodes ? UI_TEXTS.tooltips.analysisTab.expandRow : 'No T2 node evaluation details available'}">
-                     ${hasEvaluatedNodes ? '<button class="btn btn-sm btn-outline-secondary p-1 row-toggle-button" aria-label="Toggle Details"><i class="fas fa-chevron-down row-toggle-icon"></i></button>' : ''}
-                </td>
-            </tr>
-             ${hasEvaluatedNodes ? `
-            <tr class="sub-row">
-                 <td colspan="8" class="p-0 border-0">
-                    <div class="collapse" id="${detailRowId}">
-                        <div class="sub-row-content p-2 bg-light border-top border-bottom">
-                           ${_createAnalysisDetailRowContent(patient, appliedCriteria, appliedLogic)}
-                        </div>
-                    </div>
-                 </td>
-            </tr>` : ''}
+        html += `
+                    </tbody>
+                </table>
+            </div>
         `;
+
+        return html;
     }
+
 
     return Object.freeze({
-        createDataTableRow,
-        createAnalysisTableRow
+        createDashboardCard,
+        createT2CriteriaControls,
+        createStatisticsCard,
+        createPublicationNav,
+        createBruteForceModalContent
     });
 })();
