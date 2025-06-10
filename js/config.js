@@ -1,3 +1,15 @@
+const getDefaultT2Criteria = () => {
+    // This function is now defined before APP_CONFIG to avoid TDZ error.
+    return Object.freeze({
+        logic: 'AND', // Default logic
+        size: { active: true, threshold: 5.0, condition: '>=' },
+        form: { active: false, value: 'rund' },
+        kontur: { active: false, value: 'irregulär' },
+        homogenitaet: { active: false, value: 'heterogen' },
+        signal: { active: false, value: 'signalreich' }
+    });
+};
+
 const APP_CONFIG = Object.freeze({
     APP_NAME: "Nodal Staging: Avocado Sign vs. T2 Criteria",
     APP_VERSION: "3.0.0",
@@ -658,7 +670,7 @@ const APP_CONFIG = Object.freeze({
                                     <tr><td>Accuracy</td><td>${fCI(perf.acc)}</td><td>${perf.acc?.method || 'N/A'}</td></tr>
                                     <tr><td>Balanced Accuracy</td><td>${fCI(perf.balAcc)}</td><td>${perf.balAcc?.method || 'N/A'}</td></tr>
                                     <tr><td>F1-Score</td><td>${fCI(perf.f1, 3, false)}</td><td>${perf.f1?.method || 'N/A'}</td></tr>
-                                    <tr><td>AUC</td><td>${fCI(perf.auc, 3, false)}</td><td>${perf.auc?.method || 'N/A'}</td></tr>
+                                    <tr><td>AUC</td><td>${fCI(perf.auc, 2, false)}</td><td>${perf.auc?.method || 'N/A'}</td></tr>
                                 </tbody>
                             </table>
                         `;
@@ -777,14 +789,3 @@ const APP_CONFIG = Object.freeze({
         })
     })
 });
-
-function getDefaultT2Criteria() {
-    return Object.freeze({
-        logic: APP_CONFIG.DEFAULT_SETTINGS.T2_LOGIC,
-        size: { active: true, threshold: 5.0, condition: '>=' },
-        form: { active: false, value: 'rund' },
-        kontur: { active: false, value: 'irregulär' },
-        homogenitaet: { active: false, value: 'heterogen' },
-        signal: { active: false, value: 'signalreich' }
-    });
-}
