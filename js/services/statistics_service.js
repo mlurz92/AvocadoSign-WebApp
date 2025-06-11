@@ -595,7 +595,7 @@ const statisticsService = (() => {
                 if (applicableCohortMapped === cohortId || studySetConf.applicableCohort === 'Gesamt') {
                     const studySet = studyT2CriteriaManager.getStudyCriteriaSetById(studySetConf.id);
                     if (studySet) {
-                        const evaluatedDataStudy = studyT2CriteriaManager.evaluateDatasetWithStudyCriteria(cloneDeep(cohortData), studySet);
+                        const evaluatedDataStudy = studyT2CriteriaManager.applyStudyCriteriaToDataset(cloneDeep(cohortData), studySet);
                         results[cohortId].performanceT2Literature[studySetConf.id] = calculateDiagnosticPerformance(evaluatedDataStudy, 't2Status', 'nStatus');
                         results[cohortId][`comparisonASvsT2_literature_${studySetConf.id}`] = compareDiagnosticMethods(evaluatedDataStudy, 'asStatus', 't2Status', 'nStatus');
                     }
