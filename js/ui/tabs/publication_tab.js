@@ -74,10 +74,12 @@ const publicationTab = (() => {
     }
 
     function _generateMethodsImageAnalysisT2HTML(stats, commonData) {
-        const literatureSetsHTML = PUBLICATION_CONFIG.literatureCriteriaSets.map(set => 
-            `<li><strong>${set.name}:</strong> ${set.studyInfo.keyCriteriaSummary} [${set.studyInfo.reference.match(/\d+/) ? commonData.references[Object.keys(commonData.references).find(refKey => commonData.references[refKey].id == set.studyInfo.reference.match(/\d+/)[0])].id : 'N/A'}]. This set was applied to the '${getCohortDisplayName(set.applicableCohort)}' cohort.</li>`
-        ).join('');
-
+        const literatureSetsHTML = PUBLICATION_CONFIG.literatureCriteriaSets.map(set => {
+            const referenceMatch = set.studyInfo.reference.match(/\d+/);
+            const referenceId = referenceMatch ? commonData.references[Object.keys(commonData.references).find(refKey => commonData.references[refKey].id == referenceMatch[0])]?.id : 'N/A';
+            return `<li><strong>${set.name}:</strong> ${set.studyInfo.keyCriteriaSummary} [${referenceId}]. This set was applied to the '${getCohortDisplayName(set.applicableCohort)}' cohort.</li>`;
+        }).join('');
+    
          return `
             <p>For comparison with the Avocado Sign, we also evaluated the diagnostic performance of T2-weighted (T2w) morphological criteria. Two main approaches were considered: a literature-based set of criteria and a cohort-optimized set of criteria derived from a brute-force analysis of our dataset.</p>
             <h4>Literature-Based T2 Criteria:</h4>
