@@ -1,26 +1,27 @@
-# **Nodal Staging Analysis Tool - Technical Documentation (v3.0.0)**
+# **Nodal Staging Analysis Tool - Technical Documentation (v3.0.1)**
 
-## **1\. Overview**
+## **1. Overview**
 
-This document provides a comprehensive technical overview of the **Nodal Staging Analysis Tool**, a client-side, single-page web application designed for advanced medical data analysis. The application is built with vanilla JavaScript (ES6+), leveraging a modular, service-oriented architecture to ensure maintainability and scalability. It is designed to be self-contained, running directly in a web browser without requiring a server-side backend.
+This document provides a comprehensive technical overview of the **Nodal Staging Analysis Tool**, a client-side, single-page web application designed for advanced medical data analysis. The application is built with vanilla JavaScript (ES6+), leveraging a modular, service-oriented architecture to ensure maintainability, scalability, and robustness. It is designed to be self-contained, running directly in a modern web browser without requiring a server-side backend.
 
 ### **1.1. Core Technologies**
 
-* **Frontend:** HTML5, CSS3  
-* **Logic & Interactivity:** JavaScript (ES6+)  
-* **UI Components & Layout:** Bootstrap 5  
-* **Data Visualization:** D3.js  
-* **Asynchronous Tasks:** Web Workers  
-* **UI Enhancements:** Tippy.js (Tooltips)  
-* **File Handling:** PapaParse (CSV), JSZip (Archiving)
+* **Frontend:** HTML5, CSS3
+* **Logic & Interactivity:** JavaScript (ES6+)
+* **UI Framework & Layout:** Bootstrap 5
+* **Data Visualization:** D3.js
+* **Asynchronous Tasks:** Web Workers
+* **UI Enhancements:** Tippy.js (for tooltips)
+* **File Handling & Utilities:** PapaParse (CSV parsing/unparsing), JSZip (ZIP archiving), html2canvas (Image rendering)
 
-## **2\. Project Structure**
+## **2. Project Structure**
 
-The codebase is organized into a logical, feature-based directory structure to promote separation of concerns and code clarity.
+The codebase is organized into a logical, feature-based directory structure to promote a clear separation of concerns.
 
 ```
 /
 ├── index.html
+├── README.md
 ├── css/
 │   └── style.css
 ├── data/
@@ -28,184 +29,158 @@ The codebase is organized into a logical, feature-based directory structure to p
 ├── workers/
 │   └── brute_force_worker.js
 └── js/
-├── config.js
-├── utils.js
-├── app/
-│   ├── main.js
-│   └── state.js
-├── core/
-│   ├── data_processor.js
-│   ├── t2_criteria_manager.js
-│   └── study_criteria_manager.js
-├── services/
-│   ├── statistics_service.js
-│   ├── export_service.js
-│   └── brute_force_manager.js
-└── ui/
-├── ui_manager.js
-├── event_manager.js
-├── components/
-│   ├── table_renderer.js
-│   ├── chart_renderer.js
-│   └── ui_components.js
-└── tabs/
-├── data_tab.js
-├── analysis_tab.js
-├── statistics_tab.js
-├── presentation_tab.js
-├── publication_tab.js
-└── export_tab.js
+    ├── config.js
+    ├── utils.js
+    ├── app/
+    │   ├── main.js
+    │   └── state.js
+    ├── core/
+    │   ├── data_processor.js
+    │   ├── t2_criteria_manager.js
+    │   └── study_criteria_manager.js
+    ├── services/
+    │   ├── statistics_service.js
+    │   ├── export_service.js
+    │   └── brute_force_manager.js
+    └── ui/
+        ├── ui_manager.js
+        ├── event_manager.js
+        ├── components/
+        │   ├── table_renderer.js
+        │   ├── chart_renderer.js
+        │   └── ui_components.js
+        └── tabs/
+            ├── data_tab.js
+            ├── analysis_tab.js
+            ├── statistics_tab.js
+            ├── presentation_tab.js
+            ├── publication_tab.js
+            └── export_tab.js
 ```
 
-## **3\. Architecture & Core Concepts**
+* **`css/`**: Contains all custom stylesheets.
+* **`data/`**: Holds the static, raw patient dataset.
+* **`workers/`**: Contains scripts for Web Workers that run in the background (e.g., for brute-force analysis).
+* **`js/`**: The main directory for all JavaScript source code.
+    * **`config.js`**: Central configuration file for the entire application.
+    * **`utils.js`**: Global helper and utility functions.
+    * **`app/`**: Core application logic, including the main entry point and state management.
+    * **`core/`**: Foundational business logic modules (data processing, criteria management).
+    * **`services/`**: Modules that provide specific services like statistical calculations or file exports.
+    * **`ui/`**: All modules related to UI rendering, management, and event handling.
 
-The application follows a modular, object-oriented pattern orchestrated by a central App class.
+## **3. Architecture & Core Concepts**
 
-### **3.1. Application Lifecycle (main.js)**
+The application follows a modular, singleton-based pattern orchestrated by a central `App` class.
 
-The application's entry point is js/app/main.js. An instance of the App class is created upon DOMContentLoaded. The app.init() method orchestrates the entire startup sequence:
+### **3.1. Application Lifecycle (`main.js`)**
 
-1. **Dependency Check:** Verifies that all required modules are defined and available.  
-2. **Module Initialization:** Initializes key singleton modules in the correct order: state, t2CriteriaManager, eventManager, and bruteForceManager.  
-3. **Data Processing:** The raw data from data/data.js is processed by dataProcessor.processAllData() into a consistent, application-ready format.  
-4. **Initial State Setup:** The application's initial cohort data is filtered and prepared.  
-5. **UI Rendering:** The global UI state is rendered for the first time.  
-6. **Tab Initialization:** The default or last-viewed tab is activated and rendered.  
-7. **Event Listeners:** The central eventManager is initialized to handle all user interactions.
+The application's entry point is `js/app/main.js`. An instance of the `App` class is created on `DOMContentLoaded`. The `app.init()` method orchestrates the startup sequence:
+1.  **Dependency Check:** Verifies that all required modules are defined.
+2.  **Module Initialization:** Initializes key singleton modules in a specific order: `state`, `t2CriteriaManager`, `bruteForceManager`, and finally `eventManager`.
+3.  **Data Processing:** The raw data from `data/data.js` is processed by `dataProcessor.processAllData()` into a consistent, application-ready format.
+4.  **Initial Render:** The `refreshCurrentTab()` method is called to perform the initial filtering, UI updates, and rendering of the default tab's content.
 
-### **3.2. State Management (state.js)**
+### **3.2. State Management (`state.js`)**
 
-A singleton module, state.js, acts as the single source of truth for the application's UI state.
+A singleton module that acts as the single source of truth for the application's UI state.
+* **Responsibilities:** Manages transient state such as the currently selected cohort, active tab, table sorting preferences, and user selections within various tabs.
+* **Persistence:** Leverages `localStorage` (via helpers in `utils.js`) to persist user settings between sessions. All storage keys are centrally managed in `config.js`.
+* **Encapsulation:** All state modifications are handled through dedicated setter methods (e.g., `setCurrentCohort`), ensuring controlled and predictable state changes.
 
-* **Responsibilities:** It manages transient state such as the currently selected cohort, active tab, table sorting preferences, and selections within the Statistics and Presentation tabs.  
-* **Persistence:** It leverages localStorage via the utils.js helper functions (saveToLocalStorage, loadFromLocalStorage) to persist user settings between sessions. All storage keys are centrally managed in config.js.  
-* **Encapsulation:** All state modifications are handled through dedicated setter methods (e.g., setCurrentCohort), ensuring controlled and predictable state changes.
+### **3.3. Data Pipeline (`data_processor.js`)**
 
-### **3.3. Data Pipeline (data\_processor.js)**
+This core module transforms the raw data into a clean, consistent data model.
+* **`processSinglePatient()`:** Takes a raw patient object and standardizes it, performing data validation, type coercion, and calculating derived fields like `age`.
+* **`filterDataByCohort()`:** Provides a consistent method for filtering the master dataset based on the user-selected cohort. It now robustly returns an empty array for unknown cohort IDs.
 
-This core module is responsible for transforming the raw, static data into a clean, consistent data model for the entire application.
+### **3.4. Criteria Management (`t2_criteria_manager.js`, `study_criteria_manager.js`)**
 
-* **processSinglePatient():** This function is the heart of the pipeline. It takes a raw patient object and transforms it into a structured object. It performs data validation, type coercion, and calculates derived fields like age.  
-* **filterDataByCohort():** Provides a consistent method for filtering the master processed dataset based on the user-selected cohort (Overall, Upfront Surgery, nRCT).  
-* **calculateHeaderStats():** A utility function that computes the summary statistics displayed in the application header.
+This pair of modules handles all logic related to T2-weighted criteria.
+* **`t2_criteria_manager.js`:** Manages the user-defined, interactive T2 criteria. It maintains both a `currentCriteria` state (for editing) and an `appliedCriteria` state (for global calculations), with an `isUnsaved` flag to track discrepancies. The `evaluateDataset()` method is key, applying the defined criteria to any given dataset.
+* **`study_criteria_manager.js`:** Manages the static, predefined criteria sets from scientific literature, which are defined in `PUBLICATION_CONFIG`. It includes special logic to handle complex, multi-layered criteria sets (e.g., ESGAR 2016).
 
-### **3.4. Criteria Management (t2\_criteria\_manager.js, study\_criteria\_manager.js)**
+### **3.5. Asynchronous Optimization (Web Worker)**
 
-This pair of modules handles the logic for T2-weighted criteria.
+To prevent the UI from freezing during the computationally intensive brute-force analysis, the application uses a Web Worker.
+* **`brute_force_worker.js`:** A self-contained script that runs in a background thread. It receives a `start` message, generates and tests all criteria combinations, and communicates its status (`started`, `progress`, `result`, `error`) back to the main thread via `postMessage`.
+* **`brute_force_manager.js`:** A robust singleton on the main thread that manages the worker's lifecycle, including initialization and re-initialization after errors. It provides a clean API (`startAnalysis`, `cancelAnalysis`) and uses a callback system to communicate with the main `App` instance.
 
-* **t2\_criteria\_manager.js:** Manages the user-defined, interactive T2 criteria.  
-  * It maintains both a currentCriteria state (what the user is editing) and an appliedCriteria state (what is globally used for calculations).  
-  * The isUnsaved flag tracks discrepancies between these two states.  
-  * The applyCriteria() method commits the current state to the applied state and persists it to localStorage.  
-  * evaluateDataset() is a key function that takes a dataset and applies the currently defined criteria to each patient, calculating the t2Status and other relevant fields.  
-* **study\_criteria\_manager.js:** Manages the static, predefined criteria sets from scientific literature.  
-  * It holds a frozen array of study objects, each defining a specific set of criteria, logic, and applicable cohort.  
-  * It includes special handling for the complex, multi-layered logic of the ESGAR 2016 criteria (\_checkSingleNodeESGAR).  
-  * Its applyStudyCriteriaToDataset() function evaluates a dataset against a specific, named study set.
+### **3.6. Statistical Engine (`statistics_service.js`)**
 
-### **3.5. Asynchronous Optimization (brute\_force\_worker.js, brute\_force\_manager.js)**
+A pure logic module that centralizes all statistical calculations.
+* **Core Metrics:** Calculates descriptive statistics and a full suite of diagnostic performance metrics (Sensitivity, Specificity, PPV, NPV, Accuracy, AUC, etc.).
+* **Confidence Intervals & Tests:** Implements robust methods for 95% CIs (Wilson Score for proportions, Bootstrap Percentile for effect sizes) and key comparative tests (McNemar, DeLong, Fisher's Exact, Mann-Whitney U).
+* **`calculateAllPublicationStats()`:** A high-level function that computes a comprehensive set of statistics for all cohorts and criteria types in a single pass, ensuring data consistency for the Publication and Export tabs.
 
-To prevent the UI from freezing during the computationally intensive search for optimal T2 criteria, the application uses a Web Worker.
+### **3.7. UI Rendering & Management (`ui_manager.js`)**
 
-* **brute\_force\_worker.js:** A self-contained script that runs in a separate background thread.  
-  * It receives a start message with the patient data, target metric, and configuration.  
-  * It systematically generates and tests thousands of criteria combinations against the provided data.  
-  * It communicates its status back to the main thread via postMessage using a defined message protocol (started, progress, result, error, cancelled).  
-* **brute\_force\_manager.js:** A singleton module on the main thread that acts as a facade for the worker.  
-  * It manages the worker's lifecycle (initialization, termination).  
-  * It provides a clean API (startAnalysis, cancelAnalysis) for the rest of the application.  
-  * It listens for messages from the worker and invokes callbacks registered by the App class, effectively decoupling the main application logic from the worker implementation.  
-  * It stores the results for each cohort, making them available for later use (e.g., in the Publication tab or for export).
+A central singleton responsible for all direct DOM manipulations and UI state updates.
+* **Responsibilities:** Shows toasts, initializes tooltips, updates text/HTML of elements, and orchestrates the rendering of tab content via `renderTabContent`.
+* **Component-Based Rendering:** It relies on helper modules in the `components/` directory to generate reusable HTML structures (e.g., cards, tables, charts).
+* **`tabs/` Directory:** Each file in this directory is responsible for generating the complete HTML content for one of the main application tabs.
 
-### **3.6. Statistical Engine (statistics\_service.js)**
+### **3.8. Event Handling (`event_manager.js`)**
 
-This module centralizes all statistical calculations, ensuring consistency and accuracy. It contains no UI logic.
+A centralized event delegation model is used for performance and maintainability.
+* **Central Dispatcher:** A minimal number of event listeners are attached to `document.body`. The `handleBodyClick`, `handleBodyChange`, and `handleBodyInput` functions act as central dispatchers.
+* **Structured Handling:** The `handleBodyClick` function uses a mapping of element IDs to handler functions for clarity and robustness, eliminating the fragile `if/else if` chain of the previous implementation. This ensures that all clicks are routed correctly and reliably.
 
-* **Core Metrics:** Provides functions to calculate fundamental descriptive statistics (getMedian, getMean, getStdDev) and diagnostic performance metrics (calculateDiagnosticPerformance, which returns sensitivity, specificity, PPV, NPV, accuracy, F1-score, and AUC).  
-* **Confidence Intervals:** Implements robust methods for calculating 95% CIs, including calculateWilsonScoreCI for proportions and a bootstrapCI function for metrics like AUC and F1-score where analytic methods are complex.  
-* **Comparative Tests:** Includes implementations for calculateMcNemarTest (for paired accuracy comparison), calculateDeLongTest (for paired AUC comparison), and calculateFisherExactTest / calculateMannWhitneyUTest for association analyses.  
-* **calculateAllPublicationStats():** A high-level function that computes a comprehensive set of statistics for all cohorts and criteria types (AS, applied T2, literature T2, brute-force T2) in a single pass. This is used by the Publication and Export tabs to ensure data consistency.
+## **4. Data Schema**
 
-### **3.7. UI Rendering & Management**
+### **4.1. Raw Data (`data.js`)**
 
-The UI layer is modular and component-based.
+The initial data is structured with consistent keys.
 
-* **ui\_manager.js:** A central singleton that replaces the previous ui\_helpers.js and view\_renderer.js. It is responsible for all direct DOM manipulations and UI state updates, such as showing toasts, managing tooltips, and rendering the content of the main tabs via its renderTabContent method.  
-* **components/ Directory:** Contains modules for generating reusable HTML structures.  
-  * ui\_components.js: Creates generic components like cards and buttons.  
-  * table\_renderer.js: Specialized in rendering the complex, expandable rows for the Data and Analysis tables.  
-  * chart\_renderer.js: Encapsulates all D3.js logic for creating charts (histograms, pie charts, bar charts).  
-* **tabs/ Directory:** Each file in this directory is responsible for orchestrating the creation of the HTML content for a specific main tab. It gathers the necessary data, calls the appropriate UI components and renderers, and returns the final HTML string to the ui\_manager.
-
-### **3.8. Event Handling (event\_manager.js)**
-
-To optimize performance and simplify code, the application uses a centralized event delegation model.
-
-* **Single Listeners:** The event\_manager.js attaches a minimal number of event listeners (click, change, input) to the document.body.  
-* **Delegation Logic:** The handleBodyClick (and similar) function acts as a central dispatcher. It inspects the event.target to determine which element was interacted with and calls the appropriate handler function from the relevant module (e.g., app.handleCohortChange, t2CriteriaManager.updateLogic). This avoids attaching hundreds of individual listeners to elements.
-
-## **4\. Data Schema**
-
-### **4.1. Raw Data (data.js)**
-
-The initial data is structured with consistent English keys.  
-Example:  
-
-```
+```javascript
 {
-id: 1,
-lastName: "John",
-firstName: "Lothar",
-birthDate: "1953-07-13",
-sex: "m",
-therapy: "neoadjuvantTherapy",
-examDate: "2015-11-24",
-asStatus: "+",
-nStatus: "+",
-pathologyTotalNodeCount: 14,
-t2Nodes: [
-{ size: 27.0, shape: "round", border: "irregular", homogeneity: "heterogeneous", signal: "lowSignal" },
-// ...
-]
+  id: 1,
+  lastName: "John",
+  firstName: "Lothar",
+  birthDate: "1953-07-13",
+  sex: "m",
+  therapy: "neoadjuvantTherapy",
+  examDate: "2015-11-24",
+  asStatus: "+",
+  nStatus: "+",
+  pathologyTotalNodeCount: 14,
+  t2Nodes: [
+    { size: 27.0, shape: "round", border: "irregular", homogeneity: "heterogeneous", signal: "lowSignal" }
+  ]
 }
 ```
 
 ### **4.2. Processed Data Model (Application-Internal)**
 
-The data\_processor.js transforms the raw data into a consistent object model used throughout the application, calculating derived properties like age.  
-Example:  
+The `data_processor.js` module transforms the raw data into a consistent object model used throughout the application.
 
-```
+```javascript
 {
-id: 1,
-lastName: "John",
-firstName: "Lothar",
-birthDate: "1953-07-13",
-age: 62,
-therapy: "neoadjuvantTherapy",
-nStatus: "+",
-asStatus: "+",
-t2Status: null, // Populated by criteria managers
-countPathologyNodes: 14,
-countT2Nodes: 3,
-countT2NodesPositive: 0, // Populated by criteria managers
-t2Nodes: [
-{ size: 27.0, shape: "round", border: "irregular", ... },
-// ...
-],
-t2NodesEvaluated: [
-// Populated by criteria managers with check results
-{ size: 27.0, shape: "round", isPositive: true, checkResult: { size: true, ... } },
-// ...
-]
+  id: 1,
+  lastName: "John",
+  firstName: "Lothar",
+  birthDate: "1953-07-13",
+  age: 62, // Calculated
+  therapy: "neoadjuvantTherapy",
+  nStatus: "+",
+  asStatus: "+",
+  t2Status: null, // Populated by criteria managers
+  countPathologyNodes: 14,
+  countT2Nodes: 1,
+  countT2NodesPositive: 0, // Populated by criteria managers
+  t2Nodes: [
+    { size: 27.0, shape: "round", border: "irregular", ... }
+  ],
+  t2NodesEvaluated: [] // Populated by criteria managers
 }
 ```
 
-## **5\. Setup and Installation**
+## **5. Setup and Installation**
 
-The application is designed to run without a web server.
+The application is designed to run without a build process or a web server.
 
-1. **Prerequisites:** A modern web browser (e.g., Chrome, Firefox, Edge).  
-2. **Execution:** * Clone or download the project repository.  
-   * Open the index.html file directly in your web browser.  
-3. **Dependencies:** All external libraries (Bootstrap, D3.js, etc.) are loaded via CDN links in index.html and do not require manual installation.
+1.  **Prerequisites:** A modern desktop web browser (e.g., Chrome, Firefox, Edge).
+2.  **Execution:**
+    * Clone or download the project repository.
+    * Open the `index.html` file directly in your web browser.
+3.  **Dependencies:** All external libraries are loaded via CDN links in `index.html` and do not require manual installation.
