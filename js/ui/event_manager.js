@@ -55,7 +55,7 @@ const eventManager = (() => {
         if (button?.id === 'analysis-toggle-details') { uiManager.toggleAllDetails('analysis-table-body', button.id); return; }
         if (button?.id === 'btn-quick-guide') { uiManager.showQuickGuide(); return; }
         if (button?.id === 'export-bruteforce-modal-txt' && !button.disabled) { exportService.exportBruteForceReport(bruteForceManager.getResultsForCohort(state.getCurrentCohort())); return; }
-        if (button?.closest('#export-tab-pane') && button.id.startsWith('export-') && !button.disabled) { handleExportClick(button); return; }
+        if (button?.closest('#export-pane') && button.id.startsWith('export-') && !button.disabled) { handleExportClick(button); return; }
         if (button?.closest('#presentation-tab-pane') && button.id.startsWith('download-') && !button.disabled && !button.classList.contains('chart-download-btn') && !button.classList.contains('table-download-png-btn')) { 
             exportService.exportPraesentationData(button.id, app.getPresentationDataForExport(), state.getCurrentCohort()); 
             return; 
@@ -67,7 +67,6 @@ const eventManager = (() => {
 
     function handleBodyChange(event) {
         const target = event.target;
-        if (target.id === 'input-size') { debouncedUpdateSizeInput(target.value); return; }
         if (target.classList.contains('criteria-checkbox')) { handleT2CheckboxChange(target); return; }
         if (target.id === 't2-logic-switch') { handleT2LogicChange(target); return; }
         if (target.id === 'brute-force-metric') { return; }
@@ -80,8 +79,18 @@ const eventManager = (() => {
     
     function handleBodyInput(event) {
         const target = event.target;
-        if (target.id === 'range-size') {
-            document.getElementById('value-size').textContent = formatNumber(target.value, 1);
+        if (target.id === 'range-size' || target.id === 'input-size') {
+            const sizeValueDisplay = document.getElementById('value-size');
+            const sizeRangeInput = document.getElementById('range-size');
+            const sizeManualInput = document.getElementById('input-size');
+
+            if (target.id === 'range-size') {
+                if(sizeValueDisplay) sizeValueDisplay.textContent = formatNumber(target.value, 1);
+                if(sizeManualInput) sizeManualInput.value = formatNumber(target.value, 1, '', true);
+            } else { // target is input-size
+                if(sizeValueDisplay) sizeValueDisplay.textContent = formatNumber(target.value, 1);
+                if(sizeRangeInput) sizeRangeInput.value = target.value;
+            }
             debouncedUpdateSizeInput(target.value);
         }
     }
