@@ -33,7 +33,7 @@ function formatCriteriaForDisplay(criteria, logic = null) {
         return criterion.value || '?';
     };
 
-    const priorityOrder = ['size', 'kontur', 'homogenitaet', 'form', 'signal'];
+    const priorityOrder = ['size', 'border', 'homogeneity', 'shape', 'signal'];
     const sortedActiveKeys = [...activeKeys].sort((a, b) => {
         const indexA = priorityOrder.indexOf(a);
         const indexB = priorityOrder.indexOf(b);
@@ -48,9 +48,9 @@ function formatCriteriaForDisplay(criteria, logic = null) {
         let prefix = '';
         switch (key) {
             case 'size': prefix = 'Size '; break;
-            case 'form': prefix = 'Shape='; break;
-            case 'kontur': prefix = 'Border='; break;
-            case 'homogenitaet': prefix = 'Homog.='; break;
+            case 'shape': prefix = 'Shape='; break;
+            case 'border': prefix = 'Border='; break;
+            case 'homogeneity': prefix = 'Homog.='; break;
             case 'signal': prefix = 'Signal='; break;
             default: prefix = key + '=';
         }
@@ -89,12 +89,12 @@ function cloneDeep(obj) {
 }
 
 function checkNode(lymphNode, criteria) {
-    const checkResult = { size: null, form: null, kontur: null, homogenitaet: null, signal: null };
+    const checkResult = { size: null, shape: null, border: null, homogeneity: null, signal: null };
     if (!lymphNode || typeof lymphNode !== 'object' || !criteria || typeof criteria !== 'object') return checkResult;
 
     if (criteria.size?.active) {
         const threshold = criteria.size.threshold;
-        const nodeSize = lymphNode.groesse;
+        const nodeSize = lymphNode.size;
         const condition = criteria.size.condition || '>=';
         if (typeof nodeSize === 'number' && !isNaN(nodeSize) && typeof threshold === 'number' && !isNaN(threshold)) {
             switch (condition) {
@@ -107,9 +107,9 @@ function checkNode(lymphNode, criteria) {
             }
         } else { checkResult.size = false; }
     }
-    if (criteria.form?.active) checkResult.form = (lymphNode.form === criteria.form.value);
-    if (criteria.kontur?.active) checkResult.kontur = (lymphNode.kontur === criteria.kontur.value);
-    if (criteria.homogenitaet?.active) checkResult.homogenitaet = (lymphNode.homogenitaet === criteria.homogenitaet.value);
+    if (criteria.shape?.active) checkResult.shape = (lymphNode.shape === criteria.shape.value);
+    if (criteria.border?.active) checkResult.border = (lymphNode.border === criteria.border.value);
+    if (criteria.homogeneity?.active) checkResult.homogeneity = (lymphNode.homogeneity === criteria.homogeneity.value);
     if (criteria.signal?.active) checkResult.signal = (lymphNode.signal !== null && lymphNode.signal === criteria.signal.value);
 
     return checkResult;
@@ -117,7 +117,7 @@ function checkNode(lymphNode, criteria) {
 
 function applyCriteriaToPatient(patient, criteria, logic) {
     if (!patient || !criteria || (logic !== 'AND' && logic !== 'OR')) return null;
-    const lymphNodes = patient.lymphknoten_t2;
+    const lymphNodes = patient.t2Nodes;
     if (!Array.isArray(lymphNodes)) return null;
 
     const activeKeys = Object.keys(criteria).filter(key => key !== 'logic' && criteria[key]?.active === true);
@@ -147,8 +147,8 @@ function calculateMetric(data, criteria, logic, metricName) {
     data.forEach(p => {
         if (!p || typeof p !== 'object') return;
         const predictedT2 = applyCriteriaToPatient(p, criteria, logic);
-        const actualN = p.n === '+';
-        const validN = p.n === '+' || p.n === '-';
+        const actualN = p.nStatus === '+';
+        const validN = p.nStatus === '+' || p.nStatus === '-';
         const validT2 = predictedT2 === '+' || predictedT2 === '-';
 
         if (validN && validT2) {
@@ -193,13 +193,13 @@ function calculateMetric(data, criteria, logic, metricName) {
 }
 
 function generateCriteriaCombinations() {
-    const CRITERIA_KEYS = ['size', 'form', 'kontur', 'homogenitaet', 'signal'];
+    const CRITERIA_KEYS = ['size', 'shape', 'border', 'homogeneity', 'signal'];
     const VALUE_OPTIONS = {
         size: [],
-        form: ['rund', 'oval'],
-        kontur: ['scharf', 'irregulär'],
-        homogenitaet: ['homogen', 'heterogen'],
-        signal: ['signalarm', 'intermediär', 'signalreich']
+        shape: ['round', 'oval'],
+        border: ['sharp', 'irregular'],
+        homogeneity: ['homogeneous', 'heterogeneous'],
+        signal: ['lowSignal', 'intermediateSignal', 'highSignal']
     };
     const LOGICS = ['AND', 'OR'];
 
@@ -369,8 +369,8 @@ function runBruteForce() {
         if (Array.isArray(currentData)) {
             nTotal = currentData.length;
             currentData.forEach(p => {
-                if (p && p.n === '+') nPlus++;
-                else if (p && p.n === '-') nMinus++;
+                if (p && p.nStatus === '+') nPlus++;
+                else if (p && p.nStatus === '-') nMinus++;
             });
         }
 
