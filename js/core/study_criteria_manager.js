@@ -13,45 +13,30 @@ const studyT2CriteriaManager = (() => {
                 return `Size ${criterion.condition || '>='} ${formattedThreshold}mm`;
             }
             let value = criterion.value || '?';
-            // Translate German values to English for display, especially for short format
             if (isShort) {
                 switch (value) {
-                    case 'irregulär': value = 'irreg.'; break;
-                    case 'scharf': value = 'smooth'; break;
-                    case 'heterogen': value = 'heterog.'; break;
-                    case 'homogen': value = 'homog.'; break;
-                    case 'signalarm': value = 'low sig.'; break;
-                    case 'intermediär': value = 'int. sig.'; break;
-                    case 'signalreich': value = 'high sig.'; break;
-                    case 'rund': value = 'round'; break;
-                    case 'oval': value = 'oval'; break;
-                }
-            } else { // Full format, just ensure translation
-                switch (value) {
-                    case 'irregulär': value = 'irregular'; break;
-                    case 'scharf': value = 'sharp'; break;
-                    case 'heterogen': value = 'heterogeneous'; break;
-                    case 'homogen': value = 'homogeneous'; break;
-                    case 'signalarm': value = 'low signal'; break;
-                    case 'intermediär': value = 'intermediate signal'; break;
-                    case 'signalreich': value = 'high signal'; break;
-                    case 'rund': value = 'round'; break;
-                    case 'oval': value = 'oval'; break;
+                    case 'irregular': value = 'irreg.'; break;
+                    case 'sharp': value = 'smooth'; break;
+                    case 'heterogeneous': value = 'heterog.'; break;
+                    case 'homogeneous': value = 'homog.'; break;
+                    case 'lowSignal': value = 'low sig.'; break;
+                    case 'intermediateSignal': value = 'int. sig.'; break;
+                    case 'highSignal': value = 'high sig.'; break;
                 }
             }
 
             let prefix = '';
             switch(key) {
-                case 'form': prefix = isShort ? 'Sh=' : 'Shape='; break;
-                case 'kontur': prefix = isShort ? 'Bo=' : 'Border='; break;
-                case 'homogenitaet': prefix = isShort ? 'Ho=' : 'Homog.='; break;
+                case 'shape': prefix = isShort ? 'Sh=' : 'Shape='; break;
+                case 'border': prefix = isShort ? 'Bo=' : 'Border='; break;
+                case 'homogeneity': prefix = isShort ? 'Ho=' : 'Homog.='; break;
                 case 'signal': prefix = isShort ? 'Si=' : 'Signal='; break;
                 default: prefix = key + '=';
             }
             return `${prefix}${value}`;
         };
 
-        const priorityOrder = ['size', 'kontur', 'homogenitaet', 'form', 'signal'];
+        const priorityOrder = ['size', 'border', 'homogeneity', 'shape', 'signal'];
         const sortedActiveKeys = [...activeKeys].sort((a, b) => {
             const indexA = priorityOrder.indexOf(a);
             const indexB = priorityOrder.indexOf(b);
@@ -93,46 +78,38 @@ const studyT2CriteriaManager = (() => {
 
     function _checkSingleNodeESGAR(lymphNode, criteria) {
         const checkResult = {
-             size: null, form: null, kontur: null, homogenitaet: null, signal: null, // Basic checks
-             esgarCategory: 'N/A', esgarMorphologyCount: 0, isPositive: false // ESGAR specific
+             size: null, shape: null, border: null, homogeneity: null, signal: null,
+             esgarCategory: 'N/A', esgarMorphologyCount: 0, isPositive: false
         };
         if (!lymphNode || !criteria) return checkResult;
 
         const nodeSize = (typeof lymphNode.size === 'number' && !isNaN(lymphNode.size)) ? lymphNode.size : -1;
         
-        // Morphological suspicious features based on ESGAR 2016 from docs
-        // 1) Round shape, 2) Irregular border, and 3) Heterogeneous signal
-        // Note: The 'signal' property is not explicitly listed as a morphology feature in ESGAR's suspicious criteria for this rule.
-        // Therefore, only shape, kontur (border), and homogenitaet are considered for the morphology count.
-        const hasRoundShape = (lymphNode.shape === 'rund'); // 'rund' is from data.js
-        const hasIrregularBorder = (lymphNode.border === 'irregulär'); // 'irregulär' is from data.js
-        const hasHeterogeneousHomogeneity = (lymphNode.homogeneity === 'heterogen'); // 'heterogen' is from data.js
+        const hasRoundShape = (lymphNode.shape === 'round');
+        const hasIrregularBorder = (lymphNode.border === 'irregular');
+        const hasHeterogeneousHomogeneity = (lymphNode.homogeneity === 'heterogeneous');
 
         let morphologyCount = 0;
         if (hasRoundShape) morphologyCount++;
-        if (hasIrregularBorder) morphologyCount++; // Corrected variable name: hasIrregularBorder
+        if (hasIrregularBorder) morphologyCount++;
         if (hasHeterogeneousHomogeneity) morphologyCount++;
 
-        // Record individual checks for detailed display
-        checkResult.size = (criteria.size?.active && nodeSize >= (criteria.size.threshold || 9.0)); // The threshold is for >=9mm rule
-        checkResult.form = (criteria.form?.active && hasRoundShape);
-        checkResult.kontur = (criteria.kontur?.active && hasIrregularBorder); // Corrected variable name
-        checkResult.homogenitaet = (criteria.homogenitaet?.active && hasHeterogeneousHomogeneity);
-        // Signal is not part of the ESGAR morphology count for this specific rule but can be recorded if active
+        checkResult.size = (criteria.size?.active && nodeSize >= (criteria.size.threshold || 9.0));
+        checkResult.shape = (criteria.shape?.active && hasRoundShape);
+        checkResult.border = (criteria.border?.active && hasIrregularBorder);
+        checkResult.homogeneity = (criteria.homogeneity?.active && hasHeterogeneousHomogeneity);
         checkResult.signal = (criteria.signal?.active && lymphNode.signal === criteria.signal.value);
-
         checkResult.esgarMorphologyCount = morphologyCount;
 
-        // Apply ESGAR 2016 combined logic
-        if (nodeSize >= 9.0) { // Short axis ≥ 9 mm: considered malignant regardless of features
+        if (nodeSize >= 9.0) {
             checkResult.isPositive = true;
             checkResult.esgarCategory = '≥9mm';
-        } else if (nodeSize >= 5.0 && nodeSize < 9.0) { // Short axis 5–8 mm: requires 2 suspicious features
+        } else if (nodeSize >= 5.0 && nodeSize < 9.0) {
             checkResult.esgarCategory = '5-8mm';
             if (morphologyCount >= 2) {
                 checkResult.isPositive = true;
             }
-        } else if (nodeSize >= 0 && nodeSize < 5.0) { // Short axis < 5 mm: requires 3 suspicious features
+        } else if (nodeSize >= 0 && nodeSize < 5.0) {
              checkResult.esgarCategory = '<5mm';
              if (morphologyCount >= 3) {
                  checkResult.isPositive = true;
@@ -144,7 +121,7 @@ const studyT2CriteriaManager = (() => {
     }
 
     function _checkSingleNodeSimple(lymphNode, criteria) {
-        const checkResult = { size: null, form: null, kontur: null, homogenitaet: null, signal: null };
+        const checkResult = { size: null, shape: null, border: null, homogeneity: null, signal: null };
         if (!lymphNode || !criteria) return checkResult;
 
         if (criteria.size?.active) {
@@ -162,10 +139,9 @@ const studyT2CriteriaManager = (() => {
                 }
             } else { checkResult.size = false; }
         }
-        // Direct comparison for other categorical features from data.js
-        if (criteria.form?.active) checkResult.form = (lymphNode.shape === criteria.form.value);
-        if (criteria.kontur?.active) checkResult.kontur = (lymphNode.border === criteria.kontur.value);
-        if (criteria.homogenitaet?.active) checkResult.homogenitaet = (lymphNode.homogeneity === criteria.homogenitaet.value);
+        if (criteria.shape?.active) checkResult.shape = (lymphNode.shape === criteria.shape.value);
+        if (criteria.border?.active) checkResult.border = (lymphNode.border === criteria.border.value);
+        if (criteria.homogeneity?.active) checkResult.homogeneity = (lymphNode.homogeneity === criteria.homogeneity.value);
         if (criteria.signal?.active) checkResult.signal = (lymphNode.signal !== null && lymphNode.signal === criteria.signal.value);
 
         return checkResult;
@@ -195,7 +171,7 @@ const studyT2CriteriaManager = (() => {
         const evaluatedNodes = lymphNodes.map(lk => {
             if (!lk) return null;
             let isNodePositive = false;
-            let checkResult = {}; // Initialize to empty object
+            let checkResult = {};
 
             if (logic === 'KOMBINIERT' && studyCriteriaSet.id === 'rutegard_et_al_esgar') {
                 checkResult = _checkSingleNodeESGAR(lk, criteria);
@@ -216,7 +192,6 @@ const studyT2CriteriaManager = (() => {
         }).filter(node => node !== null);
 
         let finalStatus = null;
-        // A patient's T2 status is defined if any criteria are active or if a combined logic is used
         if (logic === 'KOMBINIERT' || activeKeys.length > 0) {
             finalStatus = patientIsPositive ? '+' : '-';
         }
