@@ -10,14 +10,19 @@ const DEFAULT_T2_CRITERIA = Object.freeze({
 const APP_CONFIG = Object.freeze({
     APP_NAME: "Nodal Staging: Avocado Sign vs. T2 Criteria",
     APP_VERSION: "3.0.0",
+    COHORTS: Object.freeze({
+        OVERALL: { id: 'Overall', therapyValue: null, displayName: 'Overall' },
+        SURGERY_ALONE: { id: 'surgeryAlone', therapyValue: 'surgeryAlone', displayName: 'Surgery alone' },
+        NEOADJUVANT: { id: 'neoadjuvantTherapy', therapyValue: 'neoadjuvantTherapy', displayName: 'Neoadjuvant therapy' }
+    }),
     DEFAULT_SETTINGS: Object.freeze({
-        KOLLEKTIV: 'Gesamt',
+        COHORT: 'Overall',
         T2_LOGIC: 'AND',
-        DATEN_TABLE_SORT: Object.freeze({ key: 'id', direction: 'asc', subKey: null }),
-        AUSWERTUNG_TABLE_SORT: Object.freeze({ key: 'id', direction: 'asc', subKey: null }),
+        DATA_TABLE_SORT: Object.freeze({ key: 'id', direction: 'asc', subKey: null }),
+        ANALYSIS_TABLE_SORT: Object.freeze({ key: 'id', direction: 'asc', subKey: null }),
         STATS_LAYOUT: 'einzel',
-        STATS_KOLLEKTIV1: 'Gesamt',
-        STATS_KOLLEKTIV2: 'neoadjuvantTherapy',
+        STATS_COHORT1: 'Overall',
+        STATS_COHORT2: 'neoadjuvantTherapy',
         PRESENTATION_VIEW: 'as-vs-t2',
         PRESENTATION_STUDY_ID: 'applied_criteria',
         PUBLICATION_SECTION: 'abstract_main',
@@ -27,12 +32,12 @@ const APP_CONFIG = Object.freeze({
     STORAGE_KEYS: Object.freeze({
         APPLIED_CRITERIA: 'appliedT2Criteria_v4.2_detailed',
         APPLIED_LOGIC: 'appliedT2Logic_v4.2_detailed',
-        CURRENT_KOLLEKTIV: 'currentKollektiv_v4.2_detailed',
+        CURRENT_COHORT: 'currentCohort_v4.3_unified',
         PUBLICATION_SECTION: 'currentPublicationSection_v4.4_detailed',
         PUBLICATION_BRUTE_FORCE_METRIC: 'currentPublicationBfMetric_v4.4_detailed',
         STATS_LAYOUT: 'currentStatsLayout_v4.2_detailed',
-        STATS_KOLLEKTIV1: 'currentStatsKollektiv1_v4.2_detailed',
-        STATS_KOLLEKTIV2: 'currentStatsKollektiv2_v4.2_detailed',
+        STATS_COHORT1: 'currentStatsCohort1_v4.3_unified',
+        STATS_COHORT2: 'currentStatsCohort2_v4.3_unified',
         PRESENTATION_VIEW: 'currentPresentationView_v4.2_detailed',
         PRESENTATION_STUDY_ID: 'currentPresentationStudyId_v4.2_detailed',
         CHART_COLOR_SCHEME: 'chartColorScheme_v4.2_detailed',
@@ -91,26 +96,26 @@ const APP_CONFIG = Object.freeze({
     }),
     EXPORT_SETTINGS: Object.freeze({
         DATE_FORMAT: 'YYYYMMDD',
-        FILENAME_TEMPLATE: 'AvocadoSignT2_{TYPE}_{KOLLEKTIV}_{DATE}.{EXT}',
+        FILENAME_TEMPLATE: 'AvocadoSignT2_{TYPE}_{COHORT}_{DATE}.{EXT}',
         TABLE_PNG_EXPORT_SCALE: 2,
         ENABLE_TABLE_PNG_EXPORT: true,
         CSV_DELIMITER: ';',
         FILENAME_TYPES: Object.freeze({
             STATS_CSV: 'Statistics_CSV',
             BRUTEFORCE_TXT: 'BruteForce_Report_TXT',
-            DESKRIPTIV_MD: 'Descriptive_Statistics_MD',
-            DATEN_MD: 'Data_List_MD',
-            AUSWERTUNG_MD: 'Analysis_Table_MD',
+            DESCRIPTIVE_MD: 'Descriptive_Statistics_MD',
+            DATA_MD: 'Data_List_MD',
+            ANALYSIS_MD: 'Analysis_Table_MD',
             FILTERED_DATA_CSV: 'Filtered_Data_CSV',
             COMPREHENSIVE_REPORT_HTML: 'Comprehensive_Report_HTML',
             CHART_SINGLE_PNG: '{ChartName}_PNG',
             CHART_SINGLE_SVG: '{ChartName}_SVG',
             TABLE_PNG_EXPORT: '{TableName}_PNG',
-            PRAES_AS_PERF_CSV: 'Pres_AS_Performance_CSV',
-            PRAES_AS_PERF_MD: 'Pres_AS_Performance_MD',
-            PRAES_AS_VS_T2_PERF_CSV: 'Pres_Performance_ASvsT2_{StudyID}_CSV',
-            PRAES_AS_VS_T2_COMP_MD: 'Pres_Metrics_ASvsT2_{StudyID}_MD',
-            PRAES_AS_VS_T2_TESTS_MD: 'Pres_Tests_ASvsT2_{StudyID}_MD',
+            PRES_AS_PERF_CSV: 'Pres_AS_Performance_CSV',
+            PRES_AS_PERF_MD: 'Pres_AS_Performance_MD',
+            PRES_AS_VS_T2_PERF_CSV: 'Pres_Performance_ASvsT2_{StudyID}_CSV',
+            PRES_AS_VS_T2_COMP_MD: 'Pres_Metrics_ASvsT2_{StudyID}_MD',
+            PRES_AS_VS_T2_TESTS_MD: 'Pres_Tests_ASvsT2_{StudyID}_MD',
             CRITERIA_COMPARISON_MD: 'Criteria_Comparison_MD',
             PUBLICATION_ABSTRACT_MD: 'Publication_Abstract_MD',
             PUBLICATION_INTRODUCTION_MD: 'Publication_Introduction_MD',
@@ -159,29 +164,11 @@ const APP_CONFIG = Object.freeze({
         REFERENCE_LURZ_SCHAEFER_2025: { id: 23, text: "Lurz M, Schäfer AO (2025) The Avocado Sign: A novel imaging marker for nodal staging in rectal cancer. Eur Radiol. https://doi.org/10.1007/s00330-025-11462-y" },
         REFERENCE_RUTEGARD_2025: { id: 24, text: "Rutegård J, Hallberg L, Carlsson J, Olsson J, Jarnheimer A (2025) Anatomically matched mesorectal nodal structures: evaluation of the 2016 ESGAR consensus criteria. Eur Radiol. https://doi.org/10.1007/s00330-024-11357-1" }
     }),
-    T2_ICON_SVGS: Object.freeze({
-        SIZE_DEFAULT: (s, sw, iconColor, c, r, sq, sqPos) => `<path d="M${sw/2} ${c} H${s-sw/2} M${c} ${sw/2} V${s-sw/2}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`,
-        SHAPE_ROUND: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw}"/>`,
-        SHAPE_OVAL: (s, sw, iconColor, c, r, sq, sqPos) => `<ellipse cx="${c}" cy="${c}" rx="${r}" ry="${r * 0.65}" fill="none" stroke="${iconColor}" stroke-width="${sw}"/>`,
-        BORDER_SHARP: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
-        BORDER_IRREGULAR: (s, sw, iconColor, c, r, sq, sqPos) => `<path d="M ${c + r} ${c} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${r*0.8} ${r*1.2} 0 0 1 ${c-r*0.9} ${c-r*0.3} A ${r*1.1} ${r*0.7} 0 0 1 ${c+r} ${c} Z" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
-        HOMOGENEITY_HOMOGENEOUS: (s, sw, iconColor, c, r, sq, sqPos) => `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="${iconColor}" stroke="none" rx="1" ry="1"/>`,
-        HOMOGENEITY_HETEROGENEOUS: (s, sw, iconColor, c, r, sq, sqPos) => {
-            let svgContent = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" rx="1" ry="1"/>`;
-            const pSize = sq / 4;
-            for(let i=0;i<3;i++){for(let j=0;j<3;j++){if((i+j)%2===0){svgContent+=`<rect x="${sqPos+i*pSize+pSize/2}" y="${sqPos+j*pSize+pSize/2}" width="${pSize}" height="${pSize}" fill="${iconColor}" stroke="none" style="opacity:0.6;"/>`;}}}
-            return svgContent;
-        },
-        SIGNAL_LOWSIGNAL: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#555555" stroke="rgba(0,0,0,0.1)" stroke-width="${sw * 0.75}"/>`,
-        SIGNAL_INTERMEDIATESIGNAL: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#aaaaaa" stroke="rgba(0,0,0,0.1)" stroke-width="${sw * 0.75}"/>`,
-        SIGNAL_HIGHSIGNAL: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#f0f0f0" stroke="#333333" stroke-width="${sw * 0.75}"/>`,
-        UNKNOWN: (s, sw, iconColor, c, r, sq, sqPos) => `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" stroke-dasharray="2 2" /><line x1="${sqPos}" y1="${sqPos}" x2="${sqPos+sq}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/><line x1="${sqPos+sq}" y1="${sqPos}" x2="${sqPos}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`
-    }),
     UI_TEXTS: Object.freeze({
         cohortDisplayNames: {
-            'Gesamt': 'Overall',
-            'surgeryAlone': 'Upfront Surgery',
-            'neoadjuvantTherapy': 'nRCT'
+            'Overall': 'Overall',
+            'surgeryAlone': 'Surgery alone',
+            'neoadjuvantTherapy': 'Neoadjuvant therapy'
         },
         t2LogicDisplayNames: {
             'AND': 'AND',
@@ -223,16 +210,14 @@ const APP_CONFIG = Object.freeze({
             male: 'Male',
             female: 'Female',
             unknownGender: 'Unknown',
-            surgeryAlone: 'Upfront Surgery',
-            neoadjuvantTherapy: 'nRCT',
+            surgeryAlone: 'Surgery alone',
+            neoadjuvantTherapy: 'Neoadjuvant therapy',
             nPositive: 'N+',
             nNegative: 'N-',
             asPositive: 'AS+',
             asNegative: 'AS-',
             t2Positive: 'T2+',
-            t2Negative: 'T2-',
-            avocadoSign: 'Avocado Sign (AS)',
-            currentT2: '{T2ShortName}'
+            t2Negative: 'T2-'
         },
         statMetrics: {
             significanceTexts: {
@@ -259,7 +244,7 @@ const APP_CONFIG = Object.freeze({
         },
         tooltips: Object.freeze({
             quickGuideButton: { description: "Show a quick guide and important notes about the application." },
-            cohortButtons: { description: "Select the patient cohort for the analysis: <strong>Overall</strong>, <strong>Upfront Surgery</strong>, or <strong>nRCT</strong>. This choice filters the data for all application tabs." },
+            cohortButtons: { description: "Select the patient cohort for the analysis: <strong>Overall</strong>, <strong>Surgery alone</strong>, or <strong>Neoadjuvant therapy</strong>. This choice filters the data for all application tabs." },
             headerStats: {
                 cohort: "Currently selected patient cohort for analysis.",
                 patientCount: "Total number of patients in the selected cohort.",
@@ -281,7 +266,7 @@ const APP_CONFIG = Object.freeze({
                 firstName: "Patient's first name (anonymized/coded).",
                 sex: "Patient's sex (male/female/unknown).",
                 age: "Patient's age in years at the time of MRI.",
-                therapy: "Therapy administered before surgery (nRCT: neoadjuvant chemoradiotherapy, Upfront Surgery: no prior treatment).",
+                therapy: "Therapy administered before surgery (Neoadjuvant therapy, Surgery alone).",
                 n_as_t2: "Direct status comparison: N (Histopathology reference), AS (Avocado Sign prediction), T2 (current criteria prediction). Click N, AS, or T2 in the column header for sub-sorting.",
                 notes: "Additional clinical or radiological notes on the case, if available.",
                 expandAll: "Expand or collapse the detail view of T2-weighted lymph node features for all patients in the current table view.",
@@ -314,7 +299,7 @@ const APP_CONFIG = Object.freeze({
             t2MetricsOverview: {
                 cardTitle: "Quick overview of diagnostic performance (T2 vs. N) for the currently applied and saved T2 criteria for the selected cohort: <strong>[COHORT]</strong>. All confidence intervals (CI) are 95% CIs.",
                 sens: "Sensitivity (T2 vs. N): Proportion of N+ cases correctly identified as positive by the T2 criteria.",
-                spez: "Specificity (T2 vs. N): Proportion of N- cases correctly identified as negative by the T2 criteria.",
+                spec: "Specificity (T2 vs. N): Proportion of N- cases correctly identified as negative by the T2 criteria.",
                 ppv: "Positive Predictive Value (PPV, T2 vs. N): Probability that a T2+ case is actually N+.",
                 npv: "Negative Predictive Value (NPV, T2 vs. N): Probability that a T2- case is actually N-.",
                 acc: "Accuracy (T2 vs. N): Overall proportion of correctly classified cases.",
@@ -340,7 +325,7 @@ const APP_CONFIG = Object.freeze({
                 cardTitle: "Demographics, clinical data, and baseline lymph node counts for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs.",
                 age: { name: "Age", description: "Patient age in years." },
                 sex: { name: "Sex", description: "Patient's sex (male/female/unknown)." },
-                therapy: { name: "Therapy", description: "Therapy administered before surgery (nRCT: neoadjuvant chemoradiotherapy, Upfront Surgery: no prior treatment)." },
+                therapy: { name: "Therapy", description: "Therapy administered before surgery (neoadjuvantTherapy, surgeryAlone)." },
                 nStatus: { name: "N-Status", description: "Histopathological lymph node status (N+ / N-)." },
                 asStatus: { name: "AS-Status", description: "Avocado Sign status (AS+ / AS-)." },
                 t2Status: { name: "T2-Status", description: "T2-weighted MRI lymph node status (T2+ / T2-) based on applied criteria." },
@@ -400,10 +385,10 @@ const APP_CONFIG = Object.freeze({
                 description: "Allows exporting analysis results, tables, and charts based on the currently selected global cohort ([COHORT]) and the currently applied T2 criteria.",
                 statscsv: { description: "Detailed table of all calculated statistical metrics (descriptive, AS & T2 performance, comparisons, associations) from the Statistics tab as a CSV file.", type: 'STATS_CSV', ext: "csv" },
                 bruteforcetxt: { description: "Detailed report of the last brute-force optimization for the current cohort (Top 10 results, configuration) as a text file (.txt), if performed.", type: 'BRUTEFORCE_TXT', ext: "txt" },
-                datatablemd: { description: "Current data list (Data tab) as a Markdown table (.md).", type: 'DATEN_MD', ext: "md" },
-                analysistablemd: { description: "Current analysis table (Analysis tab, incl. T2 results) as a Markdown (.md) file.", type: 'AUSWERTUNG_MD', ext: "md" },
+                datamd: { description: "Current data list (Data tab) as a Markdown table (.md).", type: 'DATA_MD', ext: "md" },
+                analysismd: { description: "Current analysis table (Analysis tab, incl. T2 results) as a Markdown (.md) file.", type: 'ANALYSIS_MD', ext: "md" },
                 filtereddatacsv: { description: "Raw data of the currently selected cohort (incl. T2 evaluation) as a CSV file (.csv).", type: 'FILTERED_DATA_CSV', ext: "csv" },
-                comprehensivereporthtml: { description: "Comprehensive analysis report as an HTML file (statistics, configurations, charts), printable.", type: 'COMPREHENSIVE_REPORT_HTML', ext: "html" },
+                comprehensivereport_html: { description: "Comprehensive analysis report as an HTML file (statistics, configurations, charts), printable.", type: 'COMPREHENSIVE_REPORT_HTML', ext: "html" },
                 allzip: { description: "All available single files (Statistics CSV, BruteForce TXT, all MDs, Raw Data CSV, HTML Report) in one ZIP archive.", type: 'ALL_ZIP', ext: "zip"},
                 csvzip: { description: "All available CSV files (Statistics, Raw Data) in one ZIP archive.", type: 'CSV_ZIP', ext: "zip"},
                 mdzip: { description: "All available Markdown files (Descriptive, Data, Analysis, Publication Texts) in one ZIP archive.", type: 'MD_ZIP', ext: "zip"},
@@ -411,6 +396,24 @@ const APP_CONFIG = Object.freeze({
                 svgzip: { description: "All currently visible charts (Statistics, Analysis, Presentation) as individual SVG files (ZIP archive).", type: 'SVG_ZIP', ext: "zip"}
             }
         })
+    }),
+    T2_ICON_SVGS: Object.freeze({
+        SIZE_DEFAULT: (s, sw, iconColor, c, r, sq, sqPos) => `<path d="M${sw/2} ${c} H${s-sw/2} M${c} ${sw/2} V${s-sw/2}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`,
+        SHAPE_ROUND: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw}"/>`,
+        SHAPE_OVAL: (s, sw, iconColor, c, r, sq, sqPos) => `<ellipse cx="${c}" cy="${c}" rx="${r}" ry="${r * 0.65}" fill="none" stroke="${iconColor}" stroke-width="${sw}"/>`,
+        BORDER_SHARP: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
+        BORDER_IRREGULAR: (s, sw, iconColor, c, r, sq, sqPos) => `<path d="M ${c + r} ${c} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${r*0.8} ${r*1.2} 0 0 1 ${c-r*0.9} ${c-r*0.3} A ${r*1.1} ${r*0.7} 0 0 1 ${c+r} ${c} Z" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
+        HOMOGENEITY_HOMOGENEOUS: (s, sw, iconColor, c, r, sq, sqPos) => `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="${iconColor}" stroke="none" rx="1" ry="1"/>`,
+        HOMOGENEITY_HETEROGENEOUS: (s, sw, iconColor, c, r, sq, sqPos) => {
+            let svgContent = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" rx="1" ry="1"/>`;
+            const pSize = sq / 4;
+            for(let i=0;i<3;i++){for(let j=0;j<3;j++){if((i+j)%2===0){svgContent+=`<rect x="${sqPos+i*pSize+pSize/2}" y="${sqPos+j*pSize+pSize/2}" width="${pSize}" height="${pSize}" fill="${iconColor}" stroke="none" style="opacity:0.6;"/>`;}}}
+            return svgContent;
+        },
+        SIGNAL_LOWSIGNAL: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#555555" stroke="rgba(0,0,0,0.1)" stroke-width="${sw * 0.75}"/>`,
+        SIGNAL_INTERMEDIATESIGNAL: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#aaaaaa" stroke="rgba(0,0,0,0.1)" stroke-width="${sw * 0.75}"/>`,
+        SIGNAL_HIGHSIGNAL: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#f0f0f0" stroke="#333333" stroke-width="${sw * 0.75}"/>`,
+        UNKNOWN: (s, sw, iconColor, c, r, sq, sqPos) => `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" stroke-dasharray="2 2" /><line x1="${sqPos}" y1="${sqPos}" x2="${sqPos+sq}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/><line x1="${sqPos+sq}" y1="${sqPos}" x2="${sqPos}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`
     })
 });
 
@@ -454,7 +457,7 @@ const PUBLICATION_CONFIG = Object.freeze({
             id: 'rutegard_et_al_esgar',
             name: 'ESGAR 2016 (Rutegård et al. 2025)',
             displayShortName: 'ESGAR 2016',
-            applicableCohort: 'Gesamt',
+            applicableCohort: 'Overall',
             logic: 'KOMBINIERT',
             criteria: Object.freeze({
                 size: { active: true, threshold: 9.0, condition: '>=' },
@@ -475,7 +478,7 @@ const PUBLICATION_CONFIG = Object.freeze({
             id: 'koh_2008',
             name: 'Koh et al. (2008)',
             displayShortName: 'Koh 2008',
-            applicableCohort: 'Gesamt',
+            applicableCohort: 'Overall',
             logic: 'OR',
             criteria: Object.freeze({
                 size: { active: false, threshold: 5.0, condition: '>=' },
@@ -544,11 +547,11 @@ const PUBLICATION_CONFIG = Object.freeze({
             },
             rocKurveSurgeryAlone: {
                 id: 'fig-results-roc-surgery-alone',
-                titleEn: 'Figure 2. ROC Curve for the Avocado Sign in the Upfront Surgery Cohort'
+                titleEn: 'Figure 2. ROC Curve for the Avocado Sign in the Surgery alone Cohort'
             },
             rocKurveNRCT: {
                 id: 'fig-results-roc-nrcT',
-                titleEn: 'Figure 3. ROC Curve for the Avocado Sign in the nRCT Cohort'
+                titleEn: 'Figure 3. ROC Curve for the Avocado Sign in the Neoadjuvant therapy Cohort'
             },
             asVsT2ComparisonChart: {
                 id: 'fig-results-as-t2-comparison',
