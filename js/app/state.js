@@ -106,18 +106,22 @@ const state = (() => {
 
     function getPresentationView() { return currentState.presentationView; }
     function setPresentationView(newView) {
-        if (newView === 'as-pur' || newView === 'as-vs-t2') {
-            if (currentState.presentationView !== newView) {
-                if (newView === 'as-pur') {
-                    _setter('presentationStudyId', APP_CONFIG.STORAGE_KEYS.PRESENTATION_STUDY_ID, null);
-                }
-                else if (newView === 'as-vs-t2' && !currentState.presentationStudyId) {
-                    _setter('presentationStudyId', APP_CONFIG.STORAGE_KEYS.PRESENTATION_STUDY_ID, APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_STUDY_ID);
-                }
-            }
-            return _setter('presentationView', APP_CONFIG.STORAGE_KEYS.PRESENTATION_VIEW, newView);
+        if (newView !== 'as-pur' && newView !== 'as-vs-t2') {
+            return false;
         }
-        return false;
+        
+        const viewChanged = _setter('presentationView', APP_CONFIG.STORAGE_KEYS.PRESENTATION_VIEW, newView);
+        let studyIdChanged = false;
+
+        if (newView === 'as-pur') {
+            studyIdChanged = _setter('presentationStudyId', APP_CONFIG.STORAGE_KEYS.PRESENTATION_STUDY_ID, null);
+        } else if (newView === 'as-vs-t2') {
+            if (currentState.presentationStudyId === null) {
+                studyIdChanged = _setter('presentationStudyId', APP_CONFIG.STORAGE_KEYS.PRESENTATION_STUDY_ID, APP_CONFIG.DEFAULT_SETTINGS.PRESENTATION_STUDY_ID);
+            }
+        }
+        
+        return viewChanged || studyIdChanged;
     }
 
     function getPresentationStudyId() { return currentState.presentationStudyId; }
