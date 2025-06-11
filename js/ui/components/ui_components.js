@@ -66,21 +66,8 @@ const uiComponents = (() => {
             return values.map(value => {
                 const isActiveValue = isChecked && currentValue === value;
                 const icon = getT2IconSVG(key, value);
+                const buttonTooltip = `Set criterion '${criterionLabel}' to '${value}'. ${isChecked ? '' : '(Criterion is currently inactive)'}`;
                 
-                let displayValueForTooltip = value;
-                switch (value) {
-                    case 'rund': displayValueForTooltip = 'round'; break;
-                    case 'oval': displayValueForTooltip = 'oval'; break;
-                    case 'scharf': displayValueForTooltip = 'sharp'; break;
-                    case 'irregulär': displayValueForTooltip = 'irregular'; break;
-                    case 'homogen': displayValueForTooltip = 'homogeneous'; break;
-                    case 'heterogen': displayValueForTooltip = 'heterogeneous'; break;
-                    case 'signalarm': displayValueForTooltip = 'low signal'; break;
-                    case 'intermediär': displayValueForTooltip = 'intermediate signal'; break;
-                    case 'signalreich': displayValueForTooltip = 'high signal'; break;
-                }
-
-                const buttonTooltip = `Set criterion '${criterionLabel}' to '${displayValueForTooltip}'. ${isChecked ? '' : '(Criterion is currently inactive)'}`;
                 return `<button class="btn t2-criteria-button criteria-icon-button ${isActiveValue ? 'active' : ''} ${!isChecked ? 'inactive-option' : ''}" data-criterion="${key}" data-value="${value}" data-tippy-content="${buttonTooltip}" ${!isChecked ? 'disabled' : ''}>${icon}</button>`;
             }).join('');
         };
@@ -124,9 +111,9 @@ const uiComponents = (() => {
                                  <input type="number" class="form-control form-control-sm criteria-input-manual" id="input-size" min="${min}" max="${max}" step="${step}" value="${formattedThresholdForInput}" ${!isChecked ? 'disabled' : ''} style="width: 70px;" aria-label="Enter size manually" data-tippy-content="Enter threshold manually.">
                             </div>
                         `)}
-                        ${createCriteriaGroup('form', 'Shape', 't2Form', createButtonOptions)}
-                        ${createCriteriaGroup('kontur', 'Border', 't2Kontur', createButtonOptions)}
-                        ${createCriteriaGroup('homogenitaet', 'Homogeneity', 't2Homogenitaet', createButtonOptions)}
+                        ${createCriteriaGroup('shape', 'Shape', 't2Shape', createButtonOptions)}
+                        ${createCriteriaGroup('border', 'Border', 't2Border', createButtonOptions)}
+                        ${createCriteriaGroup('homogeneity', 'Homogeneity', 't2Homogeneity', createButtonOptions)}
                         ${createCriteriaGroup('signal', 'Signal', 't2Signal', createButtonOptions)}
                         <div class="col-12 d-flex justify-content-end align-items-center border-top pt-3 mt-3">
                             <button class="btn btn-sm btn-outline-secondary me-2" id="btn-reset-criteria" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.t2Actions.reset}">
