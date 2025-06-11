@@ -1,9 +1,9 @@
 const presentationTab = (() => {
 
     function _createASPerformanceViewHTML(presentationData) {
-        const { statsGesamt, statsDirektOP, statsNRCT, cohort, statsCurrentCohort, patientCount } = presentationData || {};
-        const cohorts = ['Gesamt', 'direkt OP', 'nRCT'];
-        const statsMap = { 'Gesamt': statsGesamt, 'direkt OP': statsDirektOP, 'nRCT': statsNRCT };
+        const { statsGesamt, statsSurgeryAlone, statsNeoadjuvantTherapy, cohort, statsCurrentCohort, patientCount } = presentationData || {};
+        const cohorts = ['Gesamt', 'surgeryAlone', 'neoadjuvantTherapy'];
+        const statsMap = { 'Gesamt': statsGesamt, 'surgeryAlone': statsSurgeryAlone, 'neoadjuvantTherapy': statsNeoadjuvantTherapy };
         const currentCohortName = getCohortDisplayName(cohort);
         const displayPatientCount = patientCount > 0 ? patientCount : (statsCurrentCohort?.matrix?.tp + statsCurrentCohort?.matrix?.fp + statsCurrentCohort?.matrix?.fn + statsCurrentCohort?.matrix?.tn) || 0;
         const hasDataForCurrent = !!(statsCurrentCohort && statsCurrentCohort.matrix && displayPatientCount > 0);
