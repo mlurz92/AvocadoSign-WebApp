@@ -21,19 +21,11 @@ class App {
                 uiManager.showToast("Warning: No valid patient data loaded.", "warning");
             }
             
-            const initialTabId = state.getActiveTabId() || 'publication';
-            // The initial tab is already marked 'active' in index.html.
-            // Explicitly calling tab.show() here is redundant and can be removed
-            // to avoid potential timing issues or re-triggering.
-            // The processTabChange call below will handle the content rendering.
+            // Directly render the initial tab without relying on the state change check
+            this.filterAndPrepareData();
+            this.renderCurrentTab();
+            this.updateUI();
             
-            this.processTabChange(initialTabId);
-
-            // Removed: if (initialTabElement && typeof bootstrap !== 'undefined' && bootstrap.Tab) {
-            // Removed:    const tab = new bootstrap.Tab(initialTabElement);
-            // Removed:    tab.show();
-            // Removed: }
-
             if (!loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.FIRST_APP_START)) {
                 uiManager.showQuickGuide();
                 saveToLocalStorage(APP_CONFIG.STORAGE_KEYS.FIRST_APP_START, true);
@@ -138,9 +130,7 @@ class App {
 
     processTabChange(tabId) {
         if (state.setActiveTabId(tabId)) {
-            this.filterAndPrepareData();
-            this.renderCurrentTab();
-            this.updateUI();
+            this.refreshCurrentTab();
         }
     }
 
