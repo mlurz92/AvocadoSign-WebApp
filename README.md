@@ -173,7 +173,7 @@ t2Nodes: [
 The data\_processor.js transforms the raw data into a consistent object model used throughout the application, calculating derived properties like age.  
 Example:  
 
-'''
+
 {
 id: 1,
 lastName: "John",
