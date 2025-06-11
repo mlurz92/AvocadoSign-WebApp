@@ -9,22 +9,21 @@ const tableRenderer = (() => {
         patient.t2Nodes.forEach((lk, index) => {
             if (!lk) return;
             const sizeText = formatNumber(lk.size, 1, 'N/A');
-            
-            const shapeText = lk.shape === 'rund' ? 'round' : (lk.shape === 'oval' ? 'oval' : '--');
-            const borderText = lk.border === 'scharf' ? 'sharp' : (lk.border === 'irregulär' ? 'irregular' : '--');
-            const homogeneityText = lk.homogeneity === 'homogen' ? 'homogeneous' : (lk.homogeneity === 'heterogen' ? 'heterogeneous' : '--');
-            const signalText = lk.signal === 'signalarm' ? 'low signal' : (lk.signal === 'intermediär' ? 'intermediate signal' : (lk.signal === 'signalreich' ? 'high signal' : 'N/A'));
+            const shapeText = lk.shape || '--';
+            const borderText = lk.border || '--';
+            const homogeneityText = lk.homogeneity || '--';
+            const signalText = lk.signal || 'N/A';
 
-            const shapeIcon = getT2IconSVG('form', lk.form);
-            const borderIcon = getT2IconSVG('kontur', lk.kontur);
-            const homogeneityIcon = getT2IconSVG('homogenitaet', lk.homogenitaet);
+            const shapeIcon = getT2IconSVG('shape', lk.shape);
+            const borderIcon = getT2IconSVG('border', lk.border);
+            const homogeneityIcon = getT2IconSVG('homogeneity', lk.homogeneity);
             const signalIcon = getT2IconSVG('signal', lk.signal);
             const sizeIcon = getT2IconSVG('size', null);
 
             const sizeTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Size?.description || 'Size (short axis)';
-            const shapeTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Form?.description || 'Shape';
-            const borderTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Kontur?.description || 'Border';
-            const homogeneityTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Homogenitaet?.description || 'Homogeneity';
+            const shapeTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Shape?.description || 'Shape';
+            const borderTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Border?.description || 'Border';
+            const homogeneityTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Homogeneity?.description || 'Homogeneity';
             const signalTooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Signal?.description || 'Signal Intensity';
 
             content += `<div class="sub-row-item border rounded mb-1 p-1 w-100 align-items-center small">
@@ -60,7 +59,7 @@ const tableRenderer = (() => {
         return `
             <tr id="${rowId}" ${hasT2Nodes ? `class="clickable-row"` : ''} ${hasT2Nodes ? `data-bs-toggle="collapse"` : ''} data-bs-target="#${detailRowId}" aria-expanded="false" aria-controls="${detailRowId}">
                 <td data-label="ID">${patient.id}</td>
-                <td data-label="Last Name">${patient.name || naPlaceholder}</td>
+                <td data-label="Last Name">${patient.lastName || naPlaceholder}</td>
                 <td data-label="First Name">${patient.firstName || naPlaceholder}</td>
                 <td data-label="Sex">${sexText}</td>
                 <td data-label="Age">${formatNumber(patient.age, 0, naPlaceholder)}</td>
@@ -113,7 +112,6 @@ const tableRenderer = (() => {
 
                 const checkResultKey = key;
                 const checkMet = checkResultForLK[checkResultKey] === true;
-                const checkFailed = checkResultForLK[checkResultKey] === false;
                 
                 let hlClass = '';
                 if (lk.isPositive && checkMet) {
@@ -121,34 +119,20 @@ const tableRenderer = (() => {
                 }
                 
                 const icon = getT2IconSVG(iconType || key, originalValueInLK);
-                
-                let translatedValueText = originalValueInLK;
-                switch (originalValueInLK) {
-                    case 'rund': translatedValueText = 'round'; break;
-                    case 'oval': translatedValueText = 'oval'; break;
-                    case 'scharf': translatedValueText = 'sharp'; break;
-                    case 'irregulär': translatedValueText = 'irregular'; break;
-                    case 'homogen': translatedValueText = 'homogeneous'; break;
-                    case 'heterogen': translatedValueText = 'heterogeneous'; break;
-                    case 'signalarm': translatedValueText = 'low signal'; break;
-                    case 'intermediär': translatedValueText = 'intermediate signal'; break;
-                    case 'signalreich': translatedValueText = 'high signal'; break;
-                }
-                
-                const text = key === 'size' ? `${formatNumber(originalValueInLK, 1, 'N/A')}mm` : (translatedValueText || naPlaceholder);
+                const text = key === 'size' ? `${formatNumber(originalValueInLK, 1, 'N/A')}mm` : (originalValueInLK || naPlaceholder);
                 
                 const tooltipKey = 't2' + key.charAt(0).toUpperCase() + key.slice(1);
                 const tooltipBase = APP_CONFIG.UI_TEXTS.tooltips[tooltipKey]?.description || `Feature ${key}`;
-                const statusText = checkMet ? 'Fulfilled' : (checkFailed ? 'Not Fulfilled' : 'Not Applicable');
+                const statusText = checkMet ? 'Fulfilled' : (checkResultForLK[checkResultKey] === false ? 'Not Fulfilled' : 'Not Applicable');
                 const tooltip = `${tooltipBase} | Status: ${statusText}`;
 
                 return `<span class="me-2 text-nowrap ${hlClass}" data-tippy-content="${tooltip}">${icon} ${text}</span>`;
             };
 
             itemContent += formatCriterionCheck('size', 'size', lk.size, lk.checkResult, lk.size);
-            itemContent += formatCriterionCheck('form', 'form', lk.shape, lk.checkResult, lk.shape);
-            itemContent += formatCriterionCheck('kontur', 'kontur', lk.border, lk.checkResult, lk.border);
-            itemContent += formatCriterionCheck('homogenitaet', 'homogenitaet', lk.homogeneity, lk.checkResult, lk.homogeneity);
+            itemContent += formatCriterionCheck('shape', 'shape', lk.shape, lk.checkResult, lk.shape);
+            itemContent += formatCriterionCheck('border', 'border', lk.border, lk.checkResult, lk.border);
+            itemContent += formatCriterionCheck('homogeneity', 'homogeneity', lk.homogeneity, lk.checkResult, lk.homogeneity);
             itemContent += formatCriterionCheck('signal', 'signal', lk.signal, lk.checkResult, lk.signal);
 
             content += `<div class="${baseClass} ${highlightClass}">${itemContent}</div>`;
@@ -177,7 +161,7 @@ const tableRenderer = (() => {
         return `
             <tr id="${rowId}" ${hasEvaluatedNodes ? `class="clickable-row"` : ''} ${hasEvaluatedNodes ? `data-bs-toggle="collapse"` : ''} data-bs-target="#${detailRowId}" aria-expanded="false" aria-controls="${detailRowId}">
                 <td data-label="ID">${patient.id}</td>
-                <td data-label="Name">${patient.name || naPlaceholder}</td>
+                <td data-label="Name">${patient.lastName || naPlaceholder}</td>
                 <td data-label="Therapy">${therapyText}</td>
                 <td data-label="N/AS/T2">
                     <span class="status-${patient.nStatus === '+' ? 'plus' : 'minus'}" data-tippy-content="${nTooltip}">${patient.nStatus ?? '?'}</span> /
