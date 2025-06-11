@@ -288,7 +288,7 @@ const exportService = (() => {
         try {
             let headers = [], rows = [], title = ''; 
             const kollektivDisplayName = getCohortDisplayName(kollektiv); 
-            const escMD = (text) => escapeHTML(String(text)); 
+            const escMD = (text) => escapeHTML(String(text ?? '')); 
             const na = '--'; 
             const formatCriteriaFunc = typeof studyT2CriteriaManager !== 'undefined' ? studyT2CriteriaManager.formatCriteriaForDisplay : (c, l) => 'N/A'; 
             const t2CriteriaLabelShort = options.t2CriteriaLabelShort || 'T2';
@@ -343,7 +343,7 @@ const exportService = (() => {
             const getChartSVG = (element) => { if(!element) return `<p class="text-muted small">[Chart element not found]</p>`; try { const clone = element.cloneNode(true); clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg'); clone.setAttribute('version', '1.1'); clone.style.backgroundColor = APP_CONFIG.CHART_SETTINGS.PLOT_BACKGROUND_COLOR || '#ffffff'; const vb = clone.getAttribute('viewBox')?.split(' '); let w = clone.getAttribute('width'), h = clone.getAttribute('height'); if (vb && vb.length === 4 && parseFloat(vb[2]) > 0 && parseFloat(vb[3]) > 0) { clone.setAttribute('width', vb[2]); clone.setAttribute('height', vb[3]); } else if (!w || !h || parseFloat(w) <= 0 || parseFloat(h) <= 0) { clone.setAttribute('width', '400'); clone.setAttribute('height', '300'); } const styleEl = document.createElementNS("http://www.w3.org/2000/svg", "style"); styleEl.textContent = `svg { font-family: ${getComputedStyle(document.body).fontFamily || 'sans-serif'}; } .axis path, .axis line { fill: none; stroke: #6c757d; shape-rendering: crispEdges; stroke-width: 1px; } .axis text { font-size: 10px; fill: #212529; } .axis-label { font-size: 11px; fill: #212529; text-anchor: middle; } .grid .tick { stroke: #dee2e6; stroke-opacity: 0.6; } .grid path { stroke-width: 0; } .legend { font-size: 10px; fill: #212529; } .bar { opacity: 0.9; } .roc-curve { fill: none; stroke-width: 2px; } .reference-line { stroke: #adb5bd; stroke-width: 1px; stroke-dasharray: 4 2; } .auc-label { font-weight: bold; font-size: 11px; }`; clone.prepend(styleEl); return clone.outerHTML; } catch (e) { return `<p class="text-danger small">[Error embedding chart: ${e.message}]</p>`; } };
             
             const chartSVGs = {};
-            document.querySelectorAll('.dashboard-chart-container svg, .pres-chart-container svg').forEach(svgEl => {
+            document.querySelectorAll('.dashboard-chart-container svg, .pres-chart-container svg, [id*="chart-stat-"] svg').forEach(svgEl => {
                 const containerId = svgEl.closest('div[id]')?.id;
                 if(containerId) chartSVGs[containerId] = getChartSVG(svgEl);
             });
@@ -406,13 +406,13 @@ const exportService = (() => {
          if (!window.JSZip) { uiManager.showToast("JSZip library not loaded.", "danger"); return; }
          const zip = new JSZip(); const promises = []; let successCount = 0;
          const chartSvgs = document.querySelectorAll(`${scopeSelector} [id*="chart-"] svg, ${scopeSelector} .dashboard-chart-container svg, ${scopeSelector} .pres-chart-container svg`);
-         const tableSelectors = [ scopeSelector + ' table[id^="table-"]', scopeSelector + ' table[id^="analysis-table"]', scopeSelector + ' table[id^="data-table"]', scopeSelector + ' table[id^="bruteforce-results-table"]', scopeSelector + ' table[id^="pres-as-vs-t2-comp-table"]' ];
+         const tableSelectors = [ scopeSelector + ' table[id^="table-"]', scopeSelector + ' table[id^="analysis-table"]', scopeSelector + ' table[id^="data-table"]', scopeSelector + ' table[id^="bruteforce-results-table"]', scopeSelector + ' table[id^="pres-as-vs-t2-comp-table"]', scopeSelector + ' table[id="pres-as-perf-table"]' ];
          const tableContainers = (format === 'png' && APP_CONFIG.EXPORT_SETTINGS.ENABLE_TABLE_PNG_EXPORT) ? document.querySelectorAll(tableSelectors.join(', ')) : [];
 
          if (chartSvgs.length === 0 && tableContainers.length === 0) { uiManager.showToast('No charts or tables found in current view.', 'warning'); return; }
 
          chartSvgs.forEach((svgElement, index) => {
-             const chartId = svgElement.closest('[id^="chart-"], [id*="-chart-"]')?.id || `chart_${index + 1}`;
+             const chartId = svgElement.closest('div[id]')?.id || `chart_${index + 1}`;
              const chartName = chartId.replace(/^chart-/, '').replace(/-container$/, '').replace(/-content$/, '').replace(/-[0-9]+$/, '');
              let filenameKey, conversionPromise, ext;
              if (format === 'png') { filenameKey = 'CHART_SINGLE_PNG'; ext = 'png'; conversionPromise = convertSvgToPngBlob(svgElement).catch(e => { console.error(`PNG conversion for ${chartName} failed:`, e); return null; }); }
@@ -531,35 +531,43 @@ const exportService = (() => {
     
     function exportStatistikCSV(stats, kollektiv, criteria, logic) {
         const content = generateStatistikCSVString(stats, kollektiv, criteria, logic);
-        const filename = generateFilename('STATS_CSV', kollektiv, 'csv');
-        if (content) downloadFile(content, filename, 'text/csv;charset=utf-8;');
+        if (content) {
+            const filename = generateFilename('STATS_CSV', kollektiv, 'csv');
+            downloadFile(content, filename, 'text/csv;charset=utf-8;');
+        }
     }
     
     function exportBruteForceReport(resultsData) {
         const content = generateBruteForceTXTString(resultsData);
-        if (resultsData?.cohort) {
+        if (content && resultsData?.cohort) {
             const filename = generateFilename('BRUTEFORCE_TXT', resultsData.cohort, 'txt');
-            if (content) downloadFile(content, filename, 'text/plain;charset=utf-8;');
+            downloadFile(content, filename, 'text/plain;charset=utf-8;');
         }
     }
     
     function exportTableMarkdown(data, tableType, kollektiv, criteria, logic) {
         const content = generateMarkdownTableString(data, tableType, kollektiv, criteria, logic);
-        const filenameKey = (tableType === 'daten') ? 'DATEN_MD' : 'AUSWERTUNG_MD';
-        const filename = generateFilename(filenameKey, kollektiv, 'md');
-        if (content) downloadFile(content, filename, 'text/markdown;charset=utf-8;');
+        if (content) {
+            const filenameKey = (tableType === 'daten') ? 'DATEN_MD' : 'AUSWERTUNG_MD';
+            const filename = generateFilename(filenameKey, kollektiv, 'md');
+            downloadFile(content, filename, 'text/markdown;charset=utf-8;');
+        }
     }
     
     function exportFilteredDataCSV(data, kollektiv) {
         const content = generateFilteredDataCSVString(data);
-        const filename = generateFilename('FILTERED_DATA_CSV', kollektiv, 'csv');
-        if (content) downloadFile(content, filename, 'text/csv;charset=utf-8;');
+        if (content) {
+            const filename = generateFilename('FILTERED_DATA_CSV', kollektiv, 'csv');
+            downloadFile(content, filename, 'text/csv;charset=utf-8;');
+        }
     }
     
     function exportComprehensiveReportHTML(data, bfResults, kollektiv, criteria, logic) {
         const content = generateComprehensiveReportHTML(data, bfResults, kollektiv, criteria, logic);
-        const filename = generateFilename('COMPREHENSIVE_REPORT_HTML', kollektiv, 'html');
-        if (content) downloadFile(content, filename, 'text/html;charset=utf-8;');
+        if (content) {
+            const filename = generateFilename('COMPREHENSIVE_REPORT_HTML', kollektiv, 'html');
+            downloadFile(content, filename, 'text/html;charset=utf-8;');
+        }
     }
 
     return Object.freeze({
