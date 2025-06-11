@@ -571,7 +571,8 @@ const statisticsService = (() => {
     function calculateAllPublicationStats(data, appliedT2Criteria, appliedT2Logic, bruteForceResultsPerCohort) {
         if (!data || !Array.isArray(data)) return null;
         const results = {};
-        const cohorts = ['Gesamt', 'surgeryAlone', 'neoadjuvantTherapy'];
+        const cohorts = Object.values(APP_CONFIG.COHORTS).map(c => c.id);
+
         cohorts.forEach(cohortId => {
             const cohortData = dataProcessor.filterDataByCohort(data, cohortId);
             if (cohortData.length === 0) { results[cohortId] = null; return; }
@@ -591,11 +592,11 @@ const statisticsService = (() => {
             };
 
             PUBLICATION_CONFIG.literatureCriteriaSets.forEach(studySetConf => {
-                const applicableCohortMapped = (studySetConf.applicableCohort === 'direkt OP') ? 'surgeryAlone' : (studySetConf.applicableCohort === 'nRCT') ? 'neoadjuvantTherapy' : 'Gesamt';
-                if (applicableCohortMapped === cohortId || studySetConf.applicableCohort === 'Gesamt') {
+                const applicableCohort = studySetConf.applicableCohort;
+                if (applicableCohort === cohortId || applicableCohort === APP_CONFIG.COHORTS.OVERALL.id) {
                     const studySet = studyT2CriteriaManager.getStudyCriteriaSetById(studySetConf.id);
                     if (studySet) {
-                        const evaluatedDataStudy = studyT2CriteriaManager.applyStudyCriteriaToDataset(cloneDeep(cohortData), studySet);
+                        const evaluatedDataStudy = studyT2CriteriaManager.evaluateDatasetWithStudyCriteria(cloneDeep(cohortData), studySet);
                         results[cohortId].performanceT2Literature[studySetConf.id] = calculateDiagnosticPerformance(evaluatedDataStudy, 't2Status', 'nStatus');
                         results[cohortId][`comparisonASvsT2_literature_${studySetConf.id}`] = compareDiagnosticMethods(evaluatedDataStudy, 'asStatus', 't2Status', 'nStatus');
                     }
@@ -611,9 +612,9 @@ const statisticsService = (() => {
             }
         });
 
-        if (results.Gesamt) {
-            results.Gesamt.interobserverKappa = 0.92;
-            results.Gesamt.interobserverKappaCI = { lower: 0.85, upper: 0.99 };
+        if (results.Overall) {
+            results.Overall.interobserverKappa = 0.92;
+            results.Overall.interobserverKappaCI = { lower: 0.85, upper: 0.99 };
         }
 
         return results;
