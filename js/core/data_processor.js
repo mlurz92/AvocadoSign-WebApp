@@ -21,45 +21,29 @@ const dataProcessor = (() => {
 
     function processSinglePatient(rawPatient, index) {
         const p = {};
-        const config = APP_CONFIG;
-
-        p.id = typeof rawPatient.nr === 'number' ? rawPatient.nr : index + 1;
-        p.name = typeof rawPatient.name === 'string' ? rawPatient.name.trim() : 'Unknown';
-        p.firstName = typeof rawPatient.vorname === 'string' ? rawPatient.vorname.trim() : '';
-        p.birthDate = rawPatient.geburtsdatum || null;
-        p.examDate = rawPatient.untersuchungsdatum || null;
-        p.sex = (rawPatient.geschlecht === 'm' || rawPatient.geschlecht === 'f') ? rawPatient.geschlecht : 'unknown';
-        p.therapy = (rawPatient.therapie === 'direkt OP' || rawPatient.therapie === 'nRCT') ? rawPatient.therapie : 'unknown';
-        p.nStatus = (rawPatient.n === '+' || rawPatient.n === '-') ? rawPatient.n : null;
-        p.asStatus = (rawPatient.as === '+' || rawPatient.as === '-') ? rawPatient.as : null;
+        
+        p.id = typeof rawPatient.id === 'number' ? rawPatient.id : index + 1;
+        p.lastName = typeof rawPatient.lastName === 'string' ? rawPatient.lastName.trim() : 'Unknown';
+        p.firstName = typeof rawPatient.firstName === 'string' ? rawPatient.firstName.trim() : '';
+        p.birthDate = rawPatient.birthDate || null;
+        p.examDate = rawPatient.examDate || null;
+        p.sex = (rawPatient.sex === 'm' || rawPatient.sex === 'f') ? rawPatient.sex : 'unknown';
+        p.therapy = (rawPatient.therapy === 'surgeryAlone' || rawPatient.therapy === 'neoadjuvantTherapy') ? rawPatient.therapy : 'unknown';
+        p.nStatus = (rawPatient.nStatus === '+' || rawPatient.nStatus === '-') ? rawPatient.nStatus : null;
+        p.asStatus = (rawPatient.asStatus === '+' || rawPatient.asStatus === '-') ? rawPatient.asStatus : null;
 
         const validateCount = (value) => (typeof value === 'number' && value >= 0 && Number.isInteger(value)) ? value : 0;
-        p.countPathologyNodes = validateCount(rawPatient.anzahl_patho_lk);
-        p.countPathologyNodesPositive = validateCount(rawPatient.anzahl_patho_n_plus_lk);
-        p.countASNodes = validateCount(rawPatient.anzahl_as_lk);
-        p.countASNodesPositive = validateCount(rawPatient.anzahl_as_plus_lk);
+        p.countPathologyNodes = validateCount(rawPatient.pathologyTotalNodeCount);
+        p.countPathologyNodesPositive = validateCount(rawPatient.pathologyPositiveNodeCount);
+        p.countASNodes = validateCount(rawPatient.asTotalNodeCount);
+        p.countASNodesPositive = validateCount(rawPatient.asPositiveNodeCount);
 
-        p.notes = typeof rawPatient.bemerkung === 'string' ? rawPatient.bemerkung.trim() : '';
+        p.notes = typeof rawPatient.notes === 'string' ? rawPatient.notes.trim() : '';
         p.age = calculateAge(p.birthDate, p.examDate);
 
-        const rawT2Nodes = rawPatient.lymphknoten_t2;
-        p.t2Nodes = [];
-
-        if (Array.isArray(rawT2Nodes)) {
-            p.t2Nodes = rawT2Nodes.map(lk => {
-                if (typeof lk !== 'object' || lk === null) return null;
-                const processedLk = {};
-                processedLk.size = (typeof lk.groesse === 'number' && !isNaN(lk.groesse) && lk.groesse >= 0) ? lk.groesse : null;
-
-                const validateEnum = (value, allowedValues) => (typeof value === 'string' && value !== null && allowedValues.includes(value.trim().toLowerCase())) ? value.trim().toLowerCase() : null;
-
-                processedLk.shape = validateEnum(lk.form, config.T2_CRITERIA_SETTINGS.FORM_VALUES);
-                processedLk.border = validateEnum(lk.kontur, config.T2_CRITERIA_SETTINGS.KONTUR_VALUES);
-                processedLk.homogeneity = validateEnum(lk.homogenitaet, config.T2_CRITERIA_SETTINGS.HOMOGENITAET_VALUES);
-                processedLk.signal = validateEnum(lk.signal, config.T2_CRITERIA_SETTINGS.SIGNAL_VALUES);
-                return processedLk;
-            }).filter(lk => lk !== null);
-        }
+        p.t2Nodes = Array.isArray(rawPatient.t2Nodes) 
+            ? rawPatient.t2Nodes.map(lk => (lk && typeof lk === 'object') ? { ...lk } : null).filter(lk => lk !== null)
+            : [];
         
         p.countT2Nodes = p.t2Nodes.length;
         p.t2Status = null;
@@ -80,7 +64,15 @@ const dataProcessor = (() => {
         if (!cohortId || cohortId === 'Gesamt') {
             return cloneDeep(data);
         }
-        return cloneDeep(data.filter(p => p && p.therapy === cohortId));
+        
+        // Map UI-facing cohort names to internal therapy values
+        const therapyMap = {
+            'Upfront Surgery': 'surgeryAlone',
+            'nRCT': 'neoadjuvantTherapy'
+        };
+        const therapyValue = therapyMap[cohortId];
+
+        return cloneDeep(data.filter(p => p && p.therapy === therapyValue));
     }
 
     function calculateHeaderStats(data, cohortId) {
