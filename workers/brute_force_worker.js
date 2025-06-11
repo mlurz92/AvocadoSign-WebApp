@@ -205,52 +205,39 @@ function generateCriteriaCombinations() {
 
     const { min, max, step } = t2SizeRange;
     if (typeof min === 'number' && typeof max === 'number' && typeof step === 'number' && step > 0 && min <= max) {
-        for (let s = Math.round(min * 10); s <= Math.round(max * 10); s += Math.round(step * 10)) {
+        const stepInTenths = Math.max(1, Math.round(step * 10));
+        for (let s = Math.round(min * 10); s <= Math.round(max * 10); s += stepInTenths) {
             VALUE_OPTIONS.size.push(parseFloat((s / 10).toFixed(1)));
         }
-        if (!VALUE_OPTIONS.size.includes(min)) VALUE_OPTIONS.size.unshift(min);
-        if (!VALUE_OPTIONS.size.includes(max) && max > VALUE_OPTIONS.size[VALUE_OPTIONS.size.length - 1]) VALUE_OPTIONS.size.push(max);
         VALUE_OPTIONS.size = [...new Set(VALUE_OPTIONS.size)].sort((a, b) => a - b);
-        if (VALUE_OPTIONS.size.length === 0) {
-            VALUE_OPTIONS.size = Array.from({ length: 141 }, (_, i) => 1.0 + i * 0.1);
-        }
-    } else {
-        VALUE_OPTIONS.size = Array.from({ length: 141 }, (_, i) => 1.0 + i * 0.1);
     }
-
+    
+    if (VALUE_OPTIONS.size.length === 0) {
+        VALUE_OPTIONS.size = Array.from({ length: Math.round((15.0 - 1.0)/0.1) + 1 }, (_, i) => 1.0 + i * 0.1);
+    }
+    
     const combinations = [];
     let calculatedTotal = 0;
     const numCriteria = CRITERIA_KEYS.length;
 
     for (let i = 1; i < (1 << numCriteria); i++) {
+        const activeKeys = [];
         const baseTemplate = {};
-        const currentActive = [];
         CRITERIA_KEYS.forEach((key, index) => {
             const isActive = ((i >> index) & 1) === 1;
             baseTemplate[key] = { active: isActive };
-            if (isActive) currentActive.push(key);
+            if (isActive) activeKeys.push(key);
         });
 
+        let combinationsForSubset = [];
         function generateValues(keyIndex, currentCombo) {
-            if (keyIndex === currentActive.length) {
-                LOGICS.forEach(logic => {
-                    const finalCombo = cloneDeep(currentCombo);
-                    CRITERIA_KEYS.forEach(k => {
-                        if (!finalCombo[k]) finalCombo[k] = { active: false };
-                    });
-                    combinations.push({ logic: logic, criteria: finalCombo });
-                });
-                calculatedTotal += LOGICS.length;
+            if (keyIndex === activeKeys.length) {
+                combinationsForSubset.push(currentCombo);
                 return;
             }
 
-            const currentKey = currentActive[keyIndex];
+            const currentKey = activeKeys[keyIndex];
             const options = VALUE_OPTIONS[currentKey];
-            if (!options || options.length === 0) {
-                generateValues(keyIndex + 1, currentCombo);
-                return;
-            }
-
             options.forEach(value => {
                 const nextCombo = cloneDeep(currentCombo);
                 if (currentKey === 'size') {
@@ -263,10 +250,23 @@ function generateCriteriaCombinations() {
             });
         }
         generateValues(0, baseTemplate);
+
+        calculatedTotal += combinationsForSubset.length * LOGICS.length;
+
+        combinationsForSubset.forEach(combo => {
+            LOGICS.forEach(logic => {
+                const finalCombo = { logic: logic, criteria: cloneDeep(combo) };
+                CRITERIA_KEYS.forEach(k => {
+                    if (!finalCombo.criteria[k]) finalCombo.criteria[k] = { active: false };
+                });
+                combinations.push(finalCombo);
+            });
+        });
     }
-    totalCombinations = calculatedTotal;
-    return combinations;
+
+    return { combinations, total: calculatedTotal };
 }
+
 
 function runBruteForce() {
     if (!isRunning) return;
@@ -280,7 +280,9 @@ function runBruteForce() {
     allResults = [];
     bestResult = { metricValue: -Infinity, criteria: null, logic: null };
 
-    const allCombinations = generateCriteriaCombinations();
+    const { combinations: allCombinations, total: calculatedTotal } = generateCriteriaCombinations();
+    totalCombinations = calculatedTotal;
+    
     if (totalCombinations === 0 || allCombinations.length === 0) {
         self.postMessage({ type: 'error', payload: { message: "No criteria combinations were generated. Please check the t2SizeRange configuration." } });
         isRunning = false;
