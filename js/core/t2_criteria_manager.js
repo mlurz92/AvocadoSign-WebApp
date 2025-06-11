@@ -104,7 +104,7 @@ const t2CriteriaManager = (() => {
     }
 
     function checkNode(lymphNode, criteria) {
-        const checkResult = { size: null, form: null, kontur: null, homogenitaet: null, signal: null };
+        const checkResult = { size: null, shape: null, border: null, homogeneity: null, signal: null };
         if (!lymphNode || !criteria) return checkResult;
 
         if (criteria.size?.active) {
@@ -125,9 +125,9 @@ const t2CriteriaManager = (() => {
             }
         }
 
-        if (criteria.form?.active) checkResult.form = (lymphNode.shape === criteria.form.value);
-        if (criteria.kontur?.active) checkResult.kontur = (lymphNode.border === criteria.kontur.value);
-        if (criteria.homogenitaet?.active) checkResult.homogenitaet = (lymphNode.homogeneity === criteria.homogenitaet.value);
+        if (criteria.shape?.active) checkResult.shape = (lymphNode.shape === criteria.shape.value);
+        if (criteria.border?.active) checkResult.border = (lymphNode.border === criteria.border.value);
+        if (criteria.homogeneity?.active) checkResult.homogeneity = (lymphNode.homogeneity === criteria.homogeneity.value);
         if (criteria.signal?.active) checkResult.signal = (lymphNode.signal === criteria.signal.value);
 
         return checkResult;
