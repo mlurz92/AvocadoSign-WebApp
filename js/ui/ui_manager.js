@@ -364,18 +364,18 @@ const uiManager = (() => {
             if (bfResult && bfResult.bestResult) {
                 const best = bfResult.bestResult;
                 const criteriaDisplay = studyT2CriteriaManager.formatCriteriaForDisplay(best.criteria, best.logic);
-                let cohortStats = `(N=${bfResult.nTotal}, N+: ${bfResult.nPlus}, N-: ${bfResult.nMinus})`;
-
-                const resultTooltipTemplate = APP_CONFIG.UI_TEXTS.tooltips.bruteForceResult.description;
-                const resultTooltip = resultTooltipTemplate
-                    .replace('[N_TOTAL]', bfResult.nTotal)
-                    .replace('[N_PLUS]', bfResult.nPlus)
-                    .replace('[N_MINUS]', bfResult.nMinus);
+                let interpretationTooltip = '';
+                if(bfResult.metric.includes('Accuracy') || bfResult.metric.includes('AUC')) {
+                    interpretationTooltip = getAUCInterpretation(best.metricValue);
+                } else {
+                    interpretationTooltip = `A value of ${formatNumber(best.metricValue, 4)} for the ${bfResult.metric} indicates the performance of this criteria set. Higher values are generally better.`
+                }
+                const valueHTML = `<strong class="text-primary" data-tippy-content="${interpretationTooltip}">${formatNumber(best.metricValue, 4, 'N/A', true)}</strong>`;
 
                 contentHTML = `
-                    <p class="small text-muted" data-tippy-content="${resultTooltip}">
+                    <p class="small text-muted">
                         <strong>Optimization complete for cohort '${cohortDisplayName}'.</strong><br>
-                        Best ${bfResult.metric}: <strong class="text-primary">${formatNumber(best.metricValue, 4, 'N/A', true)}</strong><br>
+                        Best ${bfResult.metric}: ${valueHTML}<br>
                         Criteria: <code>${criteriaDisplay}</code><br>
                         Duration: ${formatNumber(bfResult.duration / 1000, 1, 'N/A', true)}s for ${formatNumber(bfResult.totalTested, 0)} combinations.
                     </p>
@@ -388,23 +388,21 @@ const uiManager = (() => {
             }
         }
 
-        const infoTooltipTemplate = APP_CONFIG.UI_TEXTS.tooltips.bruteForceInfo.description;
-        const cardTitleTooltip = infoTooltipTemplate.replace('[COHORT_NAME]', `<strong>${cohortDisplayName}</strong>`);
         const isRunning = status === 'started' || status === 'progress';
 
         container.innerHTML = `
             <div class="card h-100" id="brute-force-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <span data-tippy-content="${cardTitleTooltip}">Criteria Optimization (Brute-Force)</span>
+                    <span>Criteria Optimization (Brute-Force)</span>
                     <div class="d-flex align-items-center">
-                        <label for="brute-force-metric" class="me-2 small text-muted" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.bruteForceMetric.description}">Target:</label>
+                        <label for="brute-force-metric" class="me-2 small text-muted" data-tippy-content="Select the target metric for the brute-force optimization.">Target:</label>
                         <select class="form-select form-select-sm me-2" id="brute-force-metric" ${isRunning ? 'disabled' : ''}>
                             ${APP_CONFIG.AVAILABLE_BRUTE_FORCE_METRICS.map(metric => `<option value="${metric.value}" ${payload.metric === metric.value ? 'selected' : ''}>${metric.label}</option>`).join('')}
                         </select>
-                        <button class="btn btn-sm btn-success me-2" id="btn-start-brute-force" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.bruteForceStart.description}" ${isRunning || !isWorkerAvailable ? 'disabled' : ''}><i class="fas fa-play me-1"></i> Start</button>
+                        <button class="btn btn-sm btn-success me-2" id="btn-start-brute-force" data-tippy-content="Starts the brute-force search." ${isRunning || !isWorkerAvailable ? 'disabled' : ''}><i class="fas fa-play me-1"></i> Start</button>
                         <button class="btn btn-sm btn-danger me-2" id="btn-cancel-brute-force" ${!isRunning ? 'disabled' : ''}><i class="fas fa-stop me-1"></i> Cancel</button>
-                        <button class="btn btn-sm btn-primary" id="btn-apply-best-bf-criteria" ${!showResultControls || isRunning ? 'disabled' : ''}><i class="fas fa-magic me-1"></i> Apply Best</button>
-                        <button class="btn btn-sm btn-outline-info ms-2" ${!showResultControls ? 'disabled' : ''} data-bs-toggle="modal" data-bs-target="#brute-force-modal" id="btn-show-bf-details" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.bruteForceDetailsButton.description}"><i class="fas fa-info-circle"></i> Top 10</button>
+                        <button class="btn btn-sm btn-primary" id="btn-apply-best-bf-criteria" ${!showResultControls || isRunning ? 'disabled' : ''} data-tippy-content="Apply the best found criteria." ><i class="fas fa-magic me-1"></i> Apply Best</button>
+                        <button class="btn btn-sm btn-outline-info ms-2" ${!showResultControls ? 'disabled' : ''} data-bs-toggle="modal" data-bs-target="#brute-force-modal" id="btn-show-bf-details" data-tippy-content="Show top 10 results."><i class="fas fa-info-circle"></i> Top 10</button>
                     </div>
                 </div>
                 <div class="card-body">
@@ -454,16 +452,15 @@ const uiManager = (() => {
         if (criteriaCard) {
             criteriaCard.classList.toggle('criteria-unsaved-indicator', isUnsaved);
             let instance = criteriaCard._tippy;
+            const tooltipContent = "<strong>Attention:</strong> There are unsaved changes to the T2 criteria or logic. Click 'Apply & Save' to update the results and save the settings.";
             if (isUnsaved && !instance) {
                 tippy(criteriaCard, {
-                    content: APP_CONFIG.UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator,
+                    content: tooltipContent,
                     theme: 'warning',
                     placement: 'top',
                 });
             } else if (instance) {
-                instance.setProps({
-                    content: APP_CONFIG.UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator,
-                });
+                instance.setProps({ content: tooltipContent });
                 if (isUnsaved) instance.enable(); else instance.disable();
             }
         }
@@ -483,8 +480,8 @@ const uiManager = (() => {
         });
 
         toggleButton.dataset.action = isExpanding ? 'collapse' : 'expand';
-        const expandAllTooltip = APP_CONFIG.UI_TEXTS.tooltips.dataTab.expandAll;
-        const collapseAllTooltip = APP_CONFIG.UI_TEXTS.tooltips.dataTab.collapseAll;
+        const expandAllTooltip = "Expand All Details";
+        const collapseAllTooltip = "Collapse All Details";
         toggleButton.innerHTML = isExpanding
             ? `Collapse All Details <i class="fas fa-chevron-up ms-1"></i>`
             : `Expand All Details <i class="fas fa-chevron-down ms-1"></i>`;
