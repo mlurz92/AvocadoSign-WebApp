@@ -157,7 +157,7 @@ function getSortFunction(key, direction = 'asc', subKey = null) {
         try {
             if (key === 'status') {
                 const getStatusValue = p => {
-                    let statusProp = p[subKey === 'nStatus' ? 'nStatus' : (subKey === 'asStatus' ? 'asStatus' : 't2Status')];
+                    let statusProp = p[subKey];
                     return (statusProp === '+') ? 1 : (statusProp === '-') ? 0 : -1;
                 };
                 valA = getStatusValue(a);
@@ -315,6 +315,8 @@ function getT2IconSVG(type, value) {
         let normalizedVal = String(val).toLowerCase();
         if (normalizedVal === 'irregulär') {
             normalizedVal = 'irregulaer';
+        } else if (normalizedVal === 'intermediär') {
+            normalizedVal = 'intermediaer';
         }
         
         const configKey = `${key.toUpperCase()}_${normalizedVal.toUpperCase()}`;
