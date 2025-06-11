@@ -7,18 +7,15 @@ function formatNumber(num, digits = 1, placeholder = '--', useStandardFormat = f
     if (num === null || num === undefined || isNaN(number) || !isFinite(number)) {
         return placeholder;
     }
-    // For publication or strict standard format, always use toFixed
     if (useStandardFormat) {
         return number.toFixed(digits);
     }
-    // For UI display, try toLocaleString for better readability with thousands separators
     try {
         return number.toLocaleString('en-US', {
             minimumFractionDigits: digits,
             maximumFractionDigits: digits
         });
     } catch (e) {
-        // Fallback for environments where toLocaleString might fail or not be desired
         return number.toFixed(digits);
     }
 }
@@ -28,19 +25,16 @@ function formatPercent(num, digits = 1, placeholder = '--%') {
     if (num === null || num === undefined || isNaN(number) || !isFinite(number)) {
         return placeholder;
     }
-    // Multiply by 100 and then fix to specified digits
     return `${(number * 100).toFixed(digits)}%`;
 }
 
 function formatCI(value, ciLower, ciUpper, digits = 1, isPercent = false, placeholder = '--') {
-    // Determine the formatting function based on whether it's a percentage
     const formatFn = isPercent
-        ? (val, dig) => formatNumber(val * 100, dig, placeholder, true) // Format percentages as numbers, then add % later
-        : (val, dig) => formatNumber(val, dig, placeholder, true);    // Format as regular numbers
+        ? (val, dig) => formatNumber(val * 100, dig, placeholder, true)
+        : (val, dig) => formatNumber(val, dig, placeholder, true);
 
     const formattedValue = formatFn(value, digits);
 
-    // If the main value is a placeholder, return it immediately, unless it's a valid zero formatted as placeholder
     if (formattedValue === placeholder && !(value === 0 && placeholder === '--')) {
         return placeholder;
     }
@@ -48,13 +42,10 @@ function formatCI(value, ciLower, ciUpper, digits = 1, isPercent = false, placeh
     const formattedLower = formatFn(ciLower, digits);
     const formattedUpper = formatFn(ciUpper, digits);
 
-    // Construct the CI string
     if (formattedLower !== placeholder && formattedUpper !== placeholder) {
         const ciStr = `(95% CI: ${formattedLower}, ${formattedUpper})`;
-        // Append '%' only if it's a percentage and not already handled by formatFn for ranges
         return `${formattedValue}${isPercent ? '%' : ''} ${ciStr}`;
     }
-    // If CI values are not valid, return only the formatted value
     return `${formattedValue}${isPercent ? '%' : ''}`;
 }
 
@@ -166,7 +157,7 @@ function getSortFunction(key, direction = 'asc', subKey = null) {
         try {
             if (key === 'status') {
                 const getStatusValue = p => {
-                    let statusProp = p[subKey === 'nStatus' ? 'n' : (subKey === 'asStatus' ? 'as' : 't2Status')];
+                    let statusProp = p[subKey === 'nStatus' ? 'nStatus' : (subKey === 'asStatus' ? 'asStatus' : 't2Status')];
                     return (statusProp === '+') ? 1 : (statusProp === '-') ? 0 : -1;
                 };
                 valA = getStatusValue(a);
@@ -216,39 +207,36 @@ function getStatisticalSignificanceSymbol(pValue) {
             return level.symbol;
         }
     }
-    return 'ns'; // Not statistically significant
+    return 'ns';
 }
 
 function getPValueText(pValue, forPublication = false) {
     if (pValue === null || pValue === undefined || isNaN(pValue) || !isFinite(pValue)) return 'N/A';
 
-    const pLessThanThreshold = 0.001; // For P < .001
-    const pDot01Threshold = 0.01;     // For two digits if P < .01, e.g. .005
-    const pDot05Threshold = 0.05;     // For three digits if P is near .05, e.g. .046
-    const pGreater099Threshold = 0.99; // For P > .99
+    const pLessThanThreshold = 0.001;
+    const pDot01Threshold = 0.01;
+    const pDot05Threshold = 0.05;
+    const pGreater099Threshold = 0.99;
 
     let formattedP;
 
     if (forPublication) {
-        const prefix = 'P'; // Use 'P' (capitalized) for publication style
+        const prefix = 'P';
         if (pValue < pLessThanThreshold) {
             formattedP = `${prefix} < .001`;
         } else if (pValue >= pLessThanThreshold && pValue < pDot01Threshold) {
-            // For values like 0.005, use 3 digits
             formattedP = `${prefix} = ${formatNumber(pValue, 3, 'N/A', true)}`;
         } else if (pValue >= pDot01Threshold && pValue < pDot05Threshold) {
-             // For values like 0.046, use 3 digits
              formattedP = `${prefix} = ${formatNumber(pValue, 3, 'N/A', true)}`;
         } else if (pValue >= pDot05Threshold && pValue <= pGreater099Threshold) {
-            // For values like 0.52 or 0.06, use 2 digits
             formattedP = `${prefix} = ${formatNumber(pValue, 2, 'N/A', true)}`;
         } else if (pValue > pGreater099Threshold) {
             formattedP = `${prefix} > .99`;
         } else {
-            formattedP = `${prefix} = ${formatNumber(pValue, 2, 'N/A', true)}`; // Fallback, e.g., if somehow not covered
+            formattedP = `${prefix} = ${formatNumber(pValue, 2, 'N/A', true)}`;
         }
     } else {
-        const prefix = 'p'; // Use 'p' (lowercase) for UI display
+        const prefix = 'p';
         if (pValue < 0.001) {
             formattedP = `${prefix} < 0.001`;
         } else {
@@ -324,7 +312,14 @@ function getT2IconSVG(type, value) {
     let svgContent = '';
 
     const getSvgContentFromConfig = (key, val) => {
-        const svgFactory = APP_CONFIG.T2_ICON_SVGS[`${key.toUpperCase()}_${String(val).toUpperCase().replace(/[^A-Z0-9]/g, '')}`];
+        let normalizedVal = String(val).toLowerCase();
+        if (normalizedVal === 'irregulär') {
+            normalizedVal = 'irregulaer';
+        }
+        
+        const configKey = `${key.toUpperCase()}_${normalizedVal.toUpperCase()}`;
+        const svgFactory = APP_CONFIG.T2_ICON_SVGS[configKey];
+        
         if (svgFactory) {
             return svgFactory(s, sw, iconColor, c, r, sq, sqPos);
         }
