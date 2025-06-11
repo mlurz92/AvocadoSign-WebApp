@@ -28,7 +28,7 @@ const uiComponents = (() => {
 
     function createDashboardCard(title, content, chartId = null, cardClasses = '', headerClasses = '', bodyClasses = '', downloadButtons = [], cohortDisplayName = '') {
         const headerButtonHtml = createHeaderButtonHTML(downloadButtons, chartId || title.replace(/[^a-z0-9]/gi, '_'), title);
-
+        
         return `
             <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 dashboard-card-col ${cardClasses}">
                 <div class="card h-100 dashboard-card">
@@ -67,25 +67,22 @@ const uiComponents = (() => {
             }).join('');
         };
 
-        const createCriteriaGroup = (key, label, tooltipKey, contentGenerator) => {
+        const createCriteriaGroup = (key, label, tooltipText, contentGenerator) => {
             const isChecked = initialCriteria[key]?.active === true;
-            let tooltip = APP_CONFIG.UI_TEXTS.tooltips.tooltipDefinitions[tooltipKey] || label;
-             if (tooltipKey === 't2Size') {
-                const sizeTooltipTemplate = "Size criterion (short axis): Lymph nodes with a diameter <strong>greater than or equal to (≥)</strong> the set threshold are considered suspicious. Adjustable range: [MIN] - [MAX] mm (step: [STEP] mm). Enable/disable with checkbox.";
-                tooltip = sizeTooltipTemplate.replace('[MIN]', min).replace('[MAX]', max).replace('[STEP]', step);
-            }
             return `
                 <div class="col-md-6 criteria-group">
                     <div class="form-check mb-2">
                         <input class="form-check-input criteria-checkbox" type="checkbox" value="${key}" id="check-${key}" ${isChecked ? 'checked' : ''}>
                         <label class="form-check-label fw-bold" for="check-${key}">${label}</label>
-                         <span data-tippy-content="${tooltip}"> <i class="fas fa-info-circle text-muted ms-1"></i></span>
+                         <span data-tippy-content="${tooltipText}"> <i class="fas fa-info-circle text-muted ms-1"></i></span>
                     </div>
                     <div class="criteria-options-container ps-3">
                         ${contentGenerator(key, isChecked, label)}
                     </div>
                 </div>`;
         };
+
+        const sizeTooltipText = `Size criterion (short axis): Lymph nodes with a diameter <strong>greater than or equal to (≥)</strong> the set threshold are considered suspicious. Adjustable range: ${min} - ${max} mm (step: ${step} mm). Enable/disable with checkbox.`;
 
         return `
             <div class="card criteria-card" id="t2-criteria-card">
@@ -99,7 +96,7 @@ const uiComponents = (() => {
                 </div>
                 <div class="card-body">
                      <div class="row g-4">
-                        ${createCriteriaGroup('size', 'Size', 't2Size', (key, isChecked) => `
+                        ${createCriteriaGroup('size', 'Size', sizeTooltipText, (key, isChecked) => `
                             <div class="d-flex align-items-center flex-wrap">
                                  <span class="me-1 small text-muted">≥</span>
                                  <input type="range" class="form-range criteria-range flex-grow-1 me-2" id="range-size" min="${min}" max="${max}" step="${step}" value="${formattedThresholdForInput}" ${!isChecked ? 'disabled' : ''} data-tippy-content="Set short-axis diameter threshold (≥).">
@@ -107,10 +104,10 @@ const uiComponents = (() => {
                                  <input type="number" class="form-control form-control-sm criteria-input-manual" id="input-size" min="${min}" max="${max}" step="${step}" value="${formattedThresholdForInput}" ${!isChecked ? 'disabled' : ''} style="width: 70px;" aria-label="Enter size manually" data-tippy-content="Enter threshold manually.">
                             </div>
                         `)}
-                        ${createCriteriaGroup('shape', 'Shape', 't2Shape', createButtonOptions)}
-                        ${createCriteriaGroup('border', 'Border', 't2Border', createButtonOptions)}
-                        ${createCriteriaGroup('homogeneity', 'Homogeneity', 't2Homogeneity', createButtonOptions)}
-                        ${createCriteriaGroup('signal', 'Signal', 't2Signal', createButtonOptions)}
+                        ${createCriteriaGroup('shape', 'Shape', "Shape criterion: Select which shape ('round' or 'oval') is considered suspicious.", createButtonOptions)}
+                        ${createCriteriaGroup('border', 'Border', "Border criterion: Select which border ('sharp' or 'irregular') is considered suspicious.", createButtonOptions)}
+                        ${createCriteriaGroup('homogeneity', 'Homogeneity', "Homogeneity criterion: Select whether 'homogeneous' or 'heterogeneous' internal signal on T2w is considered suspicious.", createButtonOptions)}
+                        ${createCriteriaGroup('signal', 'Signal', "Signal criterion: Select which T2 signal intensity ('low', 'intermediate', or 'high') relative to surrounding muscle is considered suspicious.", createButtonOptions)}
                         <div class="col-12 d-flex justify-content-end align-items-center border-top pt-3 mt-3">
                             <button class="btn btn-sm btn-outline-secondary me-2" id="btn-reset-criteria" data-tippy-content="Resets the logic and all criteria to their default settings. The changes are not yet applied.">
                                 <i class="fas fa-undo me-1"></i> Reset to Default
