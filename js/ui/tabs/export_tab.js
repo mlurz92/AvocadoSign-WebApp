@@ -29,8 +29,7 @@ const exportTab = (() => {
 
     function render(currentCohort) {
         const cohortDisplayName = getCohortDisplayName(currentCohort);
-        const descriptionTextTemplate = APP_CONFIG.UI_TEXTS.tooltips.exportTab.description;
-        const finalDescriptionText = descriptionTextTemplate.replace('[COHORT]', `<strong>${cohortDisplayName}</strong>`);
+        const descriptionText = `All exports are generated based on the currently selected global cohort (<strong>${cohortDisplayName}</strong>) and the last applied T2 criteria. Unavailable exports are disabled.`;
 
         const singleExports = [
             { id: 'stats-csv', label: 'Statistics', icon: 'fa-chart-pie', tooltipKey: 'statscsv' },
@@ -58,7 +57,7 @@ const exportTab = (() => {
                     <div class="col-12">
                         <div class="alert alert-info small" role="alert">
                             <i class="fas fa-info-circle me-2"></i>
-                            ${finalDescriptionText}
+                            ${descriptionText}
                         </div>
                     </div>
                 </div>
