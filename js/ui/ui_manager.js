@@ -201,7 +201,7 @@ const uiManager = (() => {
                     <li><strong>Configuration:</strong> <code>js/config.js</code> centralizes settings, UI texts, statistical constants, and publication configurations.</li>
                     <li><strong>Glossary of Key Terms:</strong> AS (Avocado Sign), AUC (Area Under the Curve), BF (Brute-Force), CI (Confidence Interval), nRCT (Neoadjuvant Chemoradiotherapy), NPV (Negative Predictive Value), OR (Odds Ratio), PPV (Positive Predictive Value), RD (Risk Difference), T2w (T2-weighted).</li>
                 </ul>
-                <p class="small text-muted text-end"><em>Description generated for Application Version ${appVersion}. Last updated: June 10, 2025.</em></p>
+                <p class="small text-muted text-end"><em>Description generated for Application Version ${appVersion}. Last updated: June 11, 2025.</em></p>
             `;
             const modalHTML = `
                 <div class="modal fade" id="quick-guide-modal" tabindex="-1" aria-labelledby="quickGuideModalLabel" aria-hidden="true">
@@ -235,10 +235,10 @@ const uiManager = (() => {
     }
 
     function updateCohortButtonsUI(currentCohort) {
-        ['Gesamt', 'direkt OP', 'nRCT'].forEach(cohortId => {
-            const button = document.getElementById(`btn-cohort-${cohortId.replace(/\s+/g, '-')}`);
+        Object.values(APP_CONFIG.COHORTS).forEach(cohort => {
+            const button = document.getElementById(`btn-cohort-${cohort.id}`);
             if (button) {
-                button.classList.toggle('active', cohortId === currentCohort);
+                button.classList.toggle('active', cohort.id === currentCohort);
             }
         });
     }
