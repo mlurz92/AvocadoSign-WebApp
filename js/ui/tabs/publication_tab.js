@@ -74,14 +74,16 @@ const publicationTab = (() => {
     }
 
     function _generateMethodsImageAnalysisT2HTML(stats, commonData) {
+        const literatureSetsHTML = PUBLICATION_CONFIG.literatureCriteriaSets.map(set => 
+            `<li><strong>${set.name}:</strong> ${set.studyInfo.keyCriteriaSummary} [${set.studyInfo.reference.match(/\d+/) ? commonData.references[Object.keys(commonData.references).find(refKey => commonData.references[refKey].id == set.studyInfo.reference.match(/\d+/)[0])].id : 'N/A'}]. This set was applied to the '${getCohortDisplayName(set.applicableCohort)}' cohort.</li>`
+        ).join('');
+
          return `
             <p>For comparison with the Avocado Sign, we also evaluated the diagnostic performance of T2-weighted (T2w) morphological criteria. Two main approaches were considered: a literature-based set of criteria and a cohort-optimized set of criteria derived from a brute-force analysis of our dataset.</p>
             <h4>Literature-Based T2 Criteria:</h4>
             <p>We selected several established literature-based T2w criteria sets for comparative analysis:</p>
             <ul>
-                <li><strong>Rutegård et al. (2025) / ESGAR 2016:</strong> These criteria combine size and morphological features [${commonData.references.REFERENCE_RUTEGARD_2025.id}]. Lymph nodes are considered malignant if: short axis ≥ 9 mm; OR short axis 5–8 mm and ≥2 suspicious features (round, irregular, heterogeneous); OR short axis < 5 mm and all 3 suspicious features are present. This set was applied to the 'Overall' cohort, aligning with its comprehensive evaluation context.</li>
-                <li><strong>Koh et al. (2008):</strong> Morphological criteria defining a malignant node by irregular outlines or internal signal heterogeneity on T2-weighted MRI [${commonData.references.REFERENCE_KOH_2008.id}]. This set was evaluated on the overall cohort for broad comparability.</li>
-                <li><strong>Barbaro et al. (2024):</strong> This study focused on optimal cut-off for short axis in restaging after nCRT: ≥ 2.3mm (original 2.2mm) [${commonData.references.REFERENCE_BARBARO_2024.id}]. This criterion was applied specifically to the 'Neoadjuvant therapy' cohort.</li>
+                ${literatureSetsHTML}
             </ul>
             <h4>Cohort-Optimized T2 Criteria (Brute-Force):</h4>
             <p>To identify the best-performing T2w criteria combination for our specific dataset, a systematic brute-force optimization was performed. This algorithm exhaustively tested all possible combinations of the five morphological T2 features (size, shape, border, homogeneity, signal intensity) and logical operators (AND/OR). The optimization aimed to maximize a pre-selected diagnostic metric (e.g., ${commonData.bruteForceMetricForPublication}). The best-performing criteria set identified by this process was then used for comparative analysis with the Avocado Sign. The brute-force analysis was performed using a dedicated Web Worker to ensure UI responsiveness.</p>
@@ -360,7 +362,7 @@ const publicationTab = (() => {
             <div class="col-md-3">${uiComponents.createPublicationNav(currentSectionId)}<div class="mt-3">
                 <label for="publication-bf-metric-select" class="form-label small text-muted">${APP_CONFIG.UI_TEXTS.publicationTab.bfMetricSelectLabel}</label>
                 <select class="form-select form-select-sm" id="publication-bf-metric-select">
-                    ${PUBLICATION_CONFIG.bruteForceMetricsForPublication.map(m => `<option value="${m.value}" ${m.value === commonData.bruteForceMetricForPublication ? 'selected' : ''}>${m.label}</option>`).join('')}
+                    ${APP_CONFIG.AVAILABLE_BRUTE_FORCE_METRICS.map(m => `<option value="${m.value}" ${m.value === commonData.bruteForceMetricForPublication ? 'selected' : ''}>${m.label}</option>`).join('')}
                 </select>
             </div></div>
             <div class="col-md-9"><div id="publication-content-area" class="bg-white p-3 border rounded">
