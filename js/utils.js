@@ -247,7 +247,6 @@ function getPValueText(pValue, forPublication = false) {
     return formattedP;
 }
 
-
 function generateUUID() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
         return crypto.randomUUID();
@@ -278,7 +277,7 @@ function clampNumber(num, min, max) {
 function getTooltip(key, replacements = {}) {
     const definitions = APP_CONFIG.UI_TEXTS.tooltips.tooltipDefinitions;
     const interpretations = APP_CONFIG.UI_TEXTS.tooltips.tooltipInterpretations;
-    let template = definitions[key] || interpretations[key] || `No tooltip found for key: ${key}`;
+    let template = definitions[key] || interpretations[key] || ``;
 
     for (const placeholder in replacements) {
         if (Object.prototype.hasOwnProperty.call(replacements, placeholder)) {
@@ -291,7 +290,8 @@ function getTooltip(key, replacements = {}) {
 
 function getAUCInterpretation(aucValue) {
     const value = parseFloat(aucValue);
-    if (isNaN(value) || value < 0 || value > 1) return getTooltip('auc', { VALUE: formatNumber(aucValue, 2), STRENGTH: 'undetermined' });
+    const texts = APP_CONFIG.UI_TEXTS.statMetrics.associationStrengthTexts;
+    if (isNaN(value) || value < 0 || value > 1) return getTooltip('auc', { VALUE: formatNumber(aucValue, 2), STRENGTH: texts.undetermined });
     
     let strength = 'not informative';
     if (value >= 0.9) strength = 'excellent';
@@ -324,15 +324,18 @@ function getPhiInterpretation(phiData, featureName = '') {
 
 function getORInterpretation(orData, featureName = '') {
     const orValue = parseFloat(orData?.value);
-    if (isNaN(orValue) || !orData.ci) return 'Odds Ratio: Not Available';
+    if (isNaN(orValue) || !orData.ci || orData.ci.lower === null || orData.ci.upper === null) return 'Odds Ratio: Not available';
 
+    const isSignificant = !(orData.ci.lower < 1 && orData.ci.upper > 1);
+    const templateKey = isSignificant ? 'or_sig' : 'or_ns';
+    
     const factorText = orValue > 1 ? 'increased' : 'decreased';
     const absValForStrength = orValue > 1 ? orValue : 1 / orValue;
     let strength = 'weak';
-    if (absValForStrength >= 3) strength = 'strong';
+    if (absValForStrength >= 3.0) strength = 'strong';
     else if (absValForStrength >= 1.5) strength = 'moderate';
 
-    return getTooltip('or', {
+    return getTooltip(templateKey, {
         FACTOR_TEXT: factorText,
         VALUE: formatNumber(orValue, 2),
         CI_LOWER: formatNumber(orData.ci.lower, 2),
@@ -344,11 +347,13 @@ function getORInterpretation(orData, featureName = '') {
 
 function getRDInterpretation(rdData, featureName = '') {
     const rdValue = parseFloat(rdData?.value);
-    if (isNaN(rdValue) || !rdData.ci) return 'Risk Difference: Not Available';
+    if (isNaN(rdValue) || !rdData.ci || rdData.ci.lower === null || rdData.ci.upper === null) return 'Risk Difference: Not available';
 
+    const isSignificant = !(rdData.ci.lower < 0 && rdData.ci.upper > 0);
+    const templateKey = isSignificant ? 'rd_sig' : 'rd_ns';
     const directionText = rdValue > 0 ? 'increase' : 'decrease';
 
-    return getTooltip('rd', {
+    return getTooltip(templateKey, {
         DIRECTION_TEXT: directionText,
         VALUE: formatNumber(Math.abs(rdValue * 100), 1),
         CI_LOWER: formatNumber(rdData.ci.lower * 100, 1),
@@ -358,7 +363,7 @@ function getRDInterpretation(rdData, featureName = '') {
 }
 
 function getTestInterpretation(testData, testKey) {
-    if (!testData || isNaN(testData.pValue)) return 'Test Interpretation: Not Available';
+    if (!testData || isNaN(testData.pValue)) return `Interpretation for ${testKey}: Not available`;
 
     const pValue = testData.pValue;
     const isSignificant = pValue < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL;
@@ -371,13 +376,13 @@ function getTestInterpretation(testData, testKey) {
 }
 
 function getAssociationInterpretation(pValData, featureName = '') {
-    if (!pValData || isNaN(pValData.pValue)) return 'Association Interpretation: Not Available';
+    if (!pValData || isNaN(pValData.pValue)) return 'Association Interpretation: Not available';
 
     const pValue = pValData.pValue;
     const isSignificant = pValue < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL;
     let strength = 'no significant';
     
-    if(isSignificant) {
+    if (isSignificant) {
         if (pValue < 0.001) strength = 'a very strong';
         else if (pValue < 0.01) strength = 'a strong';
         else strength = 'a moderate';
