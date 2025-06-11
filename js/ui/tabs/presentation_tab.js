@@ -2,8 +2,13 @@ const presentationTab = (() => {
 
     function _createASPerformanceViewHTML(presentationData) {
         const { statsGesamt, statsSurgeryAlone, statsNeoadjuvantTherapy, cohort, statsCurrentCohort, patientCount } = presentationData || {};
-        const cohorts = ['Gesamt', 'surgeryAlone', 'neoadjuvantTherapy'];
-        const statsMap = { 'Gesamt': statsGesamt, 'surgeryAlone': statsSurgeryAlone, 'neoadjuvantTherapy': statsNeoadjuvantTherapy };
+        
+        const cohortsData = [
+            { id: APP_CONFIG.COHORTS.OVERALL.id, stats: statsGesamt },
+            { id: APP_CONFIG.COHORTS.SURGERY_ALONE.id, stats: statsSurgeryAlone },
+            { id: APP_CONFIG.COHORTS.NEOADJUVANT.id, stats: statsNeoadjuvantTherapy }
+        ];
+
         const currentCohortName = getCohortDisplayName(cohort);
         const displayPatientCount = patientCount > 0 ? patientCount : (statsCurrentCohort?.matrix?.tp + statsCurrentCohort?.matrix?.fp + statsCurrentCohort?.matrix?.fn + statsCurrentCohort?.matrix?.tn) || 0;
         const hasDataForCurrent = !!(statsCurrentCohort && statsCurrentCohort.matrix && displayPatientCount > 0);
@@ -37,7 +42,7 @@ const presentationTab = (() => {
                     <div class="card-header d-flex justify-content-between align-items-center"><span>AS Performance vs. N for All Cohorts</span>${uiComponents.createHeaderButtonHTML([{id: `dl-${tableId}-png`, icon: 'fa-image', format: 'png', tableId: tableId, tableName: `Pres_AS_Perf_Overview`}], tableId, "AS_Performance_Overview")}</div>
                     <div class="card-body p-0"><div class="table-responsive"><table class="table table-striped table-hover table-sm small mb-0" id="${tableId}">
                         <thead class="small"><tr><th>Cohort</th><th>Sens. (95% CI)</th><th>Spec. (95% CI)</th><th>PPV (95% CI)</th><th>NPV (95% CI)</th><th>Acc. (95% CI)</th><th>AUC (95% CI)</th></tr></thead>
-                        <tbody>${cohorts.map(k => createPerfTableRow(statsMap[k], k)).join('')}</tbody>
+                        <tbody>${cohortsData.map(c => createPerfTableRow(c.stats, c.id)).join('')}</tbody>
                     </table></div></div>
                     <div class="card-footer text-end p-1">
                         <button class="btn btn-sm btn-outline-secondary me-1" id="download-performance-as-pur-csv"><i class="fas fa-file-csv me-1"></i>CSV</button>
