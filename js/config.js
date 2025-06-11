@@ -240,183 +240,97 @@ const APP_CONFIG = Object.freeze({
             asPositive: 'AS+',
             asNegative: 'AS-',
             t2Positive: 'T2+',
-            t2Negative: 'T2-'
-        },
-        statMetrics: {
-            significanceTexts: {
-                SIGNIFICANT: "statistically significant",
-                NOT_SIGNIFICANT: "not statistically significant"
-            },
-            orFactorTexts: {
-                INCREASED: "increased",
-                DECREASED: "decreased",
-                UNCHANGED: "unchanged"
-            },
-            rdDirectionTexts: {
-                HIGHER: "higher",
-                LOWER: "lower",
-                EQUAL: "equal"
-            },
-            associationStrengthTexts: {
-                strong: "strong",
-                moderate: "moderate",
-                weak: "weak",
-                very_weak: "very weak",
-                undetermined: "undetermined"
-            }
+            t2Negative: 'T2-',
+            avocadoSign: 'Avocado Sign'
         },
         tooltips: Object.freeze({
-            quickGuideButton: { description: "Show a quick guide and important notes about the application." },
-            cohortButtons: { description: "Select the patient cohort for the analysis: <strong>Overall</strong>, <strong>Surgery alone</strong>, or <strong>Neoadjuvant therapy</strong>. This choice filters the data for all application tabs." },
-            headerStats: {
-                cohort: "Currently selected patient cohort for analysis.",
-                patientCount: "Total number of patients in the selected cohort.",
-                statusN: "Percentage of N+ patients (Pathology).",
-                statusAS: "Percentage of AS+ patients (Prediction).",
-                statusT2: "Percentage of T2+ patients (Applied Criteria)."
-            },
-            mainTabs: {
-                data: "Display the list of all patient data in the selected cohort with basic information and status (N/AS/T2). Allows sorting and expanding details on T2 lymph node features.",
-                analysis: "Central tab for defining T2 criteria, viewing a descriptive dashboard, running brute-force optimization, and detailed analysis results per patient based on the applied criteria.",
-                statistics: "Provides detailed statistical analyses (performance metrics, comparisons, associations) for the globally selected cohort or a comparison of two specifically chosen cohorts. All confidence intervals (CI) are 95% CIs.",
-                presentation: "Presents analysis results in a format optimized for presentations, focusing on the comparison of the Avocado Sign with T2-based approaches (applied or literature).",
-                publication: "Generates text suggestions and materials for scientific publications.",
-                export: "Offers extensive options for downloading raw data, analysis results, tables, and charts in various file formats."
-            },
-            dataTab: {
-                nr: "Patient's sequential ID number.",
-                name: "Patient's last name (anonymized/coded).",
-                firstName: "Patient's first name (anonymized/coded).",
-                sex: "Patient's sex (male/female/unknown).",
-                age: "Patient's age in years at the time of MRI.",
-                therapy: "Therapy administered before surgery (Neoadjuvant therapy, Surgery alone).",
-                n_as_t2: "Direct status comparison: N (Histopathology reference), AS (Avocado Sign prediction), T2 (current criteria prediction). Click N, AS, or T2 in the column header for sub-sorting.",
-                notes: "Additional clinical or radiological notes on the case, if available.",
-                expandAll: "Expand or collapse the detail view of T2-weighted lymph node features for all patients in the current table view.",
-                collapseAll: "Collapse all detail views of T2-weighted lymph node features.",
-                expandRow: "Click here or the arrow button to show/hide details on the morphological properties of this patient's T2-weighted lymph nodes. Only available if T2 node data exists."
-            },
-            analysisTab: {
-                nr: "Patient's sequential ID number.",
-                name: "Patient's last name (anonymized/coded).",
-                therapy: "Therapy administered before surgery.",
-                n_as_t2: "Direct status comparison: N (Histopathology reference), AS (Avocado Sign prediction), T2 (current criteria prediction). Click N, AS, or T2 in the column header for sub-sorting.",
-                n_counts: "Number of pathologically positive (N+) lymph nodes / Total number of histopathologically examined lymph nodes for this patient.",
-                as_counts: "Number of Avocado Sign positive (AS+) lymph nodes / Total number of lymph nodes visible on T1-CE MRI for this patient.",
-                t2_counts: "Number of T2-positive lymph nodes (based on current criteria) / Total number of lymph nodes visible on T2-MRI for this patient.",
-                expandAll: "Expand or collapse the detail view of the evaluated T2-weighted lymph nodes and the fulfilled criteria for all patients in the current table view.",
-                collapseAll: "Collapse all detail views of the evaluated T2-weighted lymph nodes and the fulfilled criteria.",
-                expandRow: "Click here or the arrow button to show/hide the detailed evaluation of this patient's individual T2-weighted lymph nodes according to the currently applied criteria. Fulfilled positive criteria are highlighted."
-            },
-            t2Logic: { description: "Logical operator for active T2 criteria: <strong>AND</strong> (A lymph node is positive only if ALL active criteria are met). <strong>OR</strong> (A lymph node is positive if AT LEAST ONE active criterion is met). The choice affects the T2 status calculation." },
-            t2Size: { description: "Size criterion (short axis): Lymph nodes with a diameter <strong>greater than or equal to (≥)</strong> the set threshold are considered suspicious. Adjustable range: [MIN] - [MAX] mm (step: [STEP] mm). Enable/disable with checkbox." },
-            t2Shape: { description: "Shape criterion: Select which shape ('round' or 'oval') is considered suspicious. Enable/disable with checkbox." },
-            t2Border: { description: "Border criterion: Select which border ('sharp' or 'irregular') is considered suspicious. Enable/disable with checkbox." },
-            t2Homogeneity: { description: "Homogeneity criterion: Select whether 'homogeneous' or 'heterogeneous' internal signal on T2w is considered suspicious. Enable/disable with checkbox." },
-            t2Signal: { description: "Signal criterion: Select which T2 signal intensity ('low', 'intermediate', or 'high') relative to surrounding muscle is considered suspicious. Nodes with non-assessable signal (value 'null') never fulfill this criterion. Enable/disable with checkbox." },
-            t2Actions: {
-                reset: "Resets the logic and all criteria to their default settings. The changes are not yet applied.",
-                apply: "Apply the currently set T2 criteria and logic to the entire dataset. This updates the T2 columns in the tables, all statistical analyses, and charts. The setting is also saved for future sessions."
-            },
-            t2CriteriaCard: { unsavedIndicator: "<strong>Attention:</strong> There are unsaved changes to the T2 criteria or logic. Click 'Apply & Save' to update the results and save the settings." },
-            t2MetricsOverview: {
-                cardTitle: "Quick overview of diagnostic performance (T2 vs. N) for the currently applied and saved T2 criteria for the selected cohort: <strong>[COHORT]</strong>. All confidence intervals (CI) are 95% CIs.",
-                sens: "Sensitivity (T2 vs. N): Proportion of N+ cases correctly identified as positive by the T2 criteria.",
-                spec: "Specificity (T2 vs. N): Proportion of N- cases correctly identified as negative by the T2 criteria.",
-                ppv: "Positive Predictive Value (PPV, T2 vs. N): Probability that a T2+ case is actually N+.",
-                npv: "Negative Predictive Value (NPV, T2 vs. N): Probability that a T2- case is actually N-.",
-                acc: "Accuracy (T2 vs. N): Overall proportion of correctly classified cases.",
-                balAcc: "Balanced Accuracy (T2 vs. N): Average of sensitivity and specificity. Useful for imbalanced class sizes.",
-                f1: "F1-Score (T2 vs. N): Harmonic mean of PPV and sensitivity. A value of 1 is optimal.",
-                auc: "AUC (T2 vs. N): Area Under the ROC Curve; for binary tests like this, equivalent to Balanced Accuracy."
-            },
-            bruteForceMetric: { description: "Select the target metric for the brute-force optimization.<br><strong>Accuracy:</strong> Proportion of correct classifications.<br><strong>Balanced Accuracy:</strong> (Sens+Spec)/2; good for imbalanced classes.<br><strong>F1-Score:</strong> Harmonic mean of PPV & Sensitivity.<br><strong>PPV:</strong> Precision for positive predictions.<br><strong>NPV:</strong> Precision for negative predictions." },
-            bruteForceStart: { description: "Starts the brute-force search for the T2 criteria combination that maximizes the selected target metric in the current cohort. This may take some time and runs in the background." },
-            bruteForceInfo: { description: "Shows the status of the optimization worker and the currently analyzed patient cohort: <strong>[COHORT_NAME]</strong>." },
-            bruteForceProgress: { description: "Progress of the ongoing optimization: Tested combinations / Total count ([TOTAL]). Displays the current best metric and the corresponding criteria." },
-            bruteForceResult: {
-                description: "Best result of the completed brute-force optimization for the selected cohort ([N_TOTAL] patients, including [N_PLUS] N+ and [N_MINUS] N-) and the target metric.",
-                cohortStats: "Statistics of the cohort used for this optimization: N (total count), N+ (count N-positive), N- (count N-negative)."
-            },
-            bruteForceDetailsButton: { description: "Opens a window with the top 10 results and more details about the completed optimization." },
-            bruteForceModal: { exportButton: "Exports the detailed report of the brute-force optimization (Top 10 results, cohort statistics, configuration) as a formatted text file (.txt)." },
-            statisticsLayout: { description: "Select the display mode: <strong>Single View</strong> for the globally selected cohort or <strong>Comparison Active</strong> to select and compare two specific cohorts." },
-            statisticsCohort1: { description: "Select the first cohort for statistical analysis or comparison (only active in 'Comparison Active' layout)." },
-            statisticsCohort2: { description: "Select the second cohort for comparison (only active in 'Comparison Active' layout)." },
-            statisticsToggleComparison: { description: "Toggle between the detailed single view for the globally selected cohort and the comparison view of two specifically chosen cohorts." },
-            descriptiveStatistics: {
-                cardTitle: "Demographics, clinical data, and baseline lymph node counts for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs.",
-                age: { name: "Age", description: "Patient age in years." },
-                sex: { name: "Sex", description: "Patient's sex (male/female/unknown)." },
-                therapy: { name: "Therapy", description: "Therapy administered before surgery (neoadjuvantTherapy, surgeryAlone)." },
-                nStatus: { name: "N-Status", description: "Histopathological lymph node status (N+ / N-)." },
-                asStatus: { name: "AS-Status", description: "Avocado Sign status (AS+ / AS-)." },
-                t2Status: { name: "T2-Status", description: "T2-weighted MRI lymph node status (T2+ / T2-) based on applied criteria." },
-                lnCounts_n_total: { name: "LN N total", description: "Total number of histopathologically examined lymph nodes per patient." },
-                lnCounts_n_plus: { name: "LN N+", description: "Number of pathologically positive lymph nodes per patient, only in N+ patients (n=[n])." },
-                lnCounts_as_total: { name: "LN AS total", description: "Total number of lymph nodes visible on T1-CE MRI per patient." },
-                lnCounts_as_plus: { name: "LN AS+", description: "Number of Avocado Sign positive lymph nodes per patient, only in AS+ patients (n=[n])." },
-                lnCounts_t2_total: { name: "LN T2 total", description: "Total number of lymph nodes visible on T2-MRI per patient." },
-                lnCounts_t2_plus: { name: "LN T2+", description: "Number of T2-positive lymph nodes per patient (based on applied criteria), only in T2+ patients (n=[n])." },
-                chartAge: { name: "Age Distribution Chart", description: "Histogram showing the distribution of patient ages in the [COHORT] cohort." },
-                chartGender: { name: "Sex Distribution Chart", description: "Pie chart illustrating the distribution of male and female patients in the [COHORT] cohort." }
-            },
-            diagnosticPerformanceAS: { cardTitle: "Diagnostic performance of the Avocado Sign (AS) vs. Histopathology (N) for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs." },
-            diagnosticPerformanceT2: { cardTitle: "Diagnostic performance of the currently applied T2 criteria vs. Histopathology (N) for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs." },
-            statisticalComparisonASvsT2: { cardTitle: "Statistical comparison of the diagnostic performance of AS vs. currently applied T2 criteria (paired tests) in cohort <strong>[COHORT]</strong>." },
-            associationSingleCriteria: { cardTitle: "Association between AS status or individual T2 features and N-status (+/-) in cohort <strong>[COHORT]</strong>. OR: Odds Ratio, RD: Risk Difference, φ: Phi Coefficient. All CIs are 95% CIs." },
-            cohortComparison: { cardTitle: "Statistical comparison of Accuracy and AUC (for AS and T2) between <strong>[COHORT1]</strong> and <strong>[COHORT2]</strong> (unpaired tests)." },
-            criteriaComparisonTable: {
-                cardTitle: "Tabular performance comparison: Avocado Sign, applied T2 criteria, and literature sets for the globally selected cohort <strong>[GLOBAL_COHORT_NAME]</strong>. Literature-based sets are evaluated on their specific target cohort if different (indicated in parentheses). All values are without CIs.",
-                tableHeaderSet: "Method / Criteria Set (Eval. on Cohort N)",
-                tableHeaderSens: "Sens.",
-                tableHeaderSpec: "Spec.",
-                tableHeaderPPV: "PPV",
-                tableHeaderNPV: "NPV",
-                tableHeaderAcc: "Acc.",
-                tableHeaderAUC: "AUC/Bal. Acc."
-            },
-            presentation: {
-                viewSelect: { description: "Select the view: <strong>Avocado Sign (Performance)</strong> for an overview of AS performance, or <strong>AS vs. T2 (Comparison)</strong> for a direct comparison of AS with a selectable T2 criteria basis." },
-                studySelect: { description: "Select a T2 criteria basis for comparison with the Avocado Sign. Options: currently applied criteria in the app or predefined sets from published studies. The selection updates the comparisons below. The global cohort may adapt to the study's target cohort." },
-                t2BasisInfoCard: {
-                    title: "Information on T2 Comparison Basis",
-                    description: "Shows details about the selected T2 criteria for comparison with AS and the current comparison cohort.",
-                    reference: "Study reference or source of the criteria.",
-                    patientCohort: "Original study cohort or current comparison cohort (with patient count).",
-                    investigationType: "Type of examination in the original study (e.g., primary staging, restaging).",
-                    focus: "Main focus of the original study regarding these criteria.",
-                    keyCriteriaSummary: "Summary of the applied T2 criteria and their logic."
+            metrics: {
+                sens: {
+                    title: 'Sensitivity (True Positive Rate)',
+                    definition: 'The proportion of actual positives that are correctly identified as such. It measures the ability of a test to correctly identify patients with the disease.',
+                    interpretation: 'A sensitivity of {value} means that the test correctly identified {value} of all patients who were actually N+.'
                 },
-                asPurPerfTable: {
-                    cohort: "Patient cohort and its size (N).",
-                    sens: "Sensitivity of the Avocado Sign (vs. N) in this cohort.",
+                spec: {
+                    title: 'Specificity (True Negative Rate)',
+                    definition: 'The proportion of actual negatives that are correctly identified as such. It measures the ability of a test to correctly identify patients without the disease.',
+                    interpretation: 'A specificity of {value} means that the test correctly identified {value} of all patients who were actually N-.'
                 },
-                asVsT2PerfTable: {
-                    metric: "Diagnostic metric.",
-                    asValue: "Value for Avocado Sign (AS) (vs. N) in cohort <strong>[COHORT_NAME_COMPARISON]</strong>, incl. 95% CI.",
-                    t2Value: "Value for the T2 basis <strong>[T2_SHORT_NAME]</strong> (vs. N) in cohort <strong>[COHORT_NAME_COMPARISON]</strong>, incl. 95% CI."
+                ppv: {
+                    title: 'Positive Predictive Value (PPV)',
+                    definition: 'The probability that a patient with a positive test result actually has the disease. It depends on the prevalence of the disease.',
+                    interpretation: 'A PPV of {value} means that there is a {value} probability that a patient with a positive test result is truly N+.'
                 },
-                asVsT2TestTable: {
-                    test: "Statistical test comparing AS vs. <strong>[T2_SHORT_NAME]</strong>.",
-                    statistic: "Value of the test statistic.",
-                    pValue: "p-value of the test. p < 0.05 indicates a statistically significant difference between AS and <strong>[T2_SHORT_NAME]</strong> regarding the tested metric (Accuracy or AUC) in cohort <strong>[COHORT_NAME_COMPARISON]</strong>.",
-                    method: "Name of the statistical test used."
+                npv: {
+                    title: 'Negative Predictive Value (NPV)',
+                    definition: 'The probability that a patient with a negative test result actually does not have the disease. It depends on the prevalence of the disease.',
+                    interpretation: 'An NPV of {value} means that there is a {value} probability that a patient with a negative test result is truly N-.'
+                },
+                acc: {
+                    title: 'Accuracy',
+                    definition: 'The proportion of all tests that are correct. It is calculated as (TP + TN) / (All Patients).',
+                    interpretation: 'An accuracy of {value} means that the test correctly classified {value} of all patients.'
+                },
+                balAcc: {
+                    title: 'Balanced Accuracy',
+                    definition: 'The average of sensitivity and specificity. It is a useful metric for imbalanced datasets, as it is not influenced by the prevalence of the disease.',
+                    interpretation: 'A balanced accuracy of {value} indicates the average performance across both N+ and N- patients.'
+                },
+                f1: {
+                    title: 'F1-Score',
+                    definition: 'The harmonic mean of precision (PPV) and recall (sensitivity). It provides a single score that balances both concerns. An F1-score reaches its best value at 1 (perfect precision and recall).',
+                    interpretation: 'An F1-score of {value} represents a harmonic balance between the positive predictive value and sensitivity.'
+                },
+                auc: {
+                    title: 'Area Under the ROC Curve (AUC)',
+                    definition: 'A measure of the overall diagnostic ability of a binary classifier. An AUC of 1.0 represents a perfect test, while an AUC of 0.5 represents a test with no discriminative ability.',
+                    interpretation: 'An AUC of {value} indicates a {auc_interpretation} ability of the test to distinguish between N+ and N- patients.'
+                },
+                or: {
+                    title: 'Odds Ratio (OR)',
+                    definition: 'The ratio of the odds of an event occurring in one group to the odds of it occurring in another group. An OR > 1 indicates increased odds; OR < 1 indicates decreased odds; OR = 1 indicates no change in odds.',
+                    interpretation: 'An Odds Ratio of {value} means the odds of being N+ are {factor} times {direction} for patients who are {feature_positive} compared to those who are {feature_negative}. The 95% CI of {ci} suggests this finding is {significance_status}.'
+                },
+                rd: {
+                    title: 'Risk Difference (RD)',
+                    definition: 'The absolute difference in the risk (or probability) of an outcome between two groups. It ranges from -1 to 1.',
+                    interpretation: 'The risk of being N+ is {value} {direction} for the group with the feature compared to the group without. The 95% CI of {ci} suggests this difference is {significance_status}.'
+                },
+                phi: {
+                    title: 'Phi (φ) Coefficient',
+                    definition: 'A measure of association between two binary variables, similar to a correlation coefficient. It ranges from -1 to 1, where 0 indicates no association.',
+                    interpretation: 'A Phi coefficient of {value} indicates a {phi_interpretation} association between this feature and the N-status.'
+                },
+                pValue: {
+                    title: 'p-Value',
+                    definition: 'The probability of observing a result as extreme as, or more extreme than, the one observed, assuming the null hypothesis is true. A small p-value (typically < 0.05) suggests that the observed result is unlikely to be due to chance alone.',
+                    interpretation: 'A p-value of {value} indicates that the observed association is {significance_status}.'
                 }
             },
-            exportTab: {
-                description: "Allows exporting analysis results, tables, and charts based on the currently selected global cohort ([COHORT]) and the currently applied T2 criteria.",
-                statscsv: { description: "Detailed table of all calculated statistical metrics (descriptive, AS & T2 performance, comparisons, associations) from the Statistics tab as a CSV file.", type: 'STATS_CSV', ext: "csv" },
-                bruteforcetxt: { description: "Detailed report of the last brute-force optimization for the current cohort (Top 10 results, configuration) as a text file (.txt), if performed.", type: 'BRUTEFORCE_TXT', ext: "txt" },
-                datamd: { description: "Current data list (Data tab) as a Markdown table (.md).", type: 'DATA_MD', ext: "md" },
-                analysismd: { description: "Current analysis table (Analysis tab, incl. T2 results) as a Markdown (.md) file.", type: 'ANALYSIS_MD', ext: "md" },
-                filtereddatacsv: { description: "Raw data of the currently selected cohort (incl. T2 evaluation) as a CSV file (.csv).", type: 'FILTERED_DATA_CSV', ext: "csv" },
-                comprehensivereport_html: { description: "Comprehensive analysis report as an HTML file (statistics, configurations, charts), printable.", type: 'COMPREHENSIVE_REPORT_HTML', ext: "html" },
-                allzip: { description: "All available single files (Statistics CSV, BruteForce TXT, all MDs, Raw Data CSV, HTML Report) in one ZIP archive.", type: 'ALL_ZIP', ext: "zip"},
-                csvzip: { description: "All available CSV files (Statistics, Raw Data) in one ZIP archive.", type: 'CSV_ZIP', ext: "zip"},
-                mdzip: { description: "All available Markdown files (Descriptive, Data, Analysis, Publication Texts) in one ZIP archive.", type: 'MD_ZIP', ext: "zip"},
-                pngzip: { description: "All currently visible charts (Statistics, Analysis, Presentation) and selected tables as individual PNG files (ZIP archive).", type: 'PNG_ZIP', ext: "zip" },
-                svgzip: { description: "All currently visible charts (Statistics, Analysis, Presentation) as individual SVG files (ZIP archive).", type: 'SVG_ZIP', ext: "zip"}
+            tests: {
+                mcnemar: {
+                    title: "McNemar's Test",
+                    definition: 'A statistical test used on paired nominal data. It is applied to 2x2 contingency tables with a dichotomous trait, with matched pairs of subjects, to determine whether the row and column marginal frequencies are equal. It is used to compare the accuracy of two diagnostic tests.'
+                },
+                delong: {
+                    title: "DeLong's Test",
+                    definition: 'A non-parametric statistical test used to compare the Area Under the Curve (AUC) of two correlated Receiver Operating Characteristic (ROC) curves. It is commonly used to determine if one diagnostic test is significantly better than another.'
+                },
+                fisher: {
+                    title: "Fisher's Exact Test",
+                    definition: "A statistical significance test used in the analysis of contingency tables. It is used when sample sizes are small. It calculates the exact probability of observing the results as extreme as, or more extreme than, the actual results, assuming the null hypothesis of no association is true."
+                },
+                mwu: {
+                    title: 'Mann-Whitney U Test',
+                    definition: 'A non-parametric test used to compare differences between two independent groups when the dependent variable is either ordinal or continuous, but not normally distributed. It assesses whether the medians of the two groups are statistically different.'
+                },
+                wilson: {
+                    title: 'Wilson Score Confidence Interval',
+                    definition: 'A method for calculating a confidence interval for a binomial proportion. Unlike the standard Wald interval, it performs well even for small sample sizes and proportions near 0 or 1.'
+                },
+                bootstrap: {
+                    title: 'Bootstrap Percentile Confidence Interval',
+                    definition: 'A method for constructing confidence intervals by resampling from the original dataset with replacement. It is particularly useful for complex statistics (like F1-score or AUC) where an analytical formula for the CI is not available or reliable.'
+                }
             }
         })
     }),
