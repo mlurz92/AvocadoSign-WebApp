@@ -8,7 +8,6 @@ const uiComponents = (() => {
                 const iconClass = btn.icon || 'fa-download';
                 let tooltip = btn.tooltip || `Download as ${String(btn.format || 'action').toUpperCase()}`;
 
-                // Sanitize defaultTitle, chartName, tableName for use in filenames/ids
                 const safeDefaultTitle = String(defaultTitle).replace(/[^a-zA-Z0-9_-\s]/gi, '').substring(0, 50);
                 const safeChartName = String(btn.chartName || safeDefaultTitle).replace(/[^a-zA-Z0-9_-\s]/gi, '').substring(0, 50);
                 const safeTableName = String(btn.tableName || safeDefaultTitle).replace(/[^a-zA-Z0-9_-\s]/gi, '').substring(0, 50);
@@ -56,20 +55,18 @@ const uiComponents = (() => {
         const defaultCriteria = getDefaultT2Criteria();
         const sizeThreshold = initialCriteria.size?.threshold ?? defaultCriteria?.size?.threshold ?? 5.0;
         const { min, max, step } = APP_CONFIG.T2_CRITERIA_SETTINGS.SIZE_RANGE;
-        // Ensure formatNumber uses true for useStandardFormat when displaying in an input/range context
         const formattedThresholdForInput = formatNumber(sizeThreshold, 1, '5.0', true);
 
         const createButtonOptions = (key, isChecked, criterionLabel) => {
             const valuesKey = key.toUpperCase() + '_VALUES';
             const values = APP_CONFIG.T2_CRITERIA_SETTINGS[valuesKey];
-            if (!Array.isArray(values)) return ''; // Ensure values is an array
+            if (!Array.isArray(values)) return '';
             const currentValue = initialCriteria[key]?.value;
 
             return values.map(value => {
                 const isActiveValue = isChecked && currentValue === value;
-                const icon = getT2IconSVG(key, value); // Use getT2IconSVG from utils.js
+                const icon = getT2IconSVG(key, value);
                 
-                // Translate value for tooltip only, not for data-value
                 let displayValueForTooltip = value;
                 switch (value) {
                     case 'rund': displayValueForTooltip = 'round'; break;
@@ -84,7 +81,7 @@ const uiComponents = (() => {
                 }
 
                 const buttonTooltip = `Set criterion '${criterionLabel}' to '${displayValueForTooltip}'. ${isChecked ? '' : '(Criterion is currently inactive)'}`;
-                return `<button class="btn t2-criteria-button criteria-icon-button ${isActiveValue ? 'active' : ''} ${isChecked ? '' : 'inactive-option'}" data-criterion="${key}" data-value="${value}" data-tippy-content="${buttonTooltip}" ${isChecked ? '' : 'disabled'}>${icon}</button>`;
+                return `<button class="btn t2-criteria-button criteria-icon-button ${isActiveValue ? 'active' : ''} ${!isChecked ? 'inactive-option' : ''}" data-criterion="${key}" data-value="${value}" data-tippy-content="${buttonTooltip}" ${!isChecked ? 'disabled' : ''}>${icon}</button>`;
             }).join('');
         };
 
@@ -122,9 +119,9 @@ const uiComponents = (() => {
                         ${createCriteriaGroup('size', 'Size', 't2Size', (key, isChecked) => `
                             <div class="d-flex align-items-center flex-wrap">
                                  <span class="me-1 small text-muted">≥</span>
-                                 <input type="range" class="form-range criteria-range flex-grow-1 me-2" id="range-size" min="${min}" max="${max}" step="${step}" value="${formattedThresholdForInput}" ${isChecked ? '' : 'disabled'} data-tippy-content="Set short-axis diameter threshold (≥).">
+                                 <input type="range" class="form-range criteria-range flex-grow-1 me-2" id="range-size" min="${min}" max="${max}" step="${step}" value="${formattedThresholdForInput}" ${!isChecked ? 'disabled' : ''} data-tippy-content="Set short-axis diameter threshold (≥).">
                                  <span class="criteria-value-display text-end me-1 fw-bold" id="value-size">${formatNumber(sizeThreshold, 1)}</span><span class="me-2 small text-muted">mm</span>
-                                 <input type="number" class="form-control form-control-sm criteria-input-manual" id="input-size" min="${min}" max="${max}" step="${step}" value="${formattedThresholdForInput}" ${isChecked ? '' : 'disabled'} style="width: 70px;" aria-label="Enter size manually" data-tippy-content="Enter threshold manually.">
+                                 <input type="number" class="form-control form-control-sm criteria-input-manual" id="input-size" min="${min}" max="${max}" step="${step}" value="${formattedThresholdForInput}" ${!isChecked ? 'disabled' : ''} style="width: 70px;" aria-label="Enter size manually" data-tippy-content="Enter threshold manually.">
                             </div>
                         `)}
                         ${createCriteriaGroup('form', 'Shape', 't2Form', createButtonOptions)}
@@ -216,7 +213,7 @@ const uiComponents = (() => {
         let rank = 1;
         let displayedCount = 0;
         let lastMetricValue = -Infinity;
-        const precision = 8; // Define precision for floating point comparison
+        const precision = 8;
 
         for (let i = 0; i < results.length; i++) {
             const result = results[i];
@@ -225,18 +222,16 @@ const uiComponents = (() => {
             const currentMetricValueRounded = parseFloat(result.metricValue.toFixed(precision));
             const lastMetricValueRounded = parseFloat(lastMetricValue.toFixed(precision));
 
-            // Determine rank. If current value is essentially same as last, use same rank.
             let currentRank = rank;
-            const isNewRank = Math.abs(currentMetricValueRounded - lastMetricValueRounded) > 1e-8; // Small epsilon for float comparison
+            const isNewRank = Math.abs(currentMetricValueRounded - lastMetricValueRounded) > 1e-8;
 
             if (i > 0 && isNewRank) {
-                rank = displayedCount + 1; // New rank is total displayed + 1
+                rank = displayedCount + 1;
                 currentRank = rank;
             } else if (i > 0) {
-                currentRank = rank; // Same rank as previous if values are very close
+                currentRank = rank;
             }
 
-            // Stop after 10 unique ranks are displayed, or if we go beyond rank 10 and the score is no longer the same as the 10th rank.
             if (rank > 10 && isNewRank) {
                 break;
             }
