@@ -61,18 +61,17 @@ const dataProcessor = (() => {
 
     function filterDataByCohort(data, cohortId) {
         if (!Array.isArray(data)) return [];
-        if (!cohortId || cohortId === 'Gesamt') {
+        
+        if (cohortId === APP_CONFIG.COHORTS.OVERALL.id) {
             return cloneDeep(data);
         }
-        
-        // Map UI-facing cohort names to internal therapy values
-        const therapyMap = {
-            'Upfront Surgery': 'surgeryAlone',
-            'nRCT': 'neoadjuvantTherapy'
-        };
-        const therapyValue = therapyMap[cohortId];
 
-        return cloneDeep(data.filter(p => p && p.therapy === therapyValue));
+        const cohortConfig = Object.values(APP_CONFIG.COHORTS).find(c => c.id === cohortId);
+        if (cohortConfig && cohortConfig.therapyValue) {
+            return cloneDeep(data.filter(p => p && p.therapy === cohortConfig.therapyValue));
+        }
+        
+        return cloneDeep(data);
     }
 
     function calculateHeaderStats(data, cohortId) {
