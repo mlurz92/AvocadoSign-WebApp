@@ -247,6 +247,7 @@ function getPValueText(pValue, forPublication = false) {
     return formattedP;
 }
 
+
 function generateUUID() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
         return crypto.randomUUID();
@@ -288,16 +289,34 @@ function getTooltip(key, replacements = {}) {
     return template;
 }
 
+function getPerformanceMetricInterpretation(metricKey, metricData) {
+    if (!metricData || isNaN(metricData.value)) return '';
+    const replacements = {
+        VALUE: formatPercent(metricData.value, 1),
+        TP: metricData.n_success,
+        TN: metricData.n_success,
+        TP_PLUS_FN: metricData.n_trials,
+        TN_PLUS_FP: metricData.n_trials,
+        TP_PLUS_FP: metricData.n_trials,
+        TN_PLUS_FN: metricData.n_trials,
+        TP_PLUS_TN: metricData.n_success,
+        TOTAL: metricData.n_trials
+    };
+    return getTooltip(metricKey, replacements);
+}
+
 function getAUCInterpretation(aucValue) {
     const value = parseFloat(aucValue);
     const texts = APP_CONFIG.UI_TEXTS.statMetrics.associationStrengthTexts;
-    if (isNaN(value) || value < 0 || value > 1) return getTooltip('auc', { VALUE: formatNumber(aucValue, 2), STRENGTH: texts.undetermined });
-    
-    let strength = 'not informative';
-    if (value >= 0.9) strength = 'excellent';
-    else if (value >= 0.8) strength = 'good';
-    else if (value >= 0.7) strength = 'moderate';
-    else if (value > 0.5) strength = 'weak';
+    let strength = texts.undetermined;
+
+    if (!isNaN(value)) {
+        if (value >= 0.9) strength = 'excellent';
+        else if (value >= 0.8) strength = 'good';
+        else if (value >= 0.7) strength = 'moderate';
+        else if (value > 0.5) strength = 'weak';
+        else strength = 'not informative';
+    }
     
     return getTooltip('auc', { VALUE: formatNumber(aucValue, 2), STRENGTH: strength });
 }
@@ -324,7 +343,7 @@ function getPhiInterpretation(phiData, featureName = '') {
 
 function getORInterpretation(orData, featureName = '') {
     const orValue = parseFloat(orData?.value);
-    if (isNaN(orValue) || !orData.ci || orData.ci.lower === null || orData.ci.upper === null) return 'Odds Ratio: Not available';
+    if (isNaN(orValue) || !orData.ci || orData.ci.lower === null || orData.ci.upper === null) return 'Odds Ratio: Not Available';
 
     const isSignificant = !(orData.ci.lower < 1 && orData.ci.upper > 1);
     const templateKey = isSignificant ? 'or_sig' : 'or_ns';
@@ -362,7 +381,7 @@ function getRDInterpretation(rdData, featureName = '') {
     });
 }
 
-function getTestInterpretation(testData, testKey) {
+function getTestInterpretation(testData, testKey, test1Name = "Test 1", test2Name = "Test 2") {
     if (!testData || isNaN(testData.pValue)) return `Interpretation for ${testKey}: Not available`;
 
     const pValue = testData.pValue;
@@ -371,7 +390,9 @@ function getTestInterpretation(testData, testKey) {
     return getTooltip(testKey, {
         P_VALUE_TEXT: getPValueText(pValue, false),
         SIGNIFICANCE_TEXT: isSignificant ? 'statistically significant' : 'not statistically significant',
-        IS_IS_NOT: isSignificant ? 'is' : 'is not'
+        IS_IS_NOT: isSignificant ? 'is' : 'is not',
+        TEST1: test1Name,
+        TEST2: test2Name
     });
 }
 
