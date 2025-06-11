@@ -45,10 +45,15 @@ const uiManager = (() => {
         if (!window.tippy || typeof scope?.querySelectorAll !== 'function') return;
 
         const newInstances = tippy(scope.querySelectorAll('[data-tippy-content]'), {
-            allowHTML: true, theme: 'glass', placement: 'top', animation: 'fade',
-            interactive: false, appendTo: () => document.body,
-            delay: (APP_CONFIG && APP_CONFIG.UI_SETTINGS) ? APP_CONFIG.UI_SETTINGS.TOOLTIP_DELAY : [200, 100],
-            maxWidth: 400, duration: [150, 150], zIndex: 3050,
+            allowHTML: true, 
+            theme: 'avocado', 
+            placement: 'top', 
+            animation: 'fade',
+            interactive: false, 
+            appendTo: () => document.body,
+            delay: [250, 0],
+            duration: [150, 100], 
+            zIndex: 3050,
             onCreate(instance) { if (!instance.props.content || String(instance.props.content).trim() === '') { instance.disable(); } },
             onShow(instance) { const content = instance.reference.getAttribute('data-tippy-content'); return !!content && String(content).trim() !== ''; }
         });
@@ -375,7 +380,7 @@ const uiManager = (() => {
                     interpretationTooltip = `A value of ${formatNumber(value, 4)} for the ${metric} indicates the performance of this criteria set. Higher values are generally better.`;
                 }
 
-                const valueHTML = `<strong class="text-primary" data-tippy-content="${interpretationTooltip}">${formatNumber(value, 4, 'N/A', true)}</strong>`;
+                const valueHTML = `<strong class="text-primary" data-tippy-content='${interpretationTooltip}'>${formatNumber(value, 4, 'N/A', true)}</strong>`;
 
                 contentHTML = `
                     <p class="small text-muted">
@@ -463,6 +468,7 @@ const uiManager = (() => {
                     content: tooltipContent,
                     theme: 'warning',
                     placement: 'top',
+                    allowHTML: true
                 });
             } else if (instance) {
                 instance.setProps({ content: tooltipContent });
@@ -485,8 +491,8 @@ const uiManager = (() => {
         });
 
         toggleButton.dataset.action = isExpanding ? 'collapse' : 'expand';
-        const expandAllTooltip = "Expand or collapse all detail views.";
-        const collapseAllTooltip = "Expand or collapse all detail views.";
+        const expandAllTooltip = "Expand all details";
+        const collapseAllTooltip = "Collapse all details";
         toggleButton.innerHTML = isExpanding
             ? `Collapse All Details <i class="fas fa-chevron-up ms-1"></i>`
             : `Expand All Details <i class="fas fa-chevron-down ms-1"></i>`;
