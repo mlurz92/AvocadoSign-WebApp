@@ -81,9 +81,9 @@ const APP_CONFIG = Object.freeze({
         ICON_SIZE: 20,
         ICON_STROKE_WIDTH: 1.5,
         ICON_COLOR: 'var(--text-dark)',
-        TOOLTIP_DELAY: Object.freeze([200, 100]),
+        TOOLTIP_DELAY: Object.freeze([150, 0]),
         TOAST_DURATION_MS: 4500,
-        TRANSITION_DURATION_MS: 350,
+        TRANSITION_DURATION_MS: 150,
         STICKY_HEADER_OFFSET: '111px'
     }),
     CHART_SETTINGS: Object.freeze({
@@ -256,7 +256,7 @@ const APP_CONFIG = Object.freeze({
                 sens: "<strong>Sensitivity (True Positive Rate)</strong><br>The ability of a test to correctly identify patients with the disease. It is the proportion of true positives out of all actual positives (TP / (TP + FN)).",
                 spec: "<strong>Specificity (True Negative Rate)</strong><br>The ability of a test to correctly identify patients without the disease. It is the proportion of true negatives out of all actual negatives (TN / (TN + FP)).",
                 ppv: "<strong>Positive Predictive Value (PPV)</strong><br>The probability that a patient with a positive test result actually has the disease. It is the proportion of true positives out of all positive test results (TP / (TP + FP)). This metric is highly dependent on the prevalence of the disease in the sample.",
-                npv: "<strong>Negative Predictive Value (NPV)</strong><br>The probability that a patient with a negative test result actually does not have the disease. It is the proportion of true negatives out of all negative test results (TN / (TN + FN)). This metric is also highly dependent on disease prevalence.",
+                npv: "<strong>Negative Predictive Value (NPV)</strong><br>The probability that a patient with a negative test result actually does not have the disease. It is the proportion of true negatives out of all negative test results (TN / (fn + TN)). This metric is also highly dependent on disease prevalence.",
                 acc: "<strong>Accuracy</strong><br>The proportion of all tests that yielded a correct result. It is the sum of true positives and true negatives divided by the total number of patients ((TP + TN) / Total). Can be misleading in imbalanced datasets.",
                 balAcc: "<strong>Balanced Accuracy</strong><br>The arithmetic mean of sensitivity and specificity, i.e., (Sensitivity + Specificity) / 2. It is a more robust metric than accuracy for imbalanced datasets.",
                 f1: "<strong>F1-Score</strong><br>The harmonic mean of PPV (Precision) and Sensitivity (Recall). It provides a single score that balances both concerns: F1 = 2 * (PPV * Sensitivity) / (PPV + Sensitivity). A value of 1.0 is optimal, 0.0 is worst.",
@@ -273,16 +273,21 @@ const APP_CONFIG = Object.freeze({
                 phi: "<strong>Phi (φ) Coefficient</strong><br>A measure of association for two binary variables in a 2x2 contingency table. It is equivalent to the Pearson correlation coefficient for binary data. Values range from -1 (perfect negative association) to +1 (perfect positive association), with 0 indicating no association."
             },
             tooltipInterpretations: {
+                sens: "A sensitivity of <strong>[VALUE]%</strong> means this test correctly identified <strong>[SUCCESS]</strong> of the <strong>[TOTAL]</strong> patients who are actually N+.",
+                spec: "A specificity of <strong>[VALUE]%</strong> means this test correctly identified <strong>[SUCCESS]</strong> of the <strong>[TOTAL]</strong> patients who are actually N-.",
+                ppv: "A PPV of <strong>[VALUE]%</strong> means that of the <strong>[TOTAL]</strong> patients who tested positive, <strong>[SUCCESS]</strong> actually were N+.",
+                npv: "An NPV of <strong>[VALUE]%</strong> means that of the <strong>[TOTAL]</strong> patients who tested negative, <strong>[SUCCESS]</strong> actually were N-.",
+                acc: "An accuracy of <strong>[VALUE]%</strong> means the test provided the correct result for <strong>[SUCCESS]</strong> out of all <strong>[TOTAL]</strong> patients.",
                 auc: "An AUC of <strong>[VALUE]</strong> indicates a <strong>[STRENGTH]</strong> ability of the test to discriminate between N+ and N- cases.",
                 or_sig: "The odds of being N+ are <strong>[FACTOR_TEXT]</strong> by a factor of <strong>[VALUE]</strong> for patients positive for '[FEATURE_NAME]' compared to those without. This result is statistically significant, as the 95% CI ([CI_LOWER] to [CI_UPPER]) does not include 1. This indicates a <strong>[STRENGTH]</strong> association.",
                 or_ns: "The odds of being N+ are <strong>[FACTOR_TEXT]</strong> by a factor of <strong>[VALUE]</strong> for patients positive for '[FEATURE_NAME]'. However, since the 95% CI ([CI_LOWER] to [CI_UPPER]) includes 1, this finding is <strong>not statistically significant</strong>.",
                 rd_sig: "The presence of '[FEATURE_NAME]' is associated with an absolute <strong>[DIRECTION_TEXT]</strong> in the rate of N+ status by <strong>[VALUE]%</strong>. This result is statistically significant, as the 95% CI ([CI_LOWER]% to [CI_UPPER]%) does not include 0.",
                 rd_ns: "The presence of '[FEATURE_NAME]' is associated with an absolute <strong>[DIRECTION_TEXT]</strong> in the rate of N+ status by <strong>[VALUE]%</strong>. However, since the 95% CI ([CI_LOWER]% to [CI_UPPER]%) includes 0, this finding is <strong>not statistically significant</strong>.",
                 phi: "A Phi coefficient of <strong>[VALUE]</strong> indicates a <strong>[STRENGTH]</strong> association between the presence of '[FEATURE_NAME]' and N+ status.",
-                mcnemar: "The p-value of <strong>[P_VALUE_TEXT]</strong> is <strong>[SIGNIFICANCE_TEXT]</strong> (at p<0.05). This suggests that there <strong>[IS_IS_NOT]</strong> a statistically significant difference in classification accuracy between the two compared tests.",
-                delong: "The p-value of <strong>[P_VALUE_TEXT]</strong> is <strong>[SIGNIFICANCE_TEXT]</strong> (at p<0.05). This suggests that there <strong>[IS_IS_NOT]</strong> a statistically significant difference in the overall diagnostic performance (AUC) between the two compared tests.",
-                fisher: "The p-value of <strong>[P_VALUE_TEXT]</strong> is <strong>[SIGNIFICANCE_TEXT]</strong> (at p<0.05), indicating a statistically significant association between '[FEATURE_NAME]' and N-status.",
-                mwu: "The p-value of <strong>[P_VALUE_TEXT]</strong> is <strong>[SIGNIFICANCE_TEXT]</strong> (at p<0.05), indicating that there is a statistically significant difference in the median lymph node size between N+ and N- patients."
+                mcnemar: "The p-value of <strong>[P_VALUE_TEXT]</strong> is <strong>[SIGNIFICANCE_TEXT]</strong> (p<0.05). This suggests that there <strong>[IS_IS_NOT]</strong> a statistically significant difference in classification accuracy between the two compared tests ([TEST1] vs. [TEST2]).",
+                delong: "The p-value of <strong>[P_VALUE_TEXT]</strong> is <strong>[SIGNIFICANCE_TEXT]</strong> (p<0.05). This suggests that there <strong>[IS_IS_NOT]</strong> a statistically significant difference in the overall diagnostic performance (AUC) between the two compared tests ([TEST1] vs. [TEST2]).",
+                fisher: "The p-value of <strong>[P_VALUE_TEXT]</strong> is <strong>[SIGNIFICANCE_TEXT]</strong> (p<0.05), indicating a statistically significant association between '[FEATURE_NAME]' and N-status.",
+                mwu: "The p-value of <strong>[P_VALUE_TEXT]</strong> is <strong>[SIGNIFICANCE_TEXT]</strong> (p<0.05), indicating that there is a statistically significant difference in the median lymph node size between N+ and N- patients."
             }
         })
     }),
