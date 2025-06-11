@@ -499,7 +499,7 @@ const statisticsService = (() => {
     function calculateDescriptiveStats(data) {
         const n = data?.length ?? 0;
         const nullMetric = { median: NaN, q1: NaN, q3: NaN, min: NaN, max: NaN, mean: NaN, sd: NaN, n: 0 };
-        if (n === 0) return { patientCount: 0, age: nullMetric, sex: { m: 0, f: 0, unknown: 0 }, therapy: { 'direkt OP': 0, nRCT: 0, unknown: 0 }, nStatus: { plus: 0, minus: 0, unknown: 0 }, asStatus: { plus: 0, minus: 0, unknown: 0 }, t2Status: { plus: 0, minus: 0, unknown: 0 }, lnCounts: null, ageData: [] };
+        if (n === 0) return { patientCount: 0, age: nullMetric, sex: { m: 0, f: 0, unknown: 0 }, therapy: { surgeryAlone: 0, neoadjuvantTherapy: 0, unknown: 0 }, nStatus: { plus: 0, minus: 0, unknown: 0 }, asStatus: { plus: 0, minus: 0, unknown: 0 }, t2Status: { plus: 0, minus: 0, unknown: 0 }, lnCounts: null, ageData: [] };
 
         const ageData = data.map(p => p?.age).filter(a => a !== null && !isNaN(a) && isFinite(a)).sort((a,b) => a-b);
         const ageQuartiles = getQuartiles(ageData);
@@ -555,7 +555,7 @@ const statisticsService = (() => {
             patientCount: n,
             age: ageData.length > 0 ? { median: getMedian(ageData), min: ageData[0], max: ageData[ageData.length - 1], mean: getMean(ageData), sd: getStdDev(ageData), q1: ageQuartiles.q1, q3: ageQuartiles.q3, n: ageData.length } : nullMetric,
             sex: data.reduce((acc, p) => { acc[p.sex || 'unknown'] = (acc[p.sex || 'unknown'] || 0) + 1; return acc; }, { m: 0, f: 0, unknown: 0 }),
-            therapy: data.reduce((acc, p) => { acc[p.therapy || 'unknown'] = (acc[p.therapy || 'unknown'] || 0) + 1; return acc; }, { 'direkt OP': 0, nRCT: 0, unknown: 0 }),
+            therapy: data.reduce((acc, p) => { acc[p.therapy || 'unknown'] = (acc[p.therapy || 'unknown'] || 0) + 1; return acc; }, { surgeryAlone: 0, neoadjuvantTherapy: 0, unknown: 0 }),
             nStatus: nStatusCounts,
             asStatus: asStatusCounts,
             t2Status: t2StatusCounts,
@@ -571,7 +571,7 @@ const statisticsService = (() => {
     function calculateAllPublicationStats(data, appliedT2Criteria, appliedT2Logic, bruteForceResultsPerCohort) {
         if (!data || !Array.isArray(data)) return null;
         const results = {};
-        const cohorts = ['Gesamt', 'direkt OP', 'nRCT'];
+        const cohorts = ['Gesamt', 'surgeryAlone', 'neoadjuvantTherapy'];
         cohorts.forEach(cohortId => {
             const cohortData = dataProcessor.filterDataByCohort(data, cohortId);
             if (cohortData.length === 0) { results[cohortId] = null; return; }
@@ -591,10 +591,11 @@ const statisticsService = (() => {
             };
 
             PUBLICATION_CONFIG.literatureCriteriaSets.forEach(studySetConf => {
-                if (studySetConf.applicableCohort === cohortId || studySetConf.applicableCohort === 'Gesamt') {
+                const applicableCohortMapped = (studySetConf.applicableCohort === 'direkt OP') ? 'surgeryAlone' : (studySetConf.applicableCohort === 'nRCT') ? 'neoadjuvantTherapy' : 'Gesamt';
+                if (applicableCohortMapped === cohortId || studySetConf.applicableCohort === 'Gesamt') {
                     const studySet = studyT2CriteriaManager.getStudyCriteriaSetById(studySetConf.id);
                     if (studySet) {
-                        const evaluatedDataStudy = studyT2CriteriaManager.applyStudyCriteriaToDataset(cloneDeep(cohortData), studySet);
+                        const evaluatedDataStudy = studyT2CriteriaManager.evaluateDatasetWithStudyCriteria(cloneDeep(cohortData), studySet);
                         results[cohortId].performanceT2Literature[studySetConf.id] = calculateDiagnosticPerformance(evaluatedDataStudy, 't2Status', 'nStatus');
                         results[cohortId][`comparisonASvsT2_literature_${studySetConf.id}`] = compareDiagnosticMethods(evaluatedDataStudy, 'asStatus', 't2Status', 'nStatus');
                     }
@@ -642,7 +643,7 @@ const statisticsService = (() => {
             results.size_mwu = { pValue: mwuResult.pValue, Z: mwuResult.Z, testName: mwuResult.testName, featureName: 'LN Size (Median Comp.)' };
         }
 
-        ['size', 'form', 'kontur', 'homogenitaet', 'signal'].forEach(key => {
+        ['size', 'shape', 'border', 'homogeneity', 'signal'].forEach(key => {
             const criterion = t2Criteria[key];
             if (!criterion) return;
 
@@ -657,11 +658,11 @@ const statisticsService = (() => {
                     switch (key) {
                         case 'size':
                             return typeof lk.size === 'number' && !isNaN(lk.size) && lk.size >= criterion.threshold;
-                        case 'form':
+                        case 'shape':
                             return lk.shape === criterion.value;
-                        case 'kontur':
+                        case 'border':
                             return lk.border === criterion.value;
-                        case 'homogenitaet':
+                        case 'homogeneity':
                             return lk.homogeneity === criterion.value;
                         case 'signal':
                             return lk.signal !== null && lk.signal === criterion.value;
