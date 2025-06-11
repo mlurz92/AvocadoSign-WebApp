@@ -13,17 +13,15 @@ class App {
             
             state.init();
             t2CriteriaManager.init();
-            eventManager.init(this);
             this.initializeBruteForceManager();
+            eventManager.init(this);
 
             this.processedData = dataProcessor.processAllData(this.rawData);
             if (this.processedData.length === 0) {
                 uiManager.showToast("Warning: No valid patient data loaded.", "warning");
             }
             
-            this.filterAndPrepareData();
-            this.renderCurrentTab();
-            this.updateUI();
+            this.refreshAll(false);
             
             if (!loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.FIRST_APP_START)) {
                 uiManager.showQuickGuide();
@@ -36,7 +34,7 @@ class App {
 
         } catch (error) {
             console.error("Fatal error during app initialization:", error);
-            uiManager.updateElementHTML('app-container', `<div class="alert alert-danger m-5">Initialization Error: ${error.message}. Please check the console for details.</div>`);
+            uiManager.updateElementHTML('app-container', `<div class="alert alert-danger m-5"><strong>Initialization Error:</strong> ${error.message}.<br>Please check the browser console for more details.</div>`);
         }
     }
 
@@ -54,7 +52,7 @@ class App {
             }
         }
         if (typeof patientDataRaw === 'undefined' || patientDataRaw === null) {
-            throw new Error("Global 'patientDataRaw' is not available. Check data.js loading.");
+            throw new Error("Global 'patientDataRaw' is not available. Please ensure 'data/data.js' is loaded correctly.");
         }
     }
 
@@ -105,6 +103,7 @@ class App {
         } catch (error) {
             this.currentCohortData = [];
             uiManager.showToast("Error during data preparation.", "danger");
+            console.error("Data preparation error:", error);
         }
     }
 
@@ -157,7 +156,7 @@ class App {
             const filteredDataForPresentation = dataProcessor.filterDataByCohort(this.processedData, cohortForPresentation);
             
             const statsCurrentCohort = this.allPublicationStats[cohortForPresentation];
-            const statsGesamt = this.allPublicationStats[APP_CONFIG.COHORTS.OVERALL.id];
+            const statsOverall = this.allPublicationStats[APP_CONFIG.COHORTS.OVERALL.id];
             const statsSurgeryAlone = this.allPublicationStats[APP_CONFIG.COHORTS.SURGERY_ALONE.id];
             const statsNeoadjuvantTherapy = this.allPublicationStats[APP_CONFIG.COHORTS.NEOADJUVANT.id];
 
@@ -202,7 +201,7 @@ class App {
                 cohort: cohortForPresentation,
                 patientCount: filteredDataForPresentation.length,
                 statsCurrentCohort: statsCurrentCohort,
-                statsGesamt: statsGesamt,
+                statsGesamt: statsOverall,
                 statsSurgeryAlone: statsSurgeryAlone,
                 statsNeoadjuvantTherapy: statsNeoadjuvantTherapy,
                 performanceAS: statsCurrentCohort?.performanceAS,
@@ -218,7 +217,7 @@ class App {
 
         switch (tabId) {
             case 'data': uiManager.renderTabContent(tabId, () => dataTab.render(this.currentCohortData, state.getDataTableSort())); break;
-            case 'analysis': uiManager.renderTabContent(tabId, () => analysisTab.render(this.currentCohortData, t2CriteriaManager.getCurrentCriteria(), t2CriteriaManager.getAppliedLogic(), state.getAnalysisTableSort(), cohort, bruteForceManager.isWorkerAvailable(), this.allPublicationStats[cohort], bruteForceResults[cohort])); break;
+            case 'analysis': uiManager.renderTabContent(tabId, () => analysisTab.render(this.currentCohortData, t2CriteriaManager.getCurrentCriteria(), t2CriteriaManager.getCurrentLogic(), state.getAnalysisTableSort(), cohort, bruteForceManager.isWorkerAvailable(), this.allPublicationStats[cohort], bruteForceResults[cohort])); break;
             case 'statistics': uiManager.renderTabContent(tabId, () => statisticsTab.render(this.processedData, criteria, logic, state.getStatsLayout(), state.getStatsCohort1(), state.getStatsCohort2(), cohort)); break;
             case 'presentation': uiManager.renderTabContent(tabId, () => presentationTab.render(state.getPresentationView(), currentPresentationData, state.getPresentationStudyId(), cohort, this.processedData, criteria, logic)); break;
             case 'publication': uiManager.renderTabContent(tabId, () => publicationTab.render(publicationData, state.getPublicationSection())); break;
@@ -228,7 +227,7 @@ class App {
 
     handleCohortChange(newCohort, source = "user") {
         if (state.setCurrentCohort(newCohort)) {
-            this.refreshCurrentTab();
+            this.refreshAll(true);
             if (source === "user") {
                 uiManager.showToast(`Cohort '${getCohortDisplayName(newCohort)}' selected.`, 'info');
             } else if (source === "auto_presentation") {
@@ -246,7 +245,7 @@ class App {
     
     applyAndRefreshAll() {
         t2CriteriaManager.applyCriteria();
-        this.refreshCurrentTab();
+        this.refreshAll(true);
         uiManager.markCriteriaSavedIndicator(false);
         uiManager.showToast('T2 criteria applied & saved.', 'success');
     }
@@ -263,7 +262,7 @@ class App {
         if (dataForWorker.length > 0) {
             bruteForceManager.startAnalysis(dataForWorker, metric, cohortId);
         } else {
-            uiManager.showToast("No data for optimization in the current cohort.", "warning");
+            uiManager.showToast("No data for optimization in this cohort. Please select another cohort.", "warning");
         }
     }
 
@@ -328,11 +327,17 @@ class App {
             uiManager.showToast(`Export type '${exportType}' not recognized or implemented.`, 'warning');
         }
     }
+    
+    refreshAll(renderTab = true) {
+        this.filterAndPrepareData();
+        if (renderTab) {
+            this.renderCurrentTab();
+        }
+        this.updateUI();
+    }
 
     refreshCurrentTab() {
-        this.filterAndPrepareData();
-        this.renderCurrentTab();
-        this.updateUI();
+        this.refreshAll(true);
     }
     
     getRawData() { return this.rawData; }
