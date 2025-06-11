@@ -1,9 +1,9 @@
 const DEFAULT_T2_CRITERIA = Object.freeze({
     logic: 'AND',
     size: { active: true, threshold: 5.0, condition: '>=' },
-    form: { active: false, value: 'round' },
-    kontur: { active: false, value: 'irregular' },
-    homogenitaet: { active: false, value: 'heterogeneous' },
+    shape: { active: false, value: 'round' },
+    border: { active: false, value: 'irregular' },
+    homogeneity: { active: false, value: 'heterogeneous' },
     signal: { active: false, value: 'highSignal' }
 });
 
@@ -60,9 +60,9 @@ const APP_CONFIG = Object.freeze({
     }),
     T2_CRITERIA_SETTINGS: Object.freeze({
         SIZE_RANGE: Object.freeze({ min: 0.1, max: 25.0, step: 0.1 }),
-        FORM_VALUES: Object.freeze(['round', 'oval']),
-        KONTUR_VALUES: Object.freeze(['sharp', 'irregular']),
-        HOMOGENITAET_VALUES: Object.freeze(['homogeneous', 'heterogeneous']),
+        SHAPE_VALUES: Object.freeze(['round', 'oval']),
+        BORDER_VALUES: Object.freeze(['sharp', 'irregular']),
+        HOMOGENEITY_VALUES: Object.freeze(['homogeneous', 'heterogeneous']),
         SIGNAL_VALUES: Object.freeze(['lowSignal', 'intermediateSignal', 'highSignal'])
     }),
     UI_SETTINGS: Object.freeze({
@@ -161,12 +161,12 @@ const APP_CONFIG = Object.freeze({
     }),
     T2_ICON_SVGS: Object.freeze({
         SIZE_DEFAULT: (s, sw, iconColor, c, r, sq, sqPos) => `<path d="M${sw/2} ${c} H${s-sw/2} M${c} ${sw/2} V${s-sw/2}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`,
-        FORM_ROUND: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw}"/>`,
-        FORM_OVAL: (s, sw, iconColor, c, r, sq, sqPos) => `<ellipse cx="${c}" cy="${c}" rx="${r}" ry="${r * 0.65}" fill="none" stroke="${iconColor}" stroke-width="${sw}"/>`,
-        KONTUR_SHARP: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
-        KONTUR_IRREGULAR: (s, sw, iconColor, c, r, sq, sqPos) => `<path d="M ${c + r} ${c} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${r*0.8} ${r*1.2} 0 0 1 ${c-r*0.9} ${c-r*0.3} A ${r*1.1} ${r*0.7} 0 0 1 ${c+r} ${c} Z" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
-        HOMOGENITAET_HOMOGENEOUS: (s, sw, iconColor, c, r, sq, sqPos) => `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="${iconColor}" stroke="none" rx="1" ry="1"/>`,
-        HOMOGENITAET_HETEROGENEOUS: (s, sw, iconColor, c, r, sq, sqPos) => {
+        SHAPE_ROUND: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw}"/>`,
+        SHAPE_OVAL: (s, sw, iconColor, c, r, sq, sqPos) => `<ellipse cx="${c}" cy="${c}" rx="${r}" ry="${r * 0.65}" fill="none" stroke="${iconColor}" stroke-width="${sw}"/>`,
+        BORDER_SHARP: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
+        BORDER_IRREGULAR: (s, sw, iconColor, c, r, sq, sqPos) => `<path d="M ${c + r} ${c} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${r*0.8} ${r*1.2} 0 0 1 ${c-r*0.9} ${c-r*0.3} A ${r*1.1} ${r*0.7} 0 0 1 ${c+r} ${c} Z" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
+        HOMOGENEITY_HOMOGENEOUS: (s, sw, iconColor, c, r, sq, sqPos) => `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="${iconColor}" stroke="none" rx="1" ry="1"/>`,
+        HOMOGENEITY_HETEROGENEOUS: (s, sw, iconColor, c, r, sq, sqPos) => {
             let svgContent = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" rx="1" ry="1"/>`;
             const pSize = sq / 4;
             for(let i=0;i<3;i++){for(let j=0;j<3;j++){if((i+j)%2===0){svgContent+=`<rect x="${sqPos+i*pSize+pSize/2}" y="${sqPos+j*pSize+pSize/2}" width="${pSize}" height="${pSize}" fill="${iconColor}" stroke="none" style="opacity:0.6;"/>`;}}}
@@ -458,9 +458,9 @@ const PUBLICATION_CONFIG = Object.freeze({
             logic: 'KOMBINIERT',
             criteria: Object.freeze({
                 size: { active: true, threshold: 9.0, condition: '>=' },
-                form: { active: true, value: 'round' },
-                kontur: { active: true, value: 'irregular' },
-                homogenitaet: { active: true, value: 'heterogeneous' },
+                shape: { active: true, value: 'round' },
+                border: { active: true, value: 'irregular' },
+                homogeneity: { active: true, value: 'heterogeneous' },
                 signal: { active: false, value: null }
             }),
             studyInfo: Object.freeze({
@@ -479,9 +479,9 @@ const PUBLICATION_CONFIG = Object.freeze({
             logic: 'OR',
             criteria: Object.freeze({
                 size: { active: false, threshold: 5.0, condition: '>=' },
-                form: { active: false, value: null },
-                kontur: { active: true, value: 'irregular' },
-                homogenitaet: { active: true, value: 'heterogeneous' },
+                shape: { active: false, value: null },
+                border: { active: true, value: 'irregular' },
+                homogeneity: { active: true, value: 'heterogeneous' },
                 signal: { active: false, value: null }
             }),
             studyInfo: Object.freeze({
@@ -500,9 +500,9 @@ const PUBLICATION_CONFIG = Object.freeze({
             logic: 'AND',
             criteria: Object.freeze({
                 size: { active: true, threshold: 2.3, condition: '>=' },
-                form: { active: false, value: null },
-                kontur: { active: false, value: null },
-                homogenitaet: { active: false, value: null },
+                shape: { active: false, value: null },
+                border: { active: false, value: null },
+                homogeneity: { active: false, value: null },
                 signal: { active: false, value: null }
             }),
             studyInfo: Object.freeze({
