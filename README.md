@@ -1,4 +1,4 @@
-# **Nodal Staging Analysis Tool \- Technical Documentation (v3.0.0)**
+# **Nodal Staging Analysis Tool - Technical Documentation (v3.0.0)**
 
 ## **1\. Overview**
 
@@ -18,44 +18,43 @@ This document provides a comprehensive technical overview of the **Nodal Staging
 
 The codebase is organized into a logical, feature-based directory structure to promote separation of concerns and code clarity.
 
-```
-/  
-├── index.html  
-├── css/  
-│   └── style.css  
-├── data/  
-│   └── data.js  
-├── workers/  
-│   └── brute\_force\_worker.js  
-└── js/  
-    ├── config.js  
-    ├── utils.js  
-    ├── app/  
-    │   ├── main.js  
-    │   └── state.js  
-    ├── core/  
-    │   ├── data\_processor.js  
-    │   ├── t2\_criteria\_manager.js  
-    │   └── study\_criteria\_manager.js  
-    ├── services/  
-    │   ├── statistics\_service.js  
-    │   ├── export\_service.js  
-    │   └── brute\_force\_manager.js  
-    └── ui/  
-        ├── ui\_manager.js  
-        ├── event\_manager.js  
-        ├── components/  
-        │   ├── table\_renderer.js  
-        │   ├── chart\_renderer.js  
-        │   └── ui\_components.js  
-        └── tabs/  
-            ├── data\_tab.js  
-            ├── analysis\_tab.js  
-            ├── statistics\_tab.js  
-            ├── presentation\_tab.js  
-            ├── publication\_tab.js  
-            └── export\_tab.js
-```
+
+/
+├── index.html
+├── css/
+│   └── style.css
+├── data/
+│   └── data.js
+├── workers/
+│   └── brute_force_worker.js
+└── js/
+├── config.js
+├── utils.js
+├── app/
+│   ├── main.js
+│   └── state.js
+├── core/
+│   ├── data_processor.js
+│   ├── t2_criteria_manager.js
+│   └── study_criteria_manager.js
+├── services/
+│   ├── statistics_service.js
+│   ├── export_service.js
+│   └── brute_force_manager.js
+└── ui/
+├── ui_manager.js
+├── event_manager.js
+├── components/
+│   ├── table_renderer.js
+│   ├── chart_renderer.js
+│   └── ui_components.js
+└── tabs/
+├── data_tab.js
+├── analysis_tab.js
+├── statistics_tab.js
+├── presentation_tab.js
+├── publication_tab.js
+└── export_tab.js
 
 ## **3\. Architecture & Core Concepts**
 
@@ -85,7 +84,7 @@ A singleton module, state.js, acts as the single source of truth for the applica
 
 This core module is responsible for transforming the raw, static data into a clean, consistent data model for the entire application.
 
-* **processSinglePatient():** This function is the heart of the pipeline. It takes a raw patient object (with German keys like geburtsdatum) and transforms it into a structured object with English keys (e.g., birthDate). It performs data validation, type coercion, and calculates derived fields like age.  
+* **processSinglePatient():** This function is the heart of the pipeline. It takes a raw patient object and transforms it into a structured object. It performs data validation, type coercion, and calculates derived fields like age.  
 * **filterDataByCohort():** Provides a consistent method for filtering the master processed dataset based on the user-selected cohort (Overall, Upfront Surgery, nRCT).  
 * **calculateHeaderStats():** A utility function that computes the summary statistics displayed in the application header.
 
@@ -148,62 +147,63 @@ To optimize performance and simplify code, the application uses a centralized ev
 
 ### **4.1. Raw Data (data.js)**
 
-The initial data is structured with German keys.  
+The initial data is structured with consistent English keys.  
 Example:  
 
-```
-{  
-    nr: 1,  
-    name: "John",  
-    vorname: "Lothar",  
-    geburtsdatum: "1953-07-13",  
-    therapie: "nRCT",  
-    n: "+",  
-    anzahl\_patho\_lk: 14,  
-    lymphknoten\_t2: \[  
-      { groesse: 27.0, form: "rund", kontur: "irregulär", ... },  
-      // ...  
-    \]  
+
+{
+id: 1,
+lastName: "John",
+firstName: "Lothar",
+birthDate: "1953-07-13",
+sex: "m",
+therapy: "neoadjuvantTherapy",
+examDate: "2015-11-24",
+asStatus: "+",
+nStatus: "+",
+pathologyTotalNodeCount: 14,
+t2Nodes: [
+{ size: 27.0, shape: "round", border: "irregular", homogeneity: "heterogeneous", signal: "lowSignal" },
+// ...
+]
 }
-```
 
 ### **4.2. Processed Data Model (Application-Internal)**
 
-The data\_processor.js transforms the raw data into a consistent, English-keyed object model used throughout the application.  
+The data\_processor.js transforms the raw data into a consistent object model used throughout the application, calculating derived properties like age.  
 Example:  
 
-```
-{  
-    id: 1,  
-    name: "John",  
-    firstName: "Lothar",  
-    birthDate: "1953-07-13",  
-    age: 62,  
-    therapy: "nRCT",  
-    nStatus: "+",  
-    asStatus: "+",  
-    t2Status: null, // Populated by criteria managers  
-    countPathologyNodes: 14,  
-    countT2Nodes: 3,  
-    countT2NodesPositive: 0, // Populated by criteria managers  
-    t2Nodes: \[  
-      { size: 27.0, shape: "rund", border: "irregulär", ... },  
-      // ...  
-    \],  
-    t2NodesEvaluated: \[  
-      // Populated by criteria managers with check results  
-      { size: 27.0, shape: "rund", isPositive: true, checkResult: { size: true, ... } },  
-      // ...  
-    \]  
+'''
+{
+id: 1,
+lastName: "John",
+firstName: "Lothar",
+birthDate: "1953-07-13",
+age: 62,
+therapy: "neoadjuvantTherapy",
+nStatus: "+",
+asStatus: "+",
+t2Status: null, // Populated by criteria managers
+countPathologyNodes: 14,
+countT2Nodes: 3,
+countT2NodesPositive: 0, // Populated by criteria managers
+t2Nodes: [
+{ size: 27.0, shape: "round", border: "irregular", ... },
+// ...
+],
+t2NodesEvaluated: [
+// Populated by criteria managers with check results
+{ size: 27.0, shape: "round", isPositive: true, checkResult: { size: true, ... } },
+// ...
+]
 }
-```
+'''
 
 ## **5\. Setup and Installation**
 
 The application is designed to run without a web server.
 
 1. **Prerequisites:** A modern web browser (e.g., Chrome, Firefox, Edge).  
-2. **Execution:**  
-   * Clone or download the project repository.  
+2. **Execution:** * Clone or download the project repository.  
    * Open the index.html file directly in your web browser.  
 3. **Dependencies:** All external libraries (Bootstrap, D3.js, etc.) are loaded via CDN links in index.html and do not require manual installation.
