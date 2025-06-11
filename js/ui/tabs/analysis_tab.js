@@ -10,7 +10,7 @@ const analysisTab = (() => {
             { key: 'countPathologyNodes', label: 'N+/N total', textAlign: 'center' },
             { key: 'countASNodes', label: 'AS+/AS total', textAlign: 'center' },
             { key: 'countT2Nodes', label: 'T2+/T2 total', textAlign: 'center' },
-            { key: 'details', label: '', width: '30px' }
+            { key: 'details', label: '', width: '30px'}
         ];
 
         let headerHTML = `<thead class="small sticky-top bg-light" id="${tableId}-header"><tr>`;
@@ -100,7 +100,7 @@ const analysisTab = (() => {
     function render(data, currentCriteria, currentLogic, sortState, currentCohort, bfWorkerAvailable, currentCohortStats, bruteForceResultForCohort) {
         if (!data || !currentCriteria || !currentLogic) throw new Error("Data or criteria for Analysis Tab not available.");
         const criteriaControlsHTML = uiComponents.createT2CriteriaControls(currentCriteria, currentLogic);
-        const analysisTableCardHTML = createAnalysisTableCardHTML(data, sortState, currentCriteria, currentLogic);
+        const analysisTableCardHTML = createAnalysisTableCardHTML(data, sortState, currentCriteria, appliedLogic);
 
         const dashboardContainerId = 'analysis-dashboard';
         const metricsOverviewContainerId = 't2-metrics-overview';
@@ -161,14 +161,14 @@ const analysisTab = (() => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td data-tippy-content="${getTooltip('sens')}">Sensitivity</td><td>${fCI(statsT2.sens, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_proportion')}">${statsT2.sens?.method || na}</td></tr>
-                                    <tr><td data-tippy-content="${getTooltip('spec')}">Specificity</td><td>${fCI(statsT2.spec, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_proportion')}">${statsT2.spec?.method || na}</td></tr>
-                                    <tr><td data-tippy-content="${getTooltip('ppv')}">PPV</td><td>${fCI(statsT2.ppv, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_proportion')}">${statsT2.ppv?.method || na}</td></tr>
-                                    <tr><td data-tippy-content="${getTooltip('npv')}">NPV</td><td>${fCI(statsT2.npv, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_proportion')}">${statsT2.npv?.method || na}</td></tr>
-                                    <tr><td data-tippy-content="${getTooltip('acc')}">Accuracy</td><td>${fCI(statsT2.acc, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_proportion')}">${statsT2.acc?.method || na}</td></tr>
-                                    <tr><td data-tippy-content="${getTooltip('balAcc')}">Balanced Accuracy</td><td data-tippy-content="${getAUCInterpretation(statsT2.balAcc?.value)}">${fCI(statsT2.balAcc, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_bootstrap')}">${statsT2.balAcc?.method || na}</td></tr>
-                                    <tr><td data-tippy-content="${getTooltip('f1')}">F1-Score</td><td>${fCI(statsT2.f1, 3, false)}</td><td data-tippy-content="${getTooltip('ci_method_bootstrap')}">${statsT2.f1?.method || na}</td></tr>
-                                    <tr><td data-tippy-content="${getTooltip('auc')}">AUC</td><td data-tippy-content="${getAUCInterpretation(statsT2.auc?.value)}">${fCI(statsT2.auc, 2, false)}</td><td data-tippy-content="${getTooltip('ci_method_bootstrap')}">${statsT2.auc?.method || na}</td></tr>
+                                     <tr><td data-tippy-content="${getTooltip('sens')}">Sensitivity</td><td data-tippy-content="${getPerformanceMetricInterpretation('sens', statsT2.sens)}">${fCI(statsT2.sens, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_proportion')}">${statsT2.sens?.method || na}</td></tr>
+                                     <tr><td data-tippy-content="${getTooltip('spec')}">Specificity</td><td data-tippy-content="${getPerformanceMetricInterpretation('spec', statsT2.spec)}">${fCI(statsT2.spec, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_proportion')}">${statsT2.spec?.method || na}</td></tr>
+                                     <tr><td data-tippy-content="${getTooltip('ppv')}">PPV</td><td data-tippy-content="${getPerformanceMetricInterpretation('ppv', statsT2.ppv)}">${fCI(statsT2.ppv, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_proportion')}">${statsT2.ppv?.method || na}</td></tr>
+                                     <tr><td data-tippy-content="${getTooltip('npv')}">NPV</td><td data-tippy-content="${getPerformanceMetricInterpretation('npv', statsT2.npv)}">${fCI(statsT2.npv, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_proportion')}">${statsT2.npv?.method || na}</td></tr>
+                                     <tr><td data-tippy-content="${getTooltip('acc')}">Accuracy</td><td data-tippy-content="${getPerformanceMetricInterpretation('acc', statsT2.acc)}">${fCI(statsT2.acc, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_proportion')}">${statsT2.acc?.method || na}</td></tr>
+                                     <tr><td data-tippy-content="${getTooltip('balAcc')}">Balanced Accuracy</td><td data-tippy-content="${getAUCInterpretation(statsT2.balAcc?.value)}">${fCI(statsT2.balAcc, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_bootstrap')}">${statsT2.balAcc?.method || na}</td></tr>
+                                     <tr><td data-tippy-content="${getTooltip('f1')}">F1-Score</td><td>${fCI(statsT2.f1, 3, false)}</td><td data-tippy-content="${getTooltip('ci_method_bootstrap')}">${statsT2.f1?.method || na}</td></tr>
+                                     <tr><td data-tippy-content="${getTooltip('auc')}">AUC</td><td data-tippy-content="${getAUCInterpretation(statsT2.auc?.value)}">${fCI(statsT2.auc, 2, false)}</td><td data-tippy-content="${getTooltip('ci_method_bootstrap')}">${statsT2.auc?.method || na}</td></tr>
                                 </tbody>
                             </table>
                         </div>
