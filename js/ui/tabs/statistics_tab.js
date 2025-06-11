@@ -129,7 +129,7 @@ const statisticsTab = (() => {
                 <td>${formatPercent(r.ppv, 1, na_stat)}</td>
                 <td>${formatPercent(r.npv, 1, na_stat)}</td>
                 <td>${formatPercent(r.acc, 1, na_stat)}</td>
-                <td>${formatNumber(r.auc, 2, na_stat, true)}</td>
+                <td data-tippy-content="${getAUCInterpretation(r.auc)}">${formatNumber(r.auc, 2, na_stat, true)}</td>
             </tr>`;
         });
 
