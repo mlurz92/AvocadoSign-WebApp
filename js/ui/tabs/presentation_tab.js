@@ -4,9 +4,9 @@ const presentationTab = (() => {
         const { statsGesamt, statsSurgeryAlone, statsNeoadjuvantTherapy, cohort, statsCurrentCohort, patientCount } = presentationData || {};
         
         const cohortsData = [
-            { id: APP_CONFIG.COHORTS.OVERALL.id, stats: statsGesamt },
-            { id: APP_CONFIG.COHORTS.SURGERY_ALONE.id, stats: statsSurgeryAlone },
-            { id: APP_CONFIG.COHORTS.NEOADJUVANT.id, stats: statsNeoadjuvantTherapy }
+            { id: APP_CONFIG.COHORTS.OVERALL.id, stats: statsGesamt, name: getCohortDisplayName(APP_CONFIG.COHORTS.OVERALL.id) },
+            { id: APP_CONFIG.COHORTS.SURGERY_ALONE.id, stats: statsSurgeryAlone, name: getCohortDisplayName(APP_CONFIG.COHORTS.SURGERY_ALONE.id) },
+            { id: APP_CONFIG.COHORTS.NEOADJUVANT.id, stats: statsNeoadjuvantTherapy, name: getCohortDisplayName(APP_CONFIG.COHORTS.NEOADJUVANT.id) }
         ];
 
         const currentCohortName = getCohortDisplayName(cohort);
@@ -28,11 +28,11 @@ const presentationTab = (() => {
             const count = stats.matrix ? (stats.matrix.tp + stats.matrix.fp + stats.matrix.fn + stats.matrix.tn) : 0;
             return `<tr>
                         <td class="fw-bold">${cohortDisplayName} (N=${count})</td>
-                        <td>${fCI_p(stats.sens, 'sens')}</td>
-                        <td>${fCI_p(stats.spec, 'spec')}</td>
-                        <td>${fCI_p(stats.ppv, 'ppv')}</td>
-                        <td>${fCI_p(stats.npv, 'npv')}</td>
-                        <td>${fCI_p(stats.acc, 'acc')}</td>
+                        <td data-tippy-content="${getPerformanceMetricInterpretation('sens', stats.sens)}">${fCI_p(stats.sens, 'sens')}</td>
+                        <td data-tippy-content="${getPerformanceMetricInterpretation('spec', stats.spec)}">${fCI_p(stats.spec, 'spec')}</td>
+                        <td data-tippy-content="${getPerformanceMetricInterpretation('ppv', stats.ppv)}">${fCI_p(stats.ppv, 'ppv')}</td>
+                        <td data-tippy-content="${getPerformanceMetricInterpretation('npv', stats.npv)}">${fCI_p(stats.npv, 'npv')}</td>
+                        <td data-tippy-content="${getPerformanceMetricInterpretation('acc', stats.acc)}">${fCI_p(stats.acc, 'acc')}</td>
                         <td data-tippy-content="${getAUCInterpretation(stats.auc?.value)}">${fCI_p(stats.auc, 'auc')}</td>
                     </tr>`;
         };
@@ -107,18 +107,18 @@ const presentationTab = (() => {
                 const digits = (key === 'auc') ? 2 : ((key === 'f1') ? 3 : 1);
                 const valAS = formatCI(performanceAS[key]?.value, performanceAS[key]?.ci?.lower, performanceAS[key]?.ci?.upper, digits, isRate, '--');
                 const valT2 = formatCI(performanceT2[key]?.value, performanceT2[key]?.ci?.lower, performanceT2[key]?.ci?.upper, digits, isRate, '--');
-                const interpretationTooltip = (key === 'auc' || key === 'balAcc') ? `data-tippy-content="${getAUCInterpretation(performanceAS[key]?.value)}"` : '';
-                const interpretationTooltipT2 = (key === 'auc' || key === 'balAcc') ? `data-tippy-content="${getAUCInterpretation(performanceT2[key]?.value)}"` : '';
+                const interpretationTooltipAS = (key === 'auc' || key === 'balAcc') ? getAUCInterpretation(performanceAS[key]?.value) : getPerformanceMetricInterpretation(key, performanceAS[key]);
+                const interpretationTooltipT2 = (key === 'auc' || key === 'balAcc') ? getAUCInterpretation(performanceT2[key]?.value) : getPerformanceMetricInterpretation(key, performanceT2[key]);
 
-                comparisonTableHTML += `<tr><td data-tippy-content="${getTooltip(key)}">${metricNames[key]}</td><td ${interpretationTooltip}>${valAS}</td><td ${interpretationTooltipT2}>${valT2}</td></tr>`;
+                comparisonTableHTML += `<tr><td data-tippy-content="${getTooltip(key)}">${metricNames[key]}</td><td data-tippy-content="${interpretationTooltipAS}">${valAS}</td><td data-tippy-content="${interpretationTooltipT2}">${valT2}</td></tr>`;
             });
             comparisonTableHTML += `</tbody></table></div>`;
             const comparisonTableCardHTML = uiComponents.createStatisticsCard('pres-as-vs-t2-comp-table_card', `Performance Metrics (AS vs. ${t2ShortNameEffective})`, comparisonTableHTML, false, null, [{id: 'dl-pres-as-vs-t2-comp-table-png', icon: 'fa-image', format: 'png', tableId: 'pres-as-vs-t2-comp-table', tableName: `Pres_ASvsT2_Metrics_${comparisonCriteriaSet?.id || 'T2'}`}]);
 
             const fPVal = (r) => (r?.pValue !== null && !isNaN(r?.pValue)) ? (getPValueText(r.pValue, true)) : '--';
             let testsTableHTML = `<table class="table table-sm table-striped small mb-0" id="pres-as-vs-t2-test-table"><thead class="small visually-hidden"><tr><th>Test</th><th>Statistic</th><th>p-Value</th><th>Method</th></tr></thead><tbody>`;
-            testsTableHTML += `<tr><td data-tippy-content="${getTooltip('mcnemar')}">McNemar (Acc)</td><td>${formatNumber(comparison?.mcnemar?.statistic, 3, '--', true)} (df=${comparison?.mcnemar?.df || '--'})</td><td data-tippy-content="${getTestInterpretation(comparison?.mcnemar, 'mcnemar')}">${fPVal(comparison?.mcnemar)} ${getStatisticalSignificanceSymbol(comparison?.mcnemar?.pValue)}</td><td class="text-muted">${comparison?.mcnemar?.method || '--'}</td></tr>`;
-            testsTableHTML += `<tr><td data-tippy-content="${getTooltip('delong')}">DeLong (AUC)</td><td>Z=${formatNumber(comparison?.delong?.Z, 3, '--', true)}</td><td data-tippy-content="${getTestInterpretation(comparison?.delong, 'delong')}">${fPVal(comparison?.delong)} ${getStatisticalSignificanceSymbol(comparison?.delong?.pValue)}</td><td class="text-muted">${comparison?.delong?.method || '--'}</td></tr>`;
+            testsTableHTML += `<tr><td data-tippy-content="${getTooltip('mcnemar')}">McNemar (Acc)</td><td>${formatNumber(comparison?.mcnemar?.statistic, 3, '--', true)} (df=${comparison?.mcnemar?.df || '--'})</td><td data-tippy-content="${getTestInterpretation(comparison?.mcnemar, 'mcnemar', 'AS', t2ShortNameEffective)}">${fPVal(comparison?.mcnemar)} ${getStatisticalSignificanceSymbol(comparison?.mcnemar?.pValue)}</td><td class="text-muted">${comparison?.mcnemar?.method || '--'}</td></tr>`;
+            testsTableHTML += `<tr><td data-tippy-content="${getTooltip('delong')}">DeLong (AUC)</td><td>Z=${formatNumber(comparison?.delong?.Z, 3, '--', true)}</td><td data-tippy-content="${getTestInterpretation(comparison?.delong, 'delong', 'AS', t2ShortNameEffective)}">${fPVal(comparison?.delong)} ${getStatisticalSignificanceSymbol(comparison?.delong?.pValue)}</td><td class="text-muted">${comparison?.delong?.method || '--'}</td></tr>`;
             testsTableHTML += `</tbody></table>`;
             const testsCardHTML = uiComponents.createStatisticsCard('pres-as-vs-t2-test-table_card', `Statistical Comparison (AS vs. ${t2ShortNameEffective})`, testsTableHTML, false, null, [{id: `dl-pres-as-vs-t2-test-table-png`, icon: 'fa-image', format: 'png', tableId: 'pres-as-vs-t2-test-table', tableName: `Pres_ASvsT2_Tests_${comparisonCriteriaSet?.id || 'T2'}`}]);
             
