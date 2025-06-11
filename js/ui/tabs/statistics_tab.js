@@ -38,7 +38,7 @@ const statisticsTab = (() => {
                             <tbody>
                                 <tr data-tippy-content="${tooltips.age}"><td>Age, Median (Min–Max) [Mean ± SD]</td><td>${fv(d.age?.median,1)} (${fv(d.age?.min,0)}–${fv(d.age?.max,0)}) [${fv(d.age?.mean,1)} ± ${fv(d.age?.sd,1)}]</td></tr>
                                 <tr data-tippy-content="${tooltips.sex}"><td>Sex (male / female) (n / %)</td><td>${d.sex?.m ?? 0} / ${d.sex?.f ?? 0} (${fP((d.sex?.m ?? 0) / total, 1)} / ${fP((d.sex?.f ?? 0) / total, 1)})</td></tr>
-                                <tr data-tippy-content="${tooltips.therapy}"><td>Therapy (Upfront / nRCT) (n / %)</td><td>${d.therapy?.surgeryAlone ?? 0} / ${d.therapy?.neoadjuvantTherapy ?? 0} (${fP((d.therapy?.surgeryAlone ?? 0) / total, 1)} / ${fP((d.therapy?.neoadjuvantTherapy ?? 0) / total, 1)})</td></tr>
+                                <tr data-tippy-content="${tooltips.therapy}"><td>Therapy (Surgery alone / Neoadjuvant therapy) (n / %)</td><td>${d.therapy?.surgeryAlone ?? 0} / ${d.therapy?.neoadjuvantTherapy ?? 0} (${fP((d.therapy?.surgeryAlone ?? 0) / total, 1)} / ${fP((d.therapy?.neoadjuvantTherapy ?? 0) / total, 1)})</td></tr>
                                 <tr data-tippy-content="${tooltips.nStatus}"><td>N Status (+ / -) (n / %)</td><td>${d.nStatus?.plus ?? 0} / ${d.nStatus?.minus ?? 0} (${fP((d.nStatus?.plus ?? 0) / total, 1)} / ${fP((d.nStatus?.minus ?? 0) / total, 1)})</td></tr>
                                 <tr data-tippy-content="${tooltips.asStatus}"><td>AS Status (+ / -) (n / %)</td><td>${d.asStatus?.plus ?? 0} / ${d.asStatus?.minus ?? 0} (${fP((d.asStatus?.plus ?? 0) / total, 1)} / ${fP((d.asStatus?.minus ?? 0) / total, 1)})</td></tr>
                                 <tr data-tippy-content="${tooltips.t2Status}"><td>T2 Status (+ / -) (n / %)</td><td>${d.t2Status?.plus ?? 0} / ${d.t2Status?.minus ?? 0} (${fP((d.t2Status?.plus ?? 0) / total, 1)} / ${fP((d.t2Status?.minus ?? 0) / total, 1)})</td></tr>
@@ -69,7 +69,7 @@ const statisticsTab = (() => {
     }
 
     function createCriteriaComparisonTableHTML(allStats, globalCoh) {
-        const availableSets = studyT2CriteriaManager.getAllStudyCriteriaSets().filter(s => s.applicableCohort === 'Gesamt' || s.applicableCohort === globalCoh);
+        const availableSets = studyT2CriteriaManager.getAllStudyCriteriaSets().filter(s => s.applicableCohort === APP_CONFIG.COHORTS.OVERALL.id || s.applicableCohort === globalCoh);
         const allTableResults = [];
         const na_stat = '--';
 
@@ -106,7 +106,8 @@ const statisticsTab = (() => {
         }
 
         availableSets.forEach(set => {
-            const perf = allStats[set.applicableCohort || 'Gesamt']?.performanceT2Literature?.[set.id];
+            const cohortToUse = set.applicableCohort || APP_CONFIG.COHORTS.OVERALL.id;
+            const perf = allStats[cohortToUse]?.performanceT2Literature?.[set.id];
             if (perf) {
                 allTableResults.push({
                     id: set.id,
@@ -117,8 +118,8 @@ const statisticsTab = (() => {
                     npv: perf.npv?.value,
                     acc: perf.acc?.value,
                     auc: perf.auc?.value,
-                    cohort: getCohortDisplayName(set.applicableCohort || 'Gesamt'),
-                    n: allStats[set.applicableCohort || 'Gesamt']?.descriptive?.patientCount || '?'
+                    cohort: getCohortDisplayName(cohortToUse),
+                    n: allStats[cohortToUse]?.descriptive?.patientCount || '?'
                 });
             }
         });
