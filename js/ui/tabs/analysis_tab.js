@@ -29,7 +29,7 @@ const analysisTab = (() => {
                 }
             }
             
-            const baseTooltipContent = APP_CONFIG.UI_TEXTS.tooltips.analysisTab[col.tooltipKey] || `Sort by ${col.label}`;
+            const baseTooltipContent = APP_CONFIG.UI_TEXTS.tooltips.analysisTab?.[col.tooltipKey] || `Sort by ${col.label}`;
             const subHeaders = col.subKeys ? col.subKeys.map(sk => {
                 const isActiveSubSort = activeSubKey === sk.key;
                 const style = isActiveSubSort ? 'font-weight: bold; text-decoration: underline; color: var(--primary-color);' : '';
@@ -53,7 +53,7 @@ const analysisTab = (() => {
         }
         tableHTML += `</tbody></table>`;
         
-        const toggleButtonTooltip = APP_CONFIG.UI_TEXTS.tooltips.analysisTab.expandAll || 'Expand or collapse all details';
+        const toggleButtonTooltip = "Expand or collapse the detail view of the evaluated T2-weighted lymph nodes and the fulfilled criteria for all patients in the current table view.";
         return `
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -119,7 +119,7 @@ const analysisTab = (() => {
                 ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.genderDistribution, `<p class="mb-0 small">M: ${stats.sex?.m ?? 0} F: ${stats.sex?.f ?? 0}</p>`, 'chart-dash-gender', '', '', 'p-1', dlBtns('chart-dash-gender', 'genderDistribution'), cohortDisplayName)}
                 ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.therapyDistribution, `<p class="mb-0 small">Surgery alone: ${stats.therapy?.surgeryAlone ?? 0} Neoadjuvant therapy: ${stats.therapy?.neoadjuvantTherapy ?? 0}</p>`, 'chart-dash-therapy', '', '', 'p-1', dlBtns('chart-dash-therapy', 'therapyDistribution'), cohortDisplayName)}
                 ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusN, `<p class="mb-0 small">N+: ${stats.nStatus?.plus ?? 0} N-: ${stats.nStatus?.minus ?? 0}</p>`, 'chart-dash-status-n', '', '', 'p-1', dlBtns('chart-dash-status-n', 'statusN'), cohortDisplayName)}
-                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusAS, `<p class="mb-0 small">AS+: ${stats.asStatus?.plus ?? 0} AS-: ${stats.asStatus?.minus ?? 0}</p>`, 'chart-dash-status-as', '', '', 'p-1', dlBtns('chart-dash-as', 'statusAS'), cohortDisplayName)}
+                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusAS, `<p class="mb-0 small">AS+: ${stats.asStatus?.plus ?? 0} AS-: ${stats.asStatus?.minus ?? 0}</p>`, 'chart-dash-status-as', '', '', 'p-1', dlBtns('chart-dash-status-as', 'statusAS'), cohortDisplayName)}
                 ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusT2, `<p class="mb-0 small">T2+: ${stats.t2Status?.plus ?? 0} T2-: ${stats.t2Status?.minus ?? 0}</p>`, 'chart-dash-t2', '', '', 'p-1', dlBtns('chart-dash-t2', 'statusT2'), cohortDisplayName)}
             `;
         } else {
@@ -162,14 +162,14 @@ const analysisTab = (() => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>Sensitivity</td><td>${fCI(statsT2.sens, 1, true)}</td><td>${statsT2.sens?.method || na}</td></tr>
-                                    <tr><td>Specificity</td><td>${fCI(statsT2.spec, 1, true)}</td><td>${statsT2.spec?.method || na}</td></tr>
-                                    <tr><td>PPV</td><td>${fCI(statsT2.ppv, 1, true)}</td><td>${statsT2.ppv?.method || na}</td></tr>
-                                    <tr><td>NPV</td><td>${fCI(statsT2.npv, 1, true)}</td><td>${statsT2.npv?.method || na}</td></tr>
-                                    <tr><td>Accuracy</td><td>${fCI(statsT2.acc, 1, true)}</td><td>${statsT2.acc?.method || na}</td></tr>
-                                    <tr><td>Balanced Accuracy</td><td>${fCI(statsT2.balAcc, 1, true)}</td><td>${statsT2.balAcc?.method || na}</td></tr>
-                                    <tr><td>F1-Score</td><td>${fCI(statsT2.f1, 3, false)}</td><td>${statsT2.f1?.method || na}</td></tr>
-                                    <tr><td>AUC</td><td>${fCI(statsT2.auc, 2, false)}</td><td>${statsT2.auc?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${createTooltipHTML('metrics', 'sens')}">Sensitivity</td><td data-tippy-content="${createTooltipHTML('metrics', 'sens', statsT2.sens)}">${fCI(statsT2.sens, 1, true)}</td><td data-tippy-content="${createTooltipHTML('tests', 'wilson')}">${statsT2.sens?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${createTooltipHTML('metrics', 'spec')}">Specificity</td><td data-tippy-content="${createTooltipHTML('metrics', 'spec', statsT2.spec)}">${fCI(statsT2.spec, 1, true)}</td><td data-tippy-content="${createTooltipHTML('tests', 'wilson')}">${statsT2.spec?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${createTooltipHTML('metrics', 'ppv')}">PPV</td><td data-tippy-content="${createTooltipHTML('metrics', 'ppv', statsT2.ppv)}">${fCI(statsT2.ppv, 1, true)}</td><td data-tippy-content="${createTooltipHTML('tests', 'wilson')}">${statsT2.ppv?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${createTooltipHTML('metrics', 'npv')}">NPV</td><td data-tippy-content="${createTooltipHTML('metrics', 'npv', statsT2.npv)}">${fCI(statsT2.npv, 1, true)}</td><td data-tippy-content="${createTooltipHTML('tests', 'wilson')}">${statsT2.npv?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${createTooltipHTML('metrics', 'acc')}">Accuracy</td><td data-tippy-content="${createTooltipHTML('metrics', 'acc', statsT2.acc)}">${fCI(statsT2.acc, 1, true)}</td><td data-tippy-content="${createTooltipHTML('tests', 'wilson')}">${statsT2.acc?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${createTooltipHTML('metrics', 'balAcc')}">Balanced Accuracy</td><td data-tippy-content="${createTooltipHTML('metrics', 'balAcc', statsT2.balAcc)}">${fCI(statsT2.balAcc, 1, true)}</td><td data-tippy-content="${createTooltipHTML('tests', 'bootstrap')}">${statsT2.balAcc?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${createTooltipHTML('metrics', 'f1')}">F1-Score</td><td data-tippy-content="${createTooltipHTML('metrics', 'f1', statsT2.f1)}">${fCI(statsT2.f1, 3, false)}</td><td data-tippy-content="${createTooltipHTML('tests', 'bootstrap')}">${statsT2.f1?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${createTooltipHTML('metrics', 'auc')}">AUC</td><td data-tippy-content="${createTooltipHTML('metrics', 'auc', statsT2.auc)}">${fCI(statsT2.auc, 2, false)}</td><td data-tippy-content="${createTooltipHTML('tests', 'bootstrap')}">${statsT2.auc?.method || na}</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -179,7 +179,7 @@ const analysisTab = (() => {
                         'Diagnostic Performance (Applied T2)',
                         metricsHtml,
                         false,
-                        't2MetricsOverview',
+                        null,
                         [{id: 'dl-t2-metrics-overview-png', icon: 'fa-image', format: 'png', tableId: 't2-metrics-overview-card-content table', tableName: `T2_Metrics_Overview_${getCohortDisplayName(currentCohort).replace(/\s+/g, '_')}`}],
                         't2-metrics-overview-card-content table'
                     ));
