@@ -275,25 +275,120 @@ function clampNumber(num, min, max) {
     return Math.min(Math.max(number, minVal), maxVal);
 }
 
-function getAUCInterpretation(aucValue) {
-    const value = parseFloat(aucValue);
-    if (isNaN(value) || value < 0 || value > 1) return APP_CONFIG.UI_TEXTS.statMetrics.associationStrengthTexts.undetermined;
-    if (value >= 0.9) return 'excellent';
-    if (value >= 0.8) return 'good';
-    if (value >= 0.7) return 'moderate';
-    if (value > 0.5) return 'weak';
-    return 'not informative';
+function getTooltip(key, replacements = {}) {
+    const definitions = APP_CONFIG.UI_TEXTS.tooltips.tooltipDefinitions;
+    const interpretations = APP_CONFIG.UI_TEXTS.tooltips.tooltipInterpretations;
+    let template = definitions[key] || interpretations[key] || `No tooltip found for key: ${key}`;
+
+    for (const placeholder in replacements) {
+        if (Object.prototype.hasOwnProperty.call(replacements, placeholder)) {
+            const regex = new RegExp(`\\[${placeholder.toUpperCase()}\\]`, 'g');
+            template = template.replace(regex, replacements[placeholder]);
+        }
+    }
+    return template;
 }
 
-function getPhiInterpretation(phiValue) {
-    const value = parseFloat(phiValue);
-    if (isNaN(value)) return APP_CONFIG.UI_TEXTS.statMetrics.associationStrengthTexts.undetermined;
-    const absPhi = Math.abs(value);
+function getAUCInterpretation(aucValue) {
+    const value = parseFloat(aucValue);
+    if (isNaN(value) || value < 0 || value > 1) return getTooltip('auc', { VALUE: formatNumber(aucValue, 2), STRENGTH: 'undetermined' });
+    
+    let strength = 'not informative';
+    if (value >= 0.9) strength = 'excellent';
+    else if (value >= 0.8) strength = 'good';
+    else if (value >= 0.7) strength = 'moderate';
+    else if (value > 0.5) strength = 'weak';
+    
+    return getTooltip('auc', { VALUE: formatNumber(aucValue, 2), STRENGTH: strength });
+}
+
+function getPhiInterpretation(phiData, featureName = '') {
+    const value = parseFloat(phiData?.value);
     const texts = APP_CONFIG.UI_TEXTS.statMetrics.associationStrengthTexts;
-    if (absPhi >= 0.5) return texts.strong;
-    if (absPhi >= 0.3) return texts.moderate;
-    if (absPhi >= 0.1) return texts.weak;
-    return texts.very_weak;
+    let strength = texts.undetermined;
+
+    if (!isNaN(value)) {
+        const absPhi = Math.abs(value);
+        if (absPhi >= 0.5) strength = texts.strong;
+        else if (absPhi >= 0.3) strength = texts.moderate;
+        else if (absPhi >= 0.1) strength = texts.weak;
+        else strength = texts.very_weak;
+    }
+    
+    return getTooltip('phi', {
+        VALUE: formatNumber(value, 2),
+        STRENGTH: strength,
+        FEATURE_NAME: escapeHTML(featureName)
+    });
+}
+
+function getORInterpretation(orData, featureName = '') {
+    const orValue = parseFloat(orData?.value);
+    if (isNaN(orValue) || !orData.ci) return 'Odds Ratio: Not Available';
+
+    const factorText = orValue > 1 ? 'increased' : 'decreased';
+    const absValForStrength = orValue > 1 ? orValue : 1 / orValue;
+    let strength = 'weak';
+    if (absValForStrength >= 3) strength = 'strong';
+    else if (absValForStrength >= 1.5) strength = 'moderate';
+
+    return getTooltip('or', {
+        FACTOR_TEXT: factorText,
+        VALUE: formatNumber(orValue, 2),
+        CI_LOWER: formatNumber(orData.ci.lower, 2),
+        CI_UPPER: formatNumber(orData.ci.upper, 2),
+        STRENGTH: strength,
+        FEATURE_NAME: escapeHTML(featureName)
+    });
+}
+
+function getRDInterpretation(rdData, featureName = '') {
+    const rdValue = parseFloat(rdData?.value);
+    if (isNaN(rdValue) || !rdData.ci) return 'Risk Difference: Not Available';
+
+    const directionText = rdValue > 0 ? 'increase' : 'decrease';
+
+    return getTooltip('rd', {
+        DIRECTION_TEXT: directionText,
+        VALUE: formatNumber(Math.abs(rdValue * 100), 1),
+        CI_LOWER: formatNumber(rdData.ci.lower * 100, 1),
+        CI_UPPER: formatNumber(rdData.ci.upper * 100, 1),
+        FEATURE_NAME: escapeHTML(featureName)
+    });
+}
+
+function getTestInterpretation(testData, testKey) {
+    if (!testData || isNaN(testData.pValue)) return 'Test Interpretation: Not Available';
+
+    const pValue = testData.pValue;
+    const isSignificant = pValue < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL;
+    
+    return getTooltip(testKey, {
+        P_VALUE_TEXT: getPValueText(pValue, false),
+        SIGNIFICANCE_TEXT: isSignificant ? 'statistically significant' : 'not statistically significant',
+        IS_IS_NOT: isSignificant ? 'is' : 'is not'
+    });
+}
+
+function getAssociationInterpretation(pValData, featureName = '') {
+    if (!pValData || isNaN(pValData.pValue)) return 'Association Interpretation: Not Available';
+
+    const pValue = pValData.pValue;
+    const isSignificant = pValue < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL;
+    let strength = 'no significant';
+    
+    if(isSignificant) {
+        if (pValue < 0.001) strength = 'a very strong';
+        else if (pValue < 0.01) strength = 'a strong';
+        else strength = 'a moderate';
+    }
+
+    return getTooltip('fisher', {
+        P_VALUE_TEXT: getPValueText(pValue, false),
+        SIGNIFICANCE_TEXT: isSignificant ? 'statistically significant' : 'not statistically significant',
+        STRENGTH: strength,
+        FEATURE_NAME: escapeHTML(featureName)
+    });
 }
 
 function escapeHTML(text) {
