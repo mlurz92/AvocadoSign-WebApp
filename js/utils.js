@@ -1,5 +1,6 @@
 function getCohortDisplayName(cohortId) {
-    return APP_CONFIG.UI_TEXTS.cohortDisplayNames[cohortId] || cohortId || 'Unknown';
+    const cohortConfig = Object.values(APP_CONFIG.COHORTS).find(c => c.id === cohortId);
+    return cohortConfig ? cohortConfig.displayName : cohortId || 'Unknown';
 }
 
 function formatNumber(num, digits = 1, placeholder = '--', useStandardFormat = false) {
@@ -312,16 +313,9 @@ function getT2IconSVG(type, value) {
     let svgContent = '';
 
     const getSvgContentFromConfig = (key, val) => {
-        let normalizedVal = String(val).toLowerCase();
-        if (normalizedVal === 'irregulär') {
-            normalizedVal = 'irregulaer';
-        } else if (normalizedVal === 'intermediär') {
-            normalizedVal = 'intermediaer';
-        }
-        
+        const normalizedVal = String(val).toLowerCase();
         const configKey = `${key.toUpperCase()}_${normalizedVal.toUpperCase()}`;
         const svgFactory = APP_CONFIG.T2_ICON_SVGS[configKey];
-        
         if (svgFactory) {
             return svgFactory(s, sw, iconColor, c, r, sq, sqPos);
         }
@@ -330,20 +324,16 @@ function getT2IconSVG(type, value) {
 
     switch (type) {
         case 'size':
-        case 'ruler-horizontal':
             svgContent = getSvgContentFromConfig('size', 'default');
             break;
         case 'shape':
-        case 'form':
-            svgContent = getSvgContentFromConfig('form', value);
+            svgContent = getSvgContentFromConfig('shape', value);
             break;
         case 'border':
-        case 'kontur':
-            svgContent = getSvgContentFromConfig('kontur', value);
+            svgContent = getSvgContentFromConfig('border', value);
             break;
         case 'homogeneity':
-        case 'homogenitaet':
-            svgContent = getSvgContentFromConfig('homogenitaet', value);
+            svgContent = getSvgContentFromConfig('homogeneity', value);
             break;
         case 'signal':
             svgContent = getSvgContentFromConfig('signal', value);
