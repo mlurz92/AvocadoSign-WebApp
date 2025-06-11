@@ -1,10 +1,10 @@
 const DEFAULT_T2_CRITERIA = Object.freeze({
     logic: 'AND',
     size: { active: true, threshold: 5.0, condition: '>=' },
-    form: { active: false, value: 'rund' },
-    kontur: { active: false, value: 'irregulär' },
-    homogenitaet: { active: false, value: 'heterogen' },
-    signal: { active: false, value: 'signalreich' }
+    form: { active: false, value: 'round' },
+    kontur: { active: false, value: 'irregular' },
+    homogenitaet: { active: false, value: 'heterogeneous' },
+    signal: { active: false, value: 'highSignal' }
 });
 
 const APP_CONFIG = Object.freeze({
@@ -13,8 +13,8 @@ const APP_CONFIG = Object.freeze({
     DEFAULT_SETTINGS: Object.freeze({
         KOLLEKTIV: 'Gesamt',
         T2_LOGIC: 'AND',
-        DATEN_TABLE_SORT: Object.freeze({ key: 'nr', direction: 'asc', subKey: null }),
-        AUSWERTUNG_TABLE_SORT: Object.freeze({ key: 'nr', direction: 'asc', subKey: null }),
+        DATEN_TABLE_SORT: Object.freeze({ key: 'id', direction: 'asc', subKey: null }),
+        AUSWERTUNG_TABLE_SORT: Object.freeze({ key: 'id', direction: 'asc', subKey: null }),
         STATS_LAYOUT: 'einzel',
         STATS_KOLLEKTIV1: 'Gesamt',
         STATS_KOLLEKTIV2: 'nRCT',
@@ -60,10 +60,10 @@ const APP_CONFIG = Object.freeze({
     }),
     T2_CRITERIA_SETTINGS: Object.freeze({
         SIZE_RANGE: Object.freeze({ min: 0.1, max: 25.0, step: 0.1 }),
-        FORM_VALUES: Object.freeze(['rund', 'oval']),
-        KONTUR_VALUES: Object.freeze(['scharf', 'irregulär']),
-        HOMOGENITAET_VALUES: Object.freeze(['homogen', 'heterogen']),
-        SIGNAL_VALUES: Object.freeze(['signalarm', 'intermediär', 'signalreich'])
+        FORM_VALUES: Object.freeze(['round', 'oval']),
+        KONTUR_VALUES: Object.freeze(['sharp', 'irregular']),
+        HOMOGENITAET_VALUES: Object.freeze(['homogeneous', 'heterogeneous']),
+        SIGNAL_VALUES: Object.freeze(['lowSignal', 'intermediateSignal', 'highSignal'])
     }),
     UI_SETTINGS: Object.freeze({
         ICON_SIZE: 20,
@@ -160,28 +160,28 @@ const APP_CONFIG = Object.freeze({
         REFERENCE_RUTEGARD_2025: { id: 24, text: "Rutegård J, Hallberg L, Carlsson J, Olsson J, Jarnheimer A (2025) Anatomically matched mesorectal nodal structures: evaluation of the 2016 ESGAR consensus criteria. Eur Radiol. https://doi.org/10.1007/s00330-024-11357-1" }
     }),
     T2_ICON_SVGS: Object.freeze({
-        SIZE: (s, sw, iconColor, c, r, sq, sqPos) => `<path d="M${sw/2} ${c} H${s-sw/2} M${c} ${sw/2} V${s-sw/2}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`,
-        FORM_RUND: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw}"/>`,
+        SIZE_DEFAULT: (s, sw, iconColor, c, r, sq, sqPos) => `<path d="M${sw/2} ${c} H${s-sw/2} M${c} ${sw/2} V${s-sw/2}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`,
+        FORM_ROUND: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw}"/>`,
         FORM_OVAL: (s, sw, iconColor, c, r, sq, sqPos) => `<ellipse cx="${c}" cy="${c}" rx="${r}" ry="${r * 0.65}" fill="none" stroke="${iconColor}" stroke-width="${sw}"/>`,
-        KONTUR_SCHARF: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
-        KONTUR_IRREGULAER: (s, sw, iconColor, c, r, sq, sqPos) => `<path d="M ${c + r} ${c} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${r*0.8} ${r*1.2} 0 0 1 ${c-r*0.9} ${c-r*0.3} A ${r*1.1} ${r*0.7} 0 0 1 ${c+r} ${c} Z" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
-        HOMOGENITAET_HOMOGEN: (s, sw, iconColor, c, r, sq, sqPos) => `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="${iconColor}" stroke="none" rx="1" ry="1"/>`,
-        HOMOGENITAET_HETEROGEN: (s, sw, iconColor, c, r, sq, sqPos) => {
+        KONTUR_SHARP: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
+        KONTUR_IRREGULAR: (s, sw, iconColor, c, r, sq, sqPos) => `<path d="M ${c + r} ${c} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${r*0.8} ${r*1.2} 0 0 1 ${c-r*0.9} ${c-r*0.3} A ${r*1.1} ${r*0.7} 0 0 1 ${c+r} ${c} Z" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
+        HOMOGENITAET_HOMOGENEOUS: (s, sw, iconColor, c, r, sq, sqPos) => `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="${iconColor}" stroke="none" rx="1" ry="1"/>`,
+        HOMOGENITAET_HETEROGENEOUS: (s, sw, iconColor, c, r, sq, sqPos) => {
             let svgContent = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" rx="1" ry="1"/>`;
             const pSize = sq / 4;
             for(let i=0;i<3;i++){for(let j=0;j<3;j++){if((i+j)%2===0){svgContent+=`<rect x="${sqPos+i*pSize+pSize/2}" y="${sqPos+j*pSize+pSize/2}" width="${pSize}" height="${pSize}" fill="${iconColor}" stroke="none" style="opacity:0.6;"/>`;}}}
             return svgContent;
         },
-        SIGNAL_SIGNALARM: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#555555" stroke="rgba(0,0,0,0.1)" stroke-width="${sw * 0.75}"/>`,
-        SIGNAL_INTERMEDIAER: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#aaaaaa" stroke="rgba(0,0,0,0.1)" stroke-width="${sw * 0.75}"/>`,
-        SIGNAL_SIGNALREICH: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#f0f0f0" stroke="#333333" stroke-width="${sw * 0.75}"/>`,
+        SIGNAL_LOWSIGNAL: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#555555" stroke="rgba(0,0,0,0.1)" stroke-width="${sw * 0.75}"/>`,
+        SIGNAL_INTERMEDIATESIGNAL: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#aaaaaa" stroke="rgba(0,0,0,0.1)" stroke-width="${sw * 0.75}"/>`,
+        SIGNAL_HIGHSIGNAL: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#f0f0f0" stroke="#333333" stroke-width="${sw * 0.75}"/>`,
         UNKNOWN: (s, sw, iconColor, c, r, sq, sqPos) => `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" stroke-dasharray="2 2" /><line x1="${sqPos}" y1="${sqPos}" x2="${sqPos+sq}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/><line x1="${sqPos+sq}" y1="${sqPos}" x2="${sqPos}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`
     }),
     UI_TEXTS: Object.freeze({
         cohortDisplayNames: {
             'Gesamt': 'Overall',
-            'direkt OP': 'Upfront Surgery',
-            'nRCT': 'nRCT'
+            'surgeryAlone': 'Upfront Surgery',
+            'neoadjuvantTherapy': 'nRCT'
         },
         t2LogicDisplayNames: {
             'AND': 'AND',
@@ -454,14 +454,14 @@ const PUBLICATION_CONFIG = Object.freeze({
             id: 'rutegard_et_al_esgar',
             name: 'ESGAR 2016 (Rutegård et al. 2025)',
             displayShortName: 'ESGAR 2016',
-            applicableCohort: 'Gesamt', // Rutegård et al. evaluated primary staging, so Overall is most appropriate.
-            logic: 'KOMBINIERT', // Special logic handling for ESGAR
+            applicableCohort: 'Gesamt',
+            logic: 'KOMBINIERT',
             criteria: Object.freeze({
                 size: { active: true, threshold: 9.0, condition: '>=' },
-                form: { active: true, value: 'rund' },
-                kontur: { active: true, value: 'irregulär' },
-                homogenitaet: { active: true, value: 'heterogen' },
-                signal: { active: false, value: null } // Not explicitly part of ESGAR's core suspicious features list
+                form: { active: true, value: 'round' },
+                kontur: { active: true, value: 'irregular' },
+                homogenitaet: { active: true, value: 'heterogeneous' },
+                signal: { active: false, value: null }
             }),
             studyInfo: Object.freeze({
                 reference: 'Rutegård et al. (2025)',
@@ -475,13 +475,13 @@ const PUBLICATION_CONFIG = Object.freeze({
             id: 'koh_2008',
             name: 'Koh et al. (2008)',
             displayShortName: 'Koh 2008',
-            applicableCohort: 'Gesamt', // Evaluated both pre and post nCRT, overall is applicable
+            applicableCohort: 'Gesamt',
             logic: 'OR',
             criteria: Object.freeze({
                 size: { active: false, threshold: 5.0, condition: '>=' },
                 form: { active: false, value: null },
-                kontur: { active: true, value: 'irregulär' },
-                homogenitaet: { active: true, value: 'heterogen' },
+                kontur: { active: true, value: 'irregular' },
+                homogenitaet: { active: true, value: 'heterogeneous' },
                 signal: { active: false, value: null }
             }),
             studyInfo: Object.freeze({
@@ -496,10 +496,10 @@ const PUBLICATION_CONFIG = Object.freeze({
             id: 'barbaro_2024',
             name: 'Barbaro et al. (2024)',
             displayShortName: 'Barbaro 2024',
-            applicableCohort: 'nRCT', // Specifically for restaging after nCRT
-            logic: 'AND', // "a specific cut-off for the short-axis diameter" implies a single, primary criterion
+            applicableCohort: 'nRCT',
+            logic: 'AND',
             criteria: Object.freeze({
-                size: { active: true, threshold: 2.3, condition: '>=' }, // Original was 2.2mm, adjusted to 2.3mm for direct comparison in our data if needed
+                size: { active: true, threshold: 2.3, condition: '>=' },
                 form: { active: false, value: null },
                 kontur: { active: false, value: null },
                 homogenitaet: { active: false, value: null },
