@@ -21,7 +21,6 @@ class App {
                 uiManager.showToast("Warning: No valid patient data loaded.", "warning");
             }
             
-            // Directly render the initial tab without relying on the state change check
             this.filterAndPrepareData();
             this.renderCurrentTab();
             this.updateUI();
@@ -158,9 +157,9 @@ class App {
             const filteredDataForPresentation = dataProcessor.filterDataByCohort(this.processedData, cohortForPresentation);
             
             const statsCurrentCohort = this.allPublicationStats[cohortForPresentation];
-            const statsGesamt = this.allPublicationStats['Gesamt'];
-            const statsDirektOP = this.allPublicationStats['direkt OP'];
-            const statsNRCT = this.allPublicationStats['nRCT'];
+            const statsGesamt = this.allPublicationStats[APP_CONFIG.COHORTS.OVERALL.id];
+            const statsSurgeryAlone = this.allPublicationStats[APP_CONFIG.COHORTS.SURGERY_ALONE.id];
+            const statsNeoadjuvantTherapy = this.allPublicationStats[APP_CONFIG.COHORTS.NEOADJUVANT.id];
 
             let performanceT2 = null;
             let comparisonCriteriaSet = null;
@@ -188,7 +187,7 @@ class App {
             } else if (selectedStudyId) {
                 const studySet = studyT2CriteriaManager.getStudyCriteriaSetById(selectedStudyId);
                 if (studySet) {
-                    const cohortForStudySet = studySet.applicableCohort || 'Gesamt';
+                    const cohortForStudySet = studySet.applicableCohort || APP_CONFIG.COHORTS.OVERALL.id;
                     const statsForStudyCohort = this.allPublicationStats[cohortForStudySet];
                     
                     performanceT2 = statsForStudyCohort?.performanceT2Literature?.[selectedStudyId];
@@ -204,8 +203,8 @@ class App {
                 patientCount: filteredDataForPresentation.length,
                 statsCurrentCohort: statsCurrentCohort,
                 statsGesamt: statsGesamt,
-                statsDirektOP: statsDirektOP,
-                statsNRCT: statsNRCT,
+                statsSurgeryAlone: statsSurgeryAlone,
+                statsNeoadjuvantTherapy: statsNeoadjuvantTherapy,
                 performanceAS: statsCurrentCohort?.performanceAS,
                 performanceT2: performanceT2,
                 comparison: comparisonASvsT2,
@@ -234,7 +233,7 @@ class App {
                 uiManager.showToast(`Cohort '${getCohortDisplayName(newCohort)}' selected.`, 'info');
             } else if (source === "auto_presentation") {
                 uiManager.showToast(`Global cohort automatically set to '${getCohortDisplayName(newCohort)}' to match the study selection in the Presentation tab.`, 'info', 4000);
-                uiManager.highlightElement(`btn-cohort-${newCohort.replace(/\s+/g, '-')}`);
+                uiManager.highlightElement(`btn-cohort-${newCohort}`);
             }
         }
     }
@@ -255,10 +254,10 @@ class App {
     startBruteForceAnalysis() {
         const metric = document.getElementById('brute-force-metric')?.value || 'Balanced Accuracy';
         const cohortId = state.getCurrentCohort();
-        const dataForWorker = this.rawData.filter(p => cohortId === 'Gesamt' || p.therapie === cohortId).map(p => ({
-            nr: p.nr,
-            n: p.n,
-            lymphknoten_t2: p.lymphknoten_t2
+        const dataForWorker = dataProcessor.filterDataByCohort(this.processedData, cohortId).map(p => ({
+            id: p.id,
+            nStatus: p.nStatus,
+            t2Nodes: p.t2Nodes
         }));
         
         if (dataForWorker.length > 0) {
@@ -305,9 +304,9 @@ class App {
         const commonDataForPublication = {
             appName: APP_CONFIG.APP_NAME,
             appVersion: APP_CONFIG.APP_VERSION,
-            nOverall: allCohortStats.Gesamt?.descriptive?.patientCount || 0,
-            nUpfrontSurgery: allCohortStats['direkt OP']?.descriptive?.patientCount || 0,
-            nNRCT: allCohortStats.nRCT?.descriptive?.patientCount || 0,
+            nOverall: allCohortStats.Overall?.descriptive?.patientCount || 0,
+            nSurgeryAlone: allCohortStats.surgeryAlone?.descriptive?.patientCount || 0,
+            nNeoadjuvantTherapy: allCohortStats.neoadjuvantTherapy?.descriptive?.patientCount || 0,
             references: APP_CONFIG.REFERENCES_FOR_PUBLICATION || {},
             bruteForceMetricForPublication: state.getPublicationBruteForceMetric(),
             currentLanguage: state.getCurrentPublikationLang(),
