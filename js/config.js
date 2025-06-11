@@ -103,7 +103,7 @@ const APP_CONFIG = Object.freeze({
         FILENAME_TYPES: Object.freeze({
             STATS_CSV: 'Statistics_CSV',
             BRUTEFORCE_TXT: 'BruteForce_Report_TXT',
-            DESCRIPTIVE_MD: 'Descriptive_Statistics_MD',
+            DESKRIPTIV_MD: 'Descriptive_Statistics_MD',
             DATA_MD: 'Data_List_MD',
             ANALYSIS_MD: 'Analysis_Table_MD',
             FILTERED_DATA_CSV: 'Filtered_Data_CSV',
