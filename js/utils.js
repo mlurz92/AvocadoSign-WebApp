@@ -277,7 +277,7 @@ function clampNumber(num, min, max) {
 
 function getAUCInterpretation(aucValue) {
     const value = parseFloat(aucValue);
-    if (isNaN(value) || value < 0 || value > 1) return APP_CONFIG.UI_TEXTS.statMetrics.associationStrengthTexts.undetermined;
+    if (isNaN(value) || value < 0 || value > 1) return APP_CONFIG.UI_TEXTS.tooltips.metrics.auc.interpretation.undetermined;
     if (value >= 0.9) return 'excellent';
     if (value >= 0.8) return 'good';
     if (value >= 0.7) return 'moderate';
@@ -287,13 +287,13 @@ function getAUCInterpretation(aucValue) {
 
 function getPhiInterpretation(phiValue) {
     const value = parseFloat(phiValue);
-    if (isNaN(value)) return APP_CONFIG.UI_TEXTS.statMetrics.associationStrengthTexts.undetermined;
+    if (isNaN(value)) return APP_CONFIG.UI_TEXTS.tooltips.metrics.phi.interpretation.undetermined;
     const absPhi = Math.abs(value);
-    const texts = APP_CONFIG.UI_TEXTS.statMetrics.associationStrengthTexts;
-    if (absPhi >= 0.5) return texts.strong;
-    if (absPhi >= 0.3) return texts.moderate;
-    if (absPhi >= 0.1) return texts.weak;
-    return texts.very_weak;
+    const texts = APP_CONFIG.UI_TEXTS.tooltips.metrics.phi.interpretation;
+    if (absPhi >= 0.5) return 'strong';
+    if (absPhi >= 0.3) return 'moderate';
+    if (absPhi >= 0.1) return 'weak';
+    return 'very weak';
 }
 
 function escapeHTML(text) {
@@ -342,4 +342,70 @@ function getT2IconSVG(type, value) {
             svgContent = APP_CONFIG.T2_ICON_SVGS.UNKNOWN(s, sw, iconColor, c, r, sq, sqPos);
     }
     return `<svg class="icon-t2 icon-${type}" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${type}: ${value || 'unknown'}">${svgContent}</svg>`;
+}
+
+function _generateInterpretationText(metricKey, data) {
+    const tooltipTemplates = APP_CONFIG.UI_TEXTS.tooltips.metrics[metricKey];
+    if (!tooltipTemplates || !tooltipTemplates.interpretation || !data) return null;
+    let text = tooltipTemplates.interpretation;
+
+    text = text.replace('{value}', () => {
+        const isPercent = !['f1', 'auc', 'or', 'rd', 'phi', 'pValue'].includes(metricKey);
+        const digits = (metricKey === 'auc' || metricKey === 'phi' || metricKey === 'or') ? 2 : (metricKey === 'f1') ? 3 : 1;
+        return isPercent ? formatPercent(data.value, digits) : formatNumber(data.value, digits);
+    });
+    
+    if (text.includes('{ci}')) {
+        const ciText = (data.ci && data.ci.lower !== null) ? `${formatNumber(data.ci.lower, 2)}–${formatNumber(data.ci.upper, 2)}` : 'not available';
+        text = text.replace('{ci}', ciText);
+    }
+
+    if (metricKey === 'or' && data.value) {
+        const or = data.value;
+        text = text.replace('{factor}', or > 1 ? formatNumber(or, 2) : formatNumber(1 / or, 2));
+        text = text.replace('{direction}', or > 1 ? 'higher' : 'lower');
+        text = text.replace('{feature_positive}', data.featureName || 'positive');
+        text = text.replace('{feature_negative}', 'negative');
+        text = text.replace('{significance_status}', (data.ci && data.ci.lower > 1 || data.ci.upper < 1) ? 'statistically significant' : 'not statistically significant');
+    }
+    
+    if (metricKey === 'rd' && data.value) {
+        text = text.replace('{direction}', data.value > 0 ? 'higher' : 'lower');
+        text = text.replace('{significance_status}', (data.ci && data.ci.lower > 0 || data.ci.upper < 0) ? 'statistically significant' : 'not statistically significant');
+    }
+
+    if (metricKey === 'auc') {
+        text = text.replace('{auc_interpretation}', getAUCInterpretation(data.value));
+    }
+    
+    if (metricKey === 'phi') {
+        text = text.replace('{phi_interpretation}', getPhiInterpretation(data.value));
+    }
+
+    if (metricKey === 'pValue') {
+        text = text.replace('{significance_status}', data.value < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL ? 'statistically significant' : 'not statistically significant');
+    }
+
+    return text;
+}
+
+
+function createTooltipHTML(type, key, data = {}) {
+    if (!type || !key) return '';
+    const config = APP_CONFIG.UI_TEXTS.tooltips[type]?.[key];
+    if (!config) return `Tooltip for ${type}.${key} not found.`;
+
+    const title = escapeHTML(config.title || 'No Title');
+    const definition = escapeHTML(config.definition || 'No definition available.');
+    let html = `<div class="text-start p-1"><strong class="d-block mb-1">${title}</strong><hr class="my-1"><p class="mb-1 small"><em>${definition}</em></p>`;
+
+    if (data && Object.keys(data).length > 0 && type === 'metrics') {
+        const interpretation = _generateInterpretationText(key, data);
+        if (interpretation) {
+            html += `<hr class="my-1"><p class="mb-0 small fw-bold">Interpretation:</p><p class="mb-0 small fst-italic">${escapeHTML(interpretation)}</p>`;
+        }
+    }
+    
+    html += `</div>`;
+    return html;
 }
