@@ -10,7 +10,7 @@ const analysisTab = (() => {
             { key: 'countPathologyNodes', label: 'N+/N total', textAlign: 'center' },
             { key: 'countASNodes', label: 'AS+/AS total', textAlign: 'center' },
             { key: 'countT2Nodes', label: 'T2+/T2 total', textAlign: 'center' },
-            { key: 'details', label: '', width: '30px'}
+            { key: 'details', label: '', width: '30px' }
         ];
 
         let headerHTML = `<thead class="small sticky-top bg-light" id="${tableId}-header"><tr>`;
@@ -32,7 +32,8 @@ const analysisTab = (() => {
             const subHeaders = col.subKeys ? col.subKeys.map(sk => {
                 const isActiveSubSort = activeSubKey === sk.key;
                 const style = isActiveSubSort ? 'font-weight: bold; text-decoration: underline; color: var(--primary-color);' : '';
-                return `<span class="sortable-sub-header" data-sub-key="${sk.key}" style="cursor: pointer; ${style}">${sk.label}</span>`;
+                const subKeyTooltip = `Sort by Status ${sk.label}`;
+                return `<span class="sortable-sub-header" data-sub-key="${sk.key}" style="cursor: pointer; ${style}" data-tippy-content="${subKeyTooltip}">${sk.label}</span>`;
             }).join(' / ') : '';
             
             const sortAttributes = `data-sort-key="${col.key}" ${col.subKeys || col.key === 'details' ? '' : 'style="cursor: pointer;"'}`;
@@ -51,7 +52,7 @@ const analysisTab = (() => {
         }
         tableHTML += `</tbody></table>`;
         
-        const toggleButtonTooltip = APP_CONFIG.UI_TEXTS.tooltips.analysisTab?.expandAll || 'Expand or collapse all details';
+        const toggleButtonTooltip = "Expand or collapse the detail view of the evaluated T2-weighted lymph nodes for all patients.";
         return `
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -177,7 +178,7 @@ const analysisTab = (() => {
                         'Diagnostic Performance (Applied T2)',
                         metricsHtml,
                         false,
-                        't2MetricsOverview',
+                        null,
                         [{id: 'dl-t2-metrics-overview-png', icon: 'fa-image', format: 'png', tableId: 't2-metrics-overview-card-content table', tableName: `T2_Metrics_Overview_${getCohortDisplayName(currentCohort).replace(/\s+/g, '_')}`}],
                         't2-metrics-overview-card-content table'
                     ));
