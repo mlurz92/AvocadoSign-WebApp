@@ -11,18 +11,21 @@ const bruteForceManager = (() => {
     let onStarted = null;
 
     function initializeWorker() {
-        if (!window.Worker) {
-            console.error("BruteForceManager: Web Workers are not supported.");
-            if (onError) onError({ message: 'Web Workers are not supported.' });
+        if (typeof Worker === 'undefined') {
+            console.error("BruteForceManager: Web Workers are not supported in this browser.");
+            if (onError) onError({ message: 'Web Workers are not supported in this browser.' });
             return false;
         }
         try {
-            if (worker) worker.terminate();
+            if (worker) {
+                worker.terminate();
+            }
             worker = new Worker(APP_CONFIG.PATHS.BRUTE_FORCE_WORKER);
             worker.onmessage = handleWorkerMessage;
             worker.onerror = handleWorkerError;
             return true;
         } catch (e) {
+            console.error("BruteForceManager: Worker initialization failed.", e);
             worker = null;
             if (onError) onError({ message: `Worker initialization failed: ${e.message}` });
             return false;
@@ -30,7 +33,10 @@ const bruteForceManager = (() => {
     }
 
     function handleWorkerMessage(event) {
-        if (!event || !event.data) return;
+        if (!event || !event.data || !event.data.type) {
+            console.warn("BruteForceManager: Received an invalid message from the worker.", event);
+            return;
+        }
         const { type, payload } = event.data;
 
         switch (type) {
@@ -61,14 +67,26 @@ const bruteForceManager = (() => {
                 if (onError) onError(payload);
                 currentCohortRunning = null;
                 break;
+            default:
+                 console.warn(`BruteForceManager: Received unknown message type '${type}' from worker.`);
+                 break;
         }
     }
 
     function handleWorkerError(error) {
-        isRunning = false;
         const erroredCohort = currentCohortRunning;
+        isRunning = false;
         currentCohortRunning = null;
-        if (onError) onError({ message: error.message || 'Unknown worker error', cohort: erroredCohort });
+        
+        const errorMessage = `Worker error in ${error.filename} at line ${error.lineno}: ${error.message}`;
+        console.error("BruteForceManager: " + errorMessage, error);
+
+        if (onError) {
+            onError({
+                message: errorMessage,
+                cohort: erroredCohort
+            });
+        }
         worker = null;
     }
 
@@ -84,17 +102,23 @@ const bruteForceManager = (() => {
 
     function startAnalysis(data, metric, cohort) {
         if (isRunning) {
-            if (onError) onError({ message: "An optimization is already running.", cohort });
+            const message = "An optimization is already running.";
+            if (onError) onError({ message: message, cohort });
+            console.warn(`BruteForceManager: ${message}`);
             return false;
         }
         if (!worker) {
             if (!initializeWorker()) {
-                if (onError) onError({ message: "Worker not available and could not be initialized.", cohort });
+                const message = "Worker not available and could not be re-initialized.";
+                if (onError) onError({ message: message, cohort });
+                console.error(`BruteForceManager: ${message}`);
                 return false;
             }
         }
         if (!data || data.length === 0) {
-             if (onError) onError({ message: "No data provided for optimization.", cohort });
+             const message = "No data provided for optimization.";
+             if (onError) onError({ message: message, cohort });
+             console.error(`BruteForceManager: ${message}`);
             return false;
         }
 
@@ -114,7 +138,9 @@ const bruteForceManager = (() => {
     }
 
     function cancelAnalysis() {
-        if (!isRunning || !worker) return false;
+        if (!isRunning || !worker) {
+            return false;
+        }
         worker.postMessage({ action: 'cancel' });
         return true;
     }
@@ -135,9 +161,9 @@ const bruteForceManager = (() => {
         if (worker) {
             worker.terminate();
             worker = null;
-            isRunning = false;
-            currentCohortRunning = null;
         }
+        isRunning = false;
+        currentCohortRunning = null;
     }
 
     return Object.freeze({
