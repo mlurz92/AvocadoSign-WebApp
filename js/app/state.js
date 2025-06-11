@@ -2,33 +2,32 @@ const state = (() => {
     let currentState = {};
 
     const defaultState = {
-        currentCohort: APP_CONFIG.DEFAULT_SETTINGS.KOLLEKTIV,
-        dataTableSort: cloneDeep(APP_CONFIG.DEFAULT_SETTINGS.DATEN_TABLE_SORT),
-        analysisTableSort: cloneDeep(APP_CONFIG.DEFAULT_SETTINGS.AUSWERTUNG_TABLE_SORT),
+        currentCohort: APP_CONFIG.DEFAULT_SETTINGS.COHORT,
+        dataTableSort: cloneDeep(APP_CONFIG.DEFAULT_SETTINGS.DATA_TABLE_SORT),
+        analysisTableSort: cloneDeep(APP_CONFIG.DEFAULT_SETTINGS.ANALYSIS_TABLE_SORT),
         publicationSection: APP_CONFIG.DEFAULT_SETTINGS.PUBLICATION_SECTION,
         publicationBruteForceMetric: APP_CONFIG.DEFAULT_SETTINGS.PUBLICATION_BRUTE_FORCE_METRIC,
         publicationLang: APP_CONFIG.DEFAULT_SETTINGS.PUBLICATION_LANG,
         statsLayout: APP_CONFIG.DEFAULT_SETTINGS.STATS_LAYOUT,
-        statsCohort1: APP_CONFIG.DEFAULT_SETTINGS.STATS_KOLLEKTIV1,
-        statsCohort2: APP_CONFIG.DEFAULT_SETTINGS.STATS_KOLLEKTIV2,
+        statsCohort1: APP_CONFIG.DEFAULT_SETTINGS.STATS_COHORT1,
+        statsCohort2: APP_CONFIG.DEFAULT_SETTINGS.STATS_COHORT2,
         presentationView: APP_CONFIG.DEFAULT_SETTINGS.PRESENTATION_VIEW,
         presentationStudyId: APP_CONFIG.DEFAULT_SETTINGS.PRESENTATION_STUDY_ID,
         activeTabId: 'publication'
     };
 
     function init() {
-        // Load and validate publicationSection from localStorage
         const loadedSection = loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PUBLICATION_SECTION);
         const isValidSection = PUBLICATION_CONFIG.sections.some(s => s.id === loadedSection);
 
         currentState = {
-            currentCohort: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.CURRENT_KOLLEKTIV) ?? defaultState.currentCohort,
+            currentCohort: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.CURRENT_COHORT) ?? defaultState.currentCohort,
             publicationSection: isValidSection ? loadedSection : defaultState.publicationSection,
             publicationBruteForceMetric: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PUBLICATION_BRUTE_FORCE_METRIC) ?? defaultState.publicationBruteForceMetric,
             publicationLang: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PUBLICATION_LANG) ?? defaultState.publicationLang,
             statsLayout: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.STATS_LAYOUT) ?? defaultState.statsLayout,
-            statsCohort1: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.STATS_KOLLEKTIV1) ?? defaultState.statsCohort1,
-            statsCohort2: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.STATS_KOLLEKTIV2) ?? defaultState.statsCohort2,
+            statsCohort1: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.STATS_COHORT1) ?? defaultState.statsCohort1,
+            statsCohort2: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.STATS_COHORT2) ?? defaultState.statsCohort2,
             presentationView: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PRESENTATION_VIEW) ?? defaultState.presentationView,
             presentationStudyId: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PRESENTATION_STUDY_ID) ?? defaultState.presentationStudyId,
             dataTableSort: cloneDeep(defaultState.dataTableSort),
@@ -49,7 +48,7 @@ const state = (() => {
     }
 
     function getCurrentCohort() { return currentState.currentCohort; }
-    function setCurrentCohort(newCohort) { return _setter('currentCohort', APP_CONFIG.STORAGE_KEYS.CURRENT_KOLLEKTIV, newCohort); }
+    function setCurrentCohort(newCohort) { return _setter('currentCohort', APP_CONFIG.STORAGE_KEYS.CURRENT_COHORT, newCohort); }
 
     function getDataTableSort() { return cloneDeep(currentState.dataTableSort); }
     function updateDataTableSort(key, subKey = null) {
@@ -100,10 +99,10 @@ const state = (() => {
     }
 
     function getStatsCohort1() { return currentState.statsCohort1; }
-    function setStatsCohort1(newCohort) { return _setter('statsCohort1', APP_CONFIG.STORAGE_KEYS.STATS_KOLLEKTIV1, newCohort); }
+    function setStatsCohort1(newCohort) { return _setter('statsCohort1', APP_CONFIG.STORAGE_KEYS.STATS_COHORT1, newCohort); }
 
     function getStatsCohort2() { return currentState.statsCohort2; }
-    function setStatsCohort2(newCohort) { return _setter('statsCohort2', APP_CONFIG.STORAGE_KEYS.STATS_KOLLEKTIV2, newCohort); }
+    function setStatsCohort2(newCohort) { return _setter('statsCohort2', APP_CONFIG.STORAGE_KEYS.STATS_COHORT2, newCohort); }
 
     function getPresentationView() { return currentState.presentationView; }
     function setPresentationView(newView) {
