@@ -364,13 +364,18 @@ const uiManager = (() => {
             if (bfResult && bfResult.bestResult) {
                 const best = bfResult.bestResult;
                 const criteriaDisplay = studyT2CriteriaManager.formatCriteriaForDisplay(best.criteria, best.logic);
+                
                 let interpretationTooltip = '';
-                if(bfResult.metric.includes('Accuracy') || bfResult.metric.includes('AUC')) {
-                    interpretationTooltip = getAUCInterpretation(best.metricValue);
+                const metric = bfResult.metric;
+                const value = best.metricValue;
+
+                if (metric.includes('Accuracy') || metric.includes('AUC')) {
+                    interpretationTooltip = getAUCInterpretation(value);
                 } else {
-                    interpretationTooltip = `A value of ${formatNumber(best.metricValue, 4)} for the ${bfResult.metric} indicates the performance of this criteria set. Higher values are generally better.`
+                    interpretationTooltip = `A value of ${formatNumber(value, 4)} for the ${metric} indicates the performance of this criteria set. Higher values are generally better.`;
                 }
-                const valueHTML = `<strong class="text-primary" data-tippy-content="${interpretationTooltip}">${formatNumber(best.metricValue, 4, 'N/A', true)}</strong>`;
+
+                const valueHTML = `<strong class="text-primary" data-tippy-content="${interpretationTooltip}">${formatNumber(value, 4, 'N/A', true)}</strong>`;
 
                 contentHTML = `
                     <p class="small text-muted">
@@ -480,8 +485,8 @@ const uiManager = (() => {
         });
 
         toggleButton.dataset.action = isExpanding ? 'collapse' : 'expand';
-        const expandAllTooltip = "Expand All Details";
-        const collapseAllTooltip = "Collapse All Details";
+        const expandAllTooltip = "Expand or collapse all detail views.";
+        const collapseAllTooltip = "Expand or collapse all detail views.";
         toggleButton.innerHTML = isExpanding
             ? `Collapse All Details <i class="fas fa-chevron-up ms-1"></i>`
             : `Expand All Details <i class="fas fa-chevron-down ms-1"></i>`;
