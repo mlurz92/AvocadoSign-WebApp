@@ -71,7 +71,7 @@ const dataProcessor = (() => {
             return cloneDeep(data.filter(p => p && p.therapy === cohortConfig.therapyValue));
         }
         
-        return cloneDeep(data);
+        return [];
     }
 
     function calculateHeaderStats(data, cohortId) {
