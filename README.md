@@ -18,7 +18,7 @@ This document provides a comprehensive technical overview of the **Nodal Staging
 
 The codebase is organized into a logical, feature-based directory structure to promote separation of concerns and code clarity.
 
-
+```
 /
 ├── index.html
 ├── css/
@@ -55,6 +55,7 @@ The codebase is organized into a logical, feature-based directory structure to p
 ├── presentation_tab.js
 ├── publication_tab.js
 └── export_tab.js
+```
 
 ## **3\. Architecture & Core Concepts**
 
@@ -150,7 +151,7 @@ To optimize performance and simplify code, the application uses a centralized ev
 The initial data is structured with consistent English keys.  
 Example:  
 
-
+```
 {
 id: 1,
 lastName: "John",
@@ -167,6 +168,7 @@ t2Nodes: [
 // ...
 ]
 }
+```
 
 ### **4.2. Processed Data Model (Application-Internal)**
 
