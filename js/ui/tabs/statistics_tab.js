@@ -38,7 +38,7 @@ const statisticsTab = (() => {
                             <tbody>
                                 <tr data-tippy-content="${tooltips.age}"><td>Age, Median (Min–Max) [Mean ± SD]</td><td>${fv(d.age?.median,1)} (${fv(d.age?.min,0)}–${fv(d.age?.max,0)}) [${fv(d.age?.mean,1)} ± ${fv(d.age?.sd,1)}]</td></tr>
                                 <tr data-tippy-content="${tooltips.sex}"><td>Sex (male / female) (n / %)</td><td>${d.sex?.m ?? 0} / ${d.sex?.f ?? 0} (${fP((d.sex?.m ?? 0) / total, 1)} / ${fP((d.sex?.f ?? 0) / total, 1)})</td></tr>
-                                <tr data-tippy-content="${tooltips.therapy}"><td>Therapy (Upfront / nRCT) (n / %)</td><td>${d.therapy?.['direkt OP'] ?? 0} / ${d.therapy?.nRCT ?? 0} (${fP((d.therapy?.['direkt OP'] ?? 0) / total, 1)} / ${fP((d.therapy?.nRCT ?? 0) / total, 1)})</td></tr>
+                                <tr data-tippy-content="${tooltips.therapy}"><td>Therapy (Upfront / nRCT) (n / %)</td><td>${d.therapy?.surgeryAlone ?? 0} / ${d.therapy?.neoadjuvantTherapy ?? 0} (${fP((d.therapy?.surgeryAlone ?? 0) / total, 1)} / ${fP((d.therapy?.neoadjuvantTherapy ?? 0) / total, 1)})</td></tr>
                                 <tr data-tippy-content="${tooltips.nStatus}"><td>N Status (+ / -) (n / %)</td><td>${d.nStatus?.plus ?? 0} / ${d.nStatus?.minus ?? 0} (${fP((d.nStatus?.plus ?? 0) / total, 1)} / ${fP((d.nStatus?.minus ?? 0) / total, 1)})</td></tr>
                                 <tr data-tippy-content="${tooltips.asStatus}"><td>AS Status (+ / -) (n / %)</td><td>${d.asStatus?.plus ?? 0} / ${d.asStatus?.minus ?? 0} (${fP((d.asStatus?.plus ?? 0) / total, 1)} / ${fP((d.asStatus?.minus ?? 0) / total, 1)})</td></tr>
                                 <tr data-tippy-content="${tooltips.t2Status}"><td>T2 Status (+ / -) (n / %)</td><td>${d.t2Status?.plus ?? 0} / ${d.t2Status?.minus ?? 0} (${fP((d.t2Status?.plus ?? 0) / total, 1)} / ${fP((d.t2Status?.minus ?? 0) / total, 1)})</td></tr>
@@ -231,7 +231,7 @@ const statisticsTab = (() => {
                         html += `<tr><td>${assocStats.size_mwu.featureName}</td><td>${na_stat}</td><td>${na_stat}</td><td>${na_stat}</td><td>${fPVal(assocStats.size_mwu.pValue)} ${getStatisticalSignificanceSymbol(assocStats.size_mwu.pValue)}</td><td>${assocStats.size_mwu.testName || na_stat}</td></tr>`;
                     }
 
-                    ['size', 'form', 'kontur', 'homogenitaet', 'signal'].forEach(fKey => {
+                    ['size', 'shape', 'border', 'homogeneity', 'signal'].forEach(fKey => {
                         if (assocStats[fKey]) {
                             const activeStatus = appliedCrit?.[fKey]?.active ? '' : ' (inactive)';
                             addRow(fKey, `${assocStats[fKey].featureName}${activeStatus}`, assocStats[fKey]);
