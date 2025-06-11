@@ -26,18 +26,14 @@ const uiComponents = (() => {
         return headerButtonHtml;
     }
 
-    function createDashboardCard(title, content, chartId = null, cardClasses = '', headerClasses = '', bodyClasses = '', downloadButtons = [], cohortDisplayName = '') {
+    function createDashboardCard(title, content, chartId = null, cardClasses = '', headerClasses = '', bodyClasses = '', downloadButtons = [], tooltipContent = '') {
         const headerButtonHtml = createHeaderButtonHTML(downloadButtons, chartId || title.replace(/[^a-z0-9]/gi, '_'), title);
-        const tooltipKey = chartId ? chartId.replace(/^chart-dash-/, '') : title.toLowerCase().replace(/\s+/g, '');
-        let tooltipContent = APP_CONFIG.UI_TEXTS.tooltips.descriptiveStatistics[tooltipKey]?.description || title || '';
-        if (cohortDisplayName) {
-            tooltipContent = tooltipContent.replace('[COHORT]', `<strong>${cohortDisplayName}</strong>`);
-        }
+        const finalTooltipContent = tooltipContent ? `data-tippy-content="${escapeHTML(tooltipContent)}"` : '';
 
         return `
             <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 dashboard-card-col ${cardClasses}">
                 <div class="card h-100 dashboard-card">
-                    <div class="card-header ${headerClasses} d-flex justify-content-between align-items-center" data-tippy-content="${tooltipContent}">
+                    <div class="card-header ${headerClasses} d-flex justify-content-between align-items-center" ${finalTooltipContent}>
                         <span class="text-truncate">${title}</span>
                         <span class="card-header-buttons flex-shrink-0 ps-1">${headerButtonHtml}</span>
                     </div>
@@ -66,18 +62,14 @@ const uiComponents = (() => {
             return values.map(value => {
                 const isActiveValue = isChecked && currentValue === value;
                 const icon = getT2IconSVG(key, value);
-                const buttonTooltip = `Set criterion '${criterionLabel}' to '${value}'. ${isChecked ? '' : '(Criterion is currently inactive)'}`;
+                const buttonTooltip = `Set criterion '${criterionLabel}' to '${value}'.`;
                 
                 return `<button class="btn t2-criteria-button criteria-icon-button ${isActiveValue ? 'active' : ''} ${!isChecked ? 'inactive-option' : ''}" data-criterion="${key}" data-value="${value}" data-tippy-content="${buttonTooltip}" ${!isChecked ? 'disabled' : ''}>${icon}</button>`;
             }).join('');
         };
 
-        const createCriteriaGroup = (key, label, tooltipKey, contentGenerator) => {
+        const createCriteriaGroup = (key, label, tooltip, contentGenerator) => {
             const isChecked = initialCriteria[key]?.active === true;
-            let tooltip = APP_CONFIG.UI_TEXTS.tooltips[tooltipKey]?.description || label;
-            if (tooltipKey === 't2Size') {
-                tooltip = tooltip.replace('[MIN]', min).replace('[MAX]', max).replace('[STEP]', step);
-            }
             return `
                 <div class="col-md-6 criteria-group">
                     <div class="form-check mb-2">
@@ -95,7 +87,7 @@ const uiComponents = (() => {
             <div class="card criteria-card" id="t2-criteria-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>Define T2 Malignancy Criteria</span>
-                    <div class="form-check form-switch" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.t2Logic.description}">
+                    <div class="form-check form-switch" data-tippy-content="<strong>AND:</strong> All active criteria must be fulfilled. <br><strong>OR:</strong> At least one active criterion must be fulfilled.">
                          <label class="form-check-label small me-2" for="t2-logic-switch" id="t2-logic-label-prefix">Logic:</label>
                          <input class="form-check-input" type="checkbox" role="switch" id="t2-logic-switch" ${logicChecked ? 'checked' : ''}>
                          <label class="form-check-label fw-bold" for="t2-logic-switch" id="t2-logic-label">${APP_CONFIG.UI_TEXTS.t2LogicDisplayNames[initialLogic] || initialLogic}</label>
@@ -103,23 +95,23 @@ const uiComponents = (() => {
                 </div>
                 <div class="card-body">
                      <div class="row g-4">
-                        ${createCriteriaGroup('size', 'Size', 't2Size', (key, isChecked) => `
+                        ${createCriteriaGroup('size', 'Size', 'Short-axis diameter. Nodes with size ≥ threshold are considered suspicious.', (key, isChecked) => `
                             <div class="d-flex align-items-center flex-wrap">
                                  <span class="me-1 small text-muted">≥</span>
-                                 <input type="range" class="form-range criteria-range flex-grow-1 me-2" id="range-size" min="${min}" max="${max}" step="${step}" value="${formattedThresholdForInput}" ${!isChecked ? 'disabled' : ''} data-tippy-content="Set short-axis diameter threshold (≥).">
+                                 <input type="range" class="form-range criteria-range flex-grow-1 me-2" id="range-size" min="${min}" max="${max}" step="${step}" value="${formattedThresholdForInput}" ${!isChecked ? 'disabled' : ''}>
                                  <span class="criteria-value-display text-end me-1 fw-bold" id="value-size">${formatNumber(sizeThreshold, 1)}</span><span class="me-2 small text-muted">mm</span>
-                                 <input type="number" class="form-control form-control-sm criteria-input-manual" id="input-size" min="${min}" max="${max}" step="${step}" value="${formattedThresholdForInput}" ${!isChecked ? 'disabled' : ''} style="width: 70px;" aria-label="Enter size manually" data-tippy-content="Enter threshold manually.">
+                                 <input type="number" class="form-control form-control-sm criteria-input-manual" id="input-size" min="${min}" max="${max}" step="${step}" value="${formattedThresholdForInput}" ${!isChecked ? 'disabled' : ''} style="width: 70px;" aria-label="Enter size manually">
                             </div>
                         `)}
-                        ${createCriteriaGroup('shape', 'Shape', 't2Shape', createButtonOptions)}
-                        ${createCriteriaGroup('border', 'Border', 't2Border', createButtonOptions)}
-                        ${createCriteriaGroup('homogeneity', 'Homogeneity', 't2Homogeneity', createButtonOptions)}
-                        ${createCriteriaGroup('signal', 'Signal', 't2Signal', createButtonOptions)}
+                        ${createCriteriaGroup('shape', 'Shape', 'Morphological shape of the lymph node.', createButtonOptions)}
+                        ${createCriteriaGroup('border', 'Border', 'Contour characteristic of the lymph node.', createButtonOptions)}
+                        ${createCriteriaGroup('homogeneity', 'Homogeneity', 'Internal signal characteristic on T2-weighted images.', createButtonOptions)}
+                        ${createCriteriaGroup('signal', 'Signal', 'T2-weighted signal intensity relative to surrounding muscle.', createButtonOptions)}
                         <div class="col-12 d-flex justify-content-end align-items-center border-top pt-3 mt-3">
-                            <button class="btn btn-sm btn-outline-secondary me-2" id="btn-reset-criteria" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.t2Actions.reset}">
+                            <button class="btn btn-sm btn-outline-secondary me-2" id="btn-reset-criteria" data-tippy-content="Reset all criteria and logic to their default state.">
                                 <i class="fas fa-undo me-1"></i> Reset to Default
                             </button>
-                            <button class="btn btn-sm btn-primary" id="btn-apply-criteria" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.t2Actions.apply}">
+                            <button class="btn btn-sm btn-primary" id="btn-apply-criteria" data-tippy-content="Apply and save the current criteria settings for all analyses.">
                                 <i class="fas fa-check me-1"></i> Apply & Save
                             </button>
                         </div>
@@ -129,19 +121,11 @@ const uiComponents = (() => {
     }
 
     function createStatisticsCard(id, title, content = '', addPadding = true, tooltipKey = null, downloadButtons = [], tableId = null, cohortId = '') {
-        let cardTooltipHtml = `data-tippy-content="${title}"`;
-        if (tooltipKey && APP_CONFIG.UI_TEXTS.tooltips[tooltipKey]?.cardTitle) {
-            let tooltipTemplate = APP_CONFIG.UI_TEXTS.tooltips[tooltipKey].cardTitle;
-            let cohortName = cohortId ? getCohortDisplayName(cohortId) : 'the current cohort';
-            let finalTooltip = tooltipTemplate.replace('[COHORT]', `<strong>${cohortName}</strong>`);
-            cardTooltipHtml = `data-tippy-content="${finalTooltip}"`;
-        }
-        
         const headerButtonHtml = createHeaderButtonHTML(downloadButtons, id + '-content', title);
         return `
             <div class="col-12 stat-card" id="${id}-card-container">
                 <div class="card h-100">
-                    <div class="card-header" ${cardTooltipHtml}>
+                    <div class="card-header">
                          ${title}
                          <span class="float-end card-header-buttons">${headerButtonHtml}</span>
                      </div>
