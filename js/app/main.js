@@ -21,7 +21,9 @@ class App {
                 uiManager.showToast("Warning: No valid patient data loaded.", "warning");
             }
             
-            this.refreshAll(false);
+            this.filterAndPrepareData();
+            this.updateUI();
+            this.renderCurrentTab();
             
             if (!loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.FIRST_APP_START)) {
                 uiManager.showQuickGuide();
@@ -217,7 +219,7 @@ class App {
 
         switch (tabId) {
             case 'data': uiManager.renderTabContent(tabId, () => dataTab.render(this.currentCohortData, state.getDataTableSort())); break;
-            case 'analysis': uiManager.renderTabContent(tabId, () => analysisTab.render(this.currentCohortData, t2CriteriaManager.getCurrentCriteria(), t2CriteriaManager.getCurrentLogic(), state.getAnalysisTableSort(), cohort, bruteForceManager.isWorkerAvailable(), this.allPublicationStats[cohort], bruteForceResults[cohort])); break;
+            case 'analysis': uiManager.renderTabContent(tabId, () => analysisTab.render(this.currentCohortData, t2CriteriaManager.getCurrentCriteria(), t2CriteriaManager.getAppliedLogic(), state.getAnalysisTableSort(), cohort, bruteForceManager.isWorkerAvailable(), this.allPublicationStats[cohort], bruteForceResults[cohort])); break;
             case 'statistics': uiManager.renderTabContent(tabId, () => statisticsTab.render(this.processedData, criteria, logic, state.getStatsLayout(), state.getStatsCohort1(), state.getStatsCohort2(), cohort)); break;
             case 'presentation': uiManager.renderTabContent(tabId, () => presentationTab.render(state.getPresentationView(), currentPresentationData, state.getPresentationStudyId(), cohort, this.processedData, criteria, logic)); break;
             case 'publication': uiManager.renderTabContent(tabId, () => publicationTab.render(publicationData, state.getPublicationSection())); break;
@@ -227,7 +229,7 @@ class App {
 
     handleCohortChange(newCohort, source = "user") {
         if (state.setCurrentCohort(newCohort)) {
-            this.refreshAll(true);
+            this.refreshCurrentTab();
             if (source === "user") {
                 uiManager.showToast(`Cohort '${getCohortDisplayName(newCohort)}' selected.`, 'info');
             } else if (source === "auto_presentation") {
@@ -245,7 +247,7 @@ class App {
     
     applyAndRefreshAll() {
         t2CriteriaManager.applyCriteria();
-        this.refreshAll(true);
+        this.refreshCurrentTab();
         uiManager.markCriteriaSavedIndicator(false);
         uiManager.showToast('T2 criteria applied & saved.', 'success');
     }
@@ -327,17 +329,11 @@ class App {
             uiManager.showToast(`Export type '${exportType}' not recognized or implemented.`, 'warning');
         }
     }
-    
-    refreshAll(renderTab = true) {
-        this.filterAndPrepareData();
-        if (renderTab) {
-            this.renderCurrentTab();
-        }
-        this.updateUI();
-    }
 
     refreshCurrentTab() {
-        this.refreshAll(true);
+        this.filterAndPrepareData();
+        this.renderCurrentTab();
+        this.updateUI();
     }
     
     getRawData() { return this.rawData; }
