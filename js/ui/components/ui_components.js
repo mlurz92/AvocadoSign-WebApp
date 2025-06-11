@@ -28,7 +28,7 @@ const uiComponents = (() => {
 
     function createDashboardCard(title, content, chartId = null, cardClasses = '', headerClasses = '', bodyClasses = '', downloadButtons = [], cohortDisplayName = '') {
         const headerButtonHtml = createHeaderButtonHTML(downloadButtons, chartId || title.replace(/[^a-z0-9]/gi, '_'), title);
-        
+
         return `
             <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 dashboard-card-col ${cardClasses}">
                 <div class="card h-100 dashboard-card">
@@ -69,9 +69,10 @@ const uiComponents = (() => {
 
         const createCriteriaGroup = (key, label, tooltipKey, contentGenerator) => {
             const isChecked = initialCriteria[key]?.active === true;
-            let tooltip = APP_CONFIG.UI_TEXTS.tooltips.t2Size?.description || label;
-            if (tooltipKey === 't2Size') {
-                tooltip = tooltip.replace('[MIN]', min).replace('[MAX]', max).replace('[STEP]', step);
+            let tooltip = APP_CONFIG.UI_TEXTS.tooltips.tooltipDefinitions[tooltipKey] || label;
+             if (tooltipKey === 't2Size') {
+                const sizeTooltipTemplate = "Size criterion (short axis): Lymph nodes with a diameter <strong>greater than or equal to (≥)</strong> the set threshold are considered suspicious. Adjustable range: [MIN] - [MAX] mm (step: [STEP] mm). Enable/disable with checkbox.";
+                tooltip = sizeTooltipTemplate.replace('[MIN]', min).replace('[MAX]', max).replace('[STEP]', step);
             }
             return `
                 <div class="col-md-6 criteria-group">
