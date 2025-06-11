@@ -1,7 +1,7 @@
 const publicationTab = (() => {
 
     function _generateAbstractHTML(stats, commonData) {
-        const gesamtStats = stats?.Gesamt;
+        const gesamtStats = stats?.[APP_CONFIG.COHORTS.OVERALL.id];
         const asGesamt = gesamtStats?.performanceAS;
         const bfGesamtStats = gesamtStats?.performanceT2Bruteforce;
         const vergleichASvsBFGesamt = gesamtStats?.comparisonASvsT2Bruteforce;
@@ -15,17 +15,13 @@ const publicationTab = (() => {
         
         const maleCount = gesamtStats?.descriptive?.sex?.m || 0;
         const sexText = `${maleCount} men`;
-        const femaleCount = nGesamt - maleCount;
-        const sexTextFull = `${maleCount} men and ${femaleCount} women`; // Adhering to Radiology style: "60 men and 40 women" or "60 men" if majority
 
         const studyPeriod = commonData.references?.STUDY_PERIOD_2020_2023 || "January 2020 and November 2023";
 
-        // Helper for consistent CI formatting for publication
         const formatCIForPublication = (metric) => {
             if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return 'N/A';
-            const metricKey = Object.keys(metric).find(k => k === 'sens' || k === 'spec' || k === 'ppv' || k === 'npv' || k === 'acc' || k === 'auc' || k === 'f1') || 'value';
-            const digits = (metricKey === 'auc' || metricKey === 'f1') ? 2 : 1; // AUC/F1 typically 2-3 digits, percentages 1 digit
-            const isPercent = !(metricKey === 'auc' || metricKey === 'f1');
+            const isPercent = !(metric.name === 'auc' || metric.name === 'f1');
+            const digits = (metric.name === 'auc' || metric.name === 'f1') ? 2 : 1;
             const valueStr = isPercent ? formatPercent(metric.value, digits) : formatNumber(metric.value, digits, 'N/A', true);
 
             if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) {
@@ -33,7 +29,7 @@ const publicationTab = (() => {
             }
             const lowerStr = isPercent ? formatPercent(metric.ci.lower, digits) : formatNumber(metric.ci.lower, digits, 'N/A', true);
             const upperStr = isPercent ? formatPercent(metric.ci.upper, digits) : formatNumber(metric.ci.upper, digits, 'N/A', true);
-            return `${valueStr} (95% CI: ${lowerStr}, ${upperStr})`; // Radiology uses comma for CI
+            return `${valueStr} (95% CI: ${lowerStr}, ${upperStr})`;
         };
         
         const getPValueTextForPublication = (pValue) => getPValueText(pValue, true);
@@ -58,7 +54,7 @@ const publicationTab = (() => {
     function _generateMethodsStudyDesignHTML(stats, commonData) {
         return `
             <p>We conducted a single-institution retrospective study to evaluate the diagnostic performance of the Avocado Sign, a novel MR imaging marker, in predicting locoregional lymph node status in patients with rectal cancer. The study was approved by the institutional review board of Klinikum St. Georg Leipzig, Germany, and written informed consent was obtained from all patients before enrolment. This study was compliant with HIPAA regulations.
-            Patients were eligible for inclusion if they were 18 years of age or older and had histologically confirmed rectal cancer. Exclusion criteria included unresectable tumors and contraindications to MRI. From ${commonData.references.STUDY_PERIOD_2020_2023}, ${formatNumber(commonData.nOverall, 0)} consecutive patients underwent baseline staging MRI. Of these, ${formatNumber(commonData.nNRCT, 0)} patients (${formatPercent(commonData.nNRCT / commonData.nOverall, 1)}) received standard neoadjuvant chemoradiotherapy (nCRT) followed by restaging MRI prior to rectal surgery, according to current guidelines and the decision of a multidisciplinary tumor board. The remaining ${formatNumber(commonData.nUpfrontSurgery, 0)} patients (${formatPercent(commonData.nUpfrontSurgery / commonData.nOverall, 1)}) underwent primary surgery without prior therapy. For patients undergoing surgery alone, the mean interval between MRI and surgery was 7 days (range: 5–14 days). For nCRT patients, restaging MRI was performed a mean of 6 weeks (range: 5–8 weeks) after completion of therapy, with surgery occurring approximately 10 days (range: 7–15 days) post-MRI.
+            Patients were eligible for inclusion if they were 18 years of age or older and had histologically confirmed rectal cancer. Exclusion criteria included unresectable tumors and contraindications to MRI. From ${commonData.references.STUDY_PERIOD_2020_2023}, ${formatNumber(commonData.nOverall, 0)} consecutive patients underwent baseline staging MRI. Of these, ${formatNumber(commonData.nNeoadjuvantTherapy, 0)} patients (${formatPercent(commonData.nNeoadjuvantTherapy / commonData.nOverall, 1)}) received standard neoadjuvant chemoradiotherapy (nCRT) followed by restaging MRI prior to rectal surgery, according to current guidelines and the decision of a multidisciplinary tumor board. The remaining ${formatNumber(commonData.nSurgeryAlone, 0)} patients (${formatPercent(commonData.nSurgeryAlone / commonData.nOverall, 1)}) underwent primary surgery without prior therapy. For patients undergoing surgery alone, the mean interval between MRI and surgery was 7 days (range: 5–14 days). For nCRT patients, restaging MRI was performed a mean of 6 weeks (range: 5–8 weeks) after completion of therapy, with surgery occurring approximately 10 days (range: 7–15 days) post-MRI.
             Histopathological examination of the resected specimens served as the reference standard (Fig. 1).
             </p>
         `;
@@ -85,7 +81,7 @@ const publicationTab = (() => {
             <ul>
                 <li><strong>Rutegård et al. (2025) / ESGAR 2016:</strong> These criteria combine size and morphological features [${commonData.references.REFERENCE_RUTEGARD_2025.id}]. Lymph nodes are considered malignant if: short axis ≥ 9 mm; OR short axis 5–8 mm and ≥2 suspicious features (round, irregular, heterogeneous); OR short axis < 5 mm and all 3 suspicious features are present. This set was applied to the 'Overall' cohort, aligning with its comprehensive evaluation context.</li>
                 <li><strong>Koh et al. (2008):</strong> Morphological criteria defining a malignant node by irregular outlines or internal signal heterogeneity on T2-weighted MRI [${commonData.references.REFERENCE_KOH_2008.id}]. This set was evaluated on the overall cohort for broad comparability.</li>
-                <li><strong>Barbaro et al. (2024):</strong> This study focused on optimal cut-off for short axis in restaging after nCRT: ≥ 2.3mm (original 2.2mm) [${commonData.references.REFERENCE_BARBARO_2024.id}]. This criterion was applied specifically to the 'nRCT' cohort.</li>
+                <li><strong>Barbaro et al. (2024):</strong> This study focused on optimal cut-off for short axis in restaging after nCRT: ≥ 2.3mm (original 2.2mm) [${commonData.references.REFERENCE_BARBARO_2024.id}]. This criterion was applied specifically to the 'Neoadjuvant therapy' cohort.</li>
             </ul>
             <h4>Cohort-Optimized T2 Criteria (Brute-Force):</h4>
             <p>To identify the best-performing T2w criteria combination for our specific dataset, a systematic brute-force optimization was performed. This algorithm exhaustively tested all possible combinations of the five morphological T2 features (size, shape, border, homogeneity, signal intensity) and logical operators (AND/OR). The optimization aimed to maximize a pre-selected diagnostic metric (e.g., ${commonData.bruteForceMetricForPublication}). The best-performing criteria set identified by this process was then used for comparative analysis with the Avocado Sign. The brute-force analysis was performed using a dedicated Web Worker to ensure UI responsiveness.</p>
@@ -107,30 +103,30 @@ const publicationTab = (() => {
     }
 
     function _generateResultsPatientCharacteristicsHTML(stats, commonData) {
-        const gesamtStats = stats?.Gesamt?.descriptive;
+        const gesamtStats = stats?.[APP_CONFIG.COHORTS.OVERALL.id]?.descriptive;
         if (!gesamtStats) return `<p class="text-warning">Patient characteristics data not available for the overall cohort.</p>`;
         
         const maleCount = gesamtStats.sex?.m ?? 0;
         const malePercentage = formatPercent(maleCount / gesamtStats.patientCount, 1);
 
-        const upfrontSurgeryCount = gesamtStats.therapy?.['direkt OP'] ?? 0;
-        const upfrontSurgeryPercentage = formatPercent(upfrontSurgeryCount / gesamtStats.patientCount, 1);
+        const surgeryAloneCount = gesamtStats.therapy?.surgeryAlone ?? 0;
+        const surgeryAlonePercentage = formatPercent(surgeryAloneCount / gesamtStats.patientCount, 1);
 
-        const nRCTCount = gesamtStats.therapy?.nRCT ?? 0;
-        const nRCTPercentage = formatPercent(nRCTCount / gesamtStats.patientCount, 1);
+        const neoadjuvantTherapyCount = gesamtStats.therapy?.neoadjuvantTherapy ?? 0;
+        const neoadjuvantTherapyPercentage = formatPercent(neoadjuvantTherapyCount / gesamtStats.patientCount, 1);
 
         const nPlusCount = gesamtStats.nStatus?.plus ?? 0;
         const nPlusPercentage = formatPercent(nPlusCount / gesamtStats.patientCount, 1);
 
         return `
-            <p>A total of ${gesamtStats.patientCount} patients with histologically confirmed rectal cancer were included in the study (Table 2). The mean age was ${formatNumber(gesamtStats.age?.mean, 1)} ± ${formatNumber(gesamtStats.age?.sd, 1)} years, and ${malePercentage} were male. ${upfrontSurgeryCount} patients (${upfrontSurgeryPercentage}) underwent surgery alone, while ${nRCTCount} patients (${nRCTPercentage}) received neoadjuvant chemoradiotherapy. Histopathological examination revealed lymph node metastases in ${nPlusCount} patients (${nPlusPercentage}).</p>
+            <p>A total of ${gesamtStats.patientCount} patients with histologically confirmed rectal cancer were included in the study (Table 2). The mean age was ${formatNumber(gesamtStats.age?.mean, 1)} ± ${formatNumber(gesamtStats.age?.sd, 1)} years, and ${malePercentage} were male. ${surgeryAloneCount} patients (${surgeryAlonePercentage}) underwent surgery alone, while ${neoadjuvantTherapyCount} patients (${neoadjuvantTherapyPercentage}) received neoadjuvant chemoradiotherapy. Histopathological examination revealed lymph node metastases in ${nPlusCount} patients (${nPlusPercentage}).</p>
         `;
     }
 
     function _generateResultsASPerformanceHTML(stats, commonData) {
-        const gesamtStats = stats?.Gesamt?.performanceAS; // Corrected variable name from gesaltStats to gesamtStats
-        const direktOPStats = stats?.['direkt OP']?.performanceAS;
-        const nRCTStats = stats?.nRCT?.performanceAS;
+        const gesamtStats = stats?.[APP_CONFIG.COHORTS.OVERALL.id]?.performanceAS;
+        const surgeryAloneStats = stats?.[APP_CONFIG.COHORTS.SURGERY_ALONE.id]?.performanceAS;
+        const nRCTStats = stats?.[APP_CONFIG.COHORTS.NEOADJUVANT.id]?.performanceAS;
 
         if (!gesamtStats) return `<p class="text-warning">Avocado Sign diagnostic performance data not available.</p>`;
 
@@ -148,20 +144,21 @@ const publicationTab = (() => {
         };
         
         const getPValueTextForPub = (pValue) => getPValueText(pValue, true);
-        const interobserverKappa = stats?.Gesamt?.interobserverKappa || 0.92;
-        const interobserverKappaCI = stats?.Gesamt?.interobserverKappaCI || { lower: 0.85, upper: 0.99 };
+        const interobserverKappa = stats?.[APP_CONFIG.COHORTS.OVERALL.id]?.interobserverKappa || 0.92;
+        const interobserverKappaCI = stats?.[APP_CONFIG.COHORTS.OVERALL.id]?.interobserverKappaCI || { lower: 0.85, upper: 0.99 };
 
         return `
             <p>In the overall cohort, the Avocado Sign was positive in ${formatNumber(gesamtStats.matrix?.tp + gesamtStats.matrix?.fp, 0)} patients and negative in ${formatNumber(gesamtStats.matrix?.fn + gesamtStats.matrix?.tn, 0)} patients. Histopathological examination revealed lymph node metastases in ${formatNumber(gesamtStats.matrix?.tp + gesamtStats.matrix?.fn, 0)} patients, while ${formatNumber(gesamtStats.matrix?.fp + gesamtStats.matrix?.tn, 0)} patients were classified N0.</p>
             <p>The Avocado Sign demonstrated high diagnostic accuracy for predicting lymph node involvement across the overall cohort and subgroups. Overall sensitivity was ${formatCIForPub(gesamtStats.sens)}, specificity was ${formatCIForPub(gesamtStats.spec)}, PPV was ${formatCIForPub(gesamtStats.ppv)}, NPV was ${formatCIForPub(gesamtStats.npv)}, and accuracy was ${formatCIForPub(gesamtStats.acc)}. The area under the ROC curve (AUC) was ${formatCIForPub(gesamtStats.auc)} for the overall cohort, indicating high diagnostic performance (Figure 1).</p>
-            <p>Subgroup analysis revealed excellent performance of the Avocado Sign in patients undergoing surgery alone, with a sensitivity of ${formatCIForPub(direktOPStats?.sens)}, specificity of ${formatCIForPub(direktOPStats?.spec)}, PPV of ${formatCIForPub(direktOPStats?.ppv)}, NPV of ${formatCIForPub(direktOPStats?.npv)}, and accuracy of ${formatCIForPub(direktOPStats?.acc)}. The AUC was ${formatCIForPub(direktOPStats?.auc)} (Figure 2).</p>
-            <p>In patients receiving neoadjuvant chemoradiotherapy, the Avocado Sign showed a sensitivity of ${formatCIForPub(nRCTStats?.sens)}, specificity of ${formatCIForPub(nRCTStats?.spec)}, PPV of ${formatCIForPub(nRCTStats?.ppv)}, NPV of ${formatCIForPub(nRCTStats?.npv)}, and accuracy of ${formatCIForPub(nRCTStats?.acc)}. The AUC was ${formatCIForPub(nRCTStats?.auc)} (Figure 3). Chi-square tests indicated no significant differences in diagnostic performance between subgroups (${getPValueTextForPub(stats?.Gesamt?.comparisonASvsT2Applied?.mcnemar?.pValue)}), affirming the robustness of the Avocado Sign across treatment types. An overview of nominal values and diagnostic performance metrics for overall cohort and subgroups is provided in Table 3.</p>
+            <p>Subgroup analysis revealed excellent performance of the Avocado Sign in patients undergoing surgery alone, with a sensitivity of ${formatCIForPub(surgeryAloneStats?.sens)}, specificity of ${formatCIForPub(surgeryAloneStats?.spec)}, PPV of ${formatCIForPub(surgeryAloneStats?.ppv)}, NPV of ${formatCIForPub(surgeryAloneStats?.npv)}, and accuracy of ${formatCIForPub(surgeryAloneStats?.acc)}. The AUC was ${formatCIForPub(surgeryAloneStats?.auc)} (Figure 2).</p>
+            <p>In patients receiving neoadjuvant chemoradiotherapy, the Avocado Sign showed a sensitivity of ${formatCIForPub(nRCTStats?.sens)}, specificity of ${formatCIForPub(nRCTStats?.spec)}, PPV of ${formatCIForPub(nRCTStats?.ppv)}, NPV of ${formatCIForPub(nRCTStats?.npv)}, and accuracy of ${formatCIForPub(nRCTStats?.acc)}. The AUC was ${formatCIForPub(nRCTStats?.auc)} (Figure 3). Chi-square tests indicated no significant differences in diagnostic performance between subgroups (${getPValueTextForPub(stats?.[APP_CONFIG.COHORTS.OVERALL.id]?.comparisonASvsT2Applied?.mcnemar?.pValue)}), affirming the robustness of the Avocado Sign across treatment types. An overview of nominal values and diagnostic performance metrics for overall cohort and subgroups is provided in Table 3.</p>
             <p>Interobserver agreement for assessing the Avocado Sign was almost perfect, with a Cohen’s kappa value of ${formatNumber(interobserverKappa, 2, 'N/A', true)} (95% CI: ${formatNumber(interobserverKappaCI.lower, 2, 'N/A', true)}, ${formatNumber(interobserverKappaCI.upper, 2, 'N/A', true)}) and an absolute agreement rate of 95% (101 out of 106 cases) [${commonData.references.REFERENCE_LURZ_SCHAEFER_2025.id}].</p>
         `;
     }
     
     function _generateResultsT2LiteratureHTML(stats, commonData) {
-         const evaluatedSets = PUBLICATION_CONFIG.literatureCriteriaSets.filter(set => stats?.[set.applicableCohort || 'Gesamt']?.performanceT2Literature?.[set.id]);
+         const overallCohortId = APP_CONFIG.COHORTS.OVERALL.id;
+         const evaluatedSets = PUBLICATION_CONFIG.literatureCriteriaSets.filter(set => stats?.[set.applicableCohort || overallCohortId]?.performanceT2Literature?.[set.id]);
          if (evaluatedSets.length === 0) return `<p class="text-warning">No literature-based T2 performance data available for this cohort.</p>`;
          return `<p>We evaluated the diagnostic performance of several literature-based T2-weighted MRI criteria sets for N-status prediction within their applicable cohorts. The results, including sensitivity, specificity, and AUC, are summarized in Table 4, showing variable performance depending on the criteria set and the patient cohort.</p>`;
     }
@@ -176,7 +173,7 @@ const publicationTab = (() => {
     }
 
     function _generateDiscussionHTML(stats, commonData) {
-        const gesamtStatsAS = stats?.Gesamt?.performanceAS;
+        const gesamtStatsAS = stats?.[APP_CONFIG.COHORTS.OVERALL.id]?.performanceAS;
         const formatCIForPub = (metric) => {
             if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return 'N/A';
             const digits = (metric.name === 'auc') ? 2 : 1;
@@ -189,7 +186,7 @@ const publicationTab = (() => {
             const upperStr = isPercent ? formatPercent(metric.ci.upper, digits) : formatNumber(metric.ci.upper, digits, 'N/A', true);
             return `${valueStr} (95% CI: ${lowerStr}, ${upperStr})`;
         };
-        const interobserverKappa = stats?.Gesamt?.interobserverKappa || 0.92;
+        const interobserverKappa = stats?.[APP_CONFIG.COHORTS.OVERALL.id]?.interobserverKappa || 0.92;
 
         return `
             <p>This retrospective study demonstrates that the Avocado Sign can accurately predict mesorectal lymph node status in patients with rectal cancer [${commonData.references.REFERENCE_LURZ_SCHAEFER_2025.id}]. Its high diagnostic performance across patient subgroups underlines its potential to ameliorate MRI nodal staging. The Avocado Sign showed an overall sensitivity of ${formatPercent(gesamtStatsAS?.sens?.value, 1)}, specificity of ${formatPercent(gesamtStatsAS?.spec?.value, 1)}, and an AUC of ${formatNumber(gesamtStatsAS?.auc?.value, 2, 'N/A', true)}, which are comparable to or exceed previously reported accuracies of T2-weighted MRI.</p>
@@ -205,10 +202,7 @@ const publicationTab = (() => {
 
     function _generateReferencesHTML(stats, commonData) {
         const allReferences = Object.values(commonData.references).filter(ref => typeof ref === 'object' && ref.id).sort((a,b) => a.id - b.id);
-        
-        // Filter out specific non-reference data like STUDY_PERIOD_2020_2023
         const filteredReferences = allReferences.filter(ref => !ref.id.toString().startsWith('STUDY_PERIOD_'));
-
         return `<ul>${filteredReferences.map(ref => `<li>${ref.text}</li>`).join('')}</ul>`;
     }
 
@@ -245,9 +239,8 @@ const publicationTab = (() => {
         
         const fCI_pub = (metric) => {
             if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return na;
-            const metricKey = Object.keys(metric).find(k => k === 'sens' || k === 'spec' || k === 'ppv' || k === 'npv' || k === 'acc' || k === 'auc' || k === 'f1') || 'value';
-            const digits = (metricKey === 'auc') ? 2 : ((metricKey === 'f1') ? 3 : 1);
-            const isPercent = metricKey !== 'auc'; // AUC values are not percentages, F1-score is also not percentage
+            const isPercent = !(metric.name === 'auc' || metric.name === 'f1');
+            const digits = (metric.name === 'auc' || metric.name === 'f1') ? 2 : 1;
             const valueStr = isPercent ? fp(metric.value, digits) : fv(metric.value, digits, true);
             if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) return valueStr;
             const lowerStr = isPercent ? fp(metric.ci.lower, digits) : fv(metric.ci.lower, digits, true);
@@ -264,63 +257,58 @@ const publicationTab = (() => {
             rows = PUBLICATION_CONFIG.literatureCriteriaSets.map(set => [
                 `${set.name} (${getCohortDisplayName(set.applicableCohort)})`,
                 set.criteria.size?.active ? `${set.criteria.size.condition || '>='}${fv(set.criteria.size.threshold, 1)}mm` : 'N/A',
-                set.criteria.form?.active ? (set.criteria.form.value === 'rund' ? 'round' : set.criteria.form.value) : 'N/A',
-                set.criteria.kontur?.active ? (set.criteria.kontur.value === 'scharf' ? 'sharp' : 'irregular') : 'N/A',
-                set.criteria.homogenitaet?.active ? (set.criteria.homogenitaet.value === 'homogen' ? 'homogeneous' : 'heterogeneous') : 'N/A',
-                set.criteria.signal?.active ? (set.criteria.signal.value === 'signalarm' ? 'low signal' : (set.criteria.signal.value === 'intermediär' ? 'intermediate signal' : 'high signal')) : 'N/A',
+                set.criteria.shape?.active ? (set.criteria.shape.value === 'round' ? 'round' : set.criteria.shape.value) : 'N/A',
+                set.criteria.border?.active ? (set.criteria.border.value === 'sharp' ? 'sharp' : 'irregular') : 'N/A',
+                set.criteria.homogeneity?.active ? (set.criteria.homogeneity.value === 'homogeneous' ? 'homogeneous' : 'heterogeneous') : 'N/A',
+                set.criteria.signal?.active ? (set.criteria.signal.value === 'lowSignal' ? 'low signal' : (set.criteria.signal.value === 'intermediateSignal' ? 'intermediate signal' : 'high signal')) : 'N/A',
                 APP_CONFIG.UI_TEXTS.t2LogicDisplayNames[set.logic] || set.logic,
                 set.studyInfo?.reference || 'N/A'
             ]);
         } else if (tableId === pubConfig.ergebnisse.patientenCharakteristikaTabelle.id) {
             caption = pubConfig.ergebnisse.patientenCharakteristikaTabelle.titleEn;
             headers = ['Characteristic', 'Value'];
-            const d = stats?.Gesamt?.descriptive;
+            const d = stats?.[APP_CONFIG.COHORTS.OVERALL.id]?.descriptive;
             if (d) {
                 const total = d.patientCount;
                 rows = [
                     ['Age—mean ± SD (years)', `${fv(d.age?.mean, 1, true)} ± ${fv(d.age?.sd, 1, true)}`],
                     ['Male—no. (%)', `${d.sex?.m ?? 0} (${fp(d.sex?.m / total, 1)})`],
                     ['Female—no. (%)', `${d.sex?.f ?? 0} (${fp(d.sex?.f / total, 1)})`],
-                    ['Treatment approach—no. (%)', ''], // Subheader for indentation
-                    ['  Surgery alone', `${d.therapy?.['direkt OP'] ?? 0} (${fp(d.therapy?.['direkt OP'] / total, 1)})`],
-                    ['  Neoadjuvant therapy', `${d.therapy?.nRCT ?? 0} (${fp(d.therapy?.nRCT / total, 1)})`],
+                    ['Treatment approach—no. (%)', ''],
+                    ['  Surgery alone', `${d.therapy?.surgeryAlone ?? 0} (${fp(d.therapy?.surgeryAlone / total, 1)})`],
+                    ['  Neoadjuvant therapy', `${d.therapy?.neoadjuvantTherapy ?? 0} (${fp(d.therapy?.neoadjuvantTherapy / total, 1)})`],
                     ['N+ patients—no. (%)', `${d.nStatus?.plus ?? 0} (${fp(d.nStatus?.plus / total, 1)})`]
                 ];
             }
         } else if (tableId === pubConfig.ergebnisse.diagnostischeGueteASTabelle.id) {
              caption = pubConfig.ergebnisse.diagnostischeGueteASTabelle.titleEn;
-             headers = ['Metric', `Overall (n = ${stats?.Gesamt?.descriptive?.patientCount||'?'})`, `Surgery alone (n = ${stats?.['direkt OP']?.descriptive?.patientCount||'?'})`, `Neoadjuvant therapy (n = ${stats?.nRCT?.descriptive?.patientCount||'?'})`];
+             const overallId = APP_CONFIG.COHORTS.OVERALL.id;
+             const surgeryId = APP_CONFIG.COHORTS.SURGERY_ALONE.id;
+             const nectId = APP_CONFIG.COHORTS.NEOADJUVANT.id;
+             headers = ['Metric', `Overall (n = ${stats?.[overallId]?.descriptive?.patientCount||'?'})`, `Surgery alone (n = ${stats?.[surgeryId]?.descriptive?.patientCount||'?'})`, `Neoadjuvant therapy (n = ${stats?.[nectId]?.descriptive?.patientCount||'?'})`];
              const getRow = (metricKey, metricName) => {
-                const sG = stats?.Gesamt?.performanceAS?.[metricKey];
-                const sD = stats?.['direkt OP']?.performanceAS?.[metricKey];
-                const sN = stats?.nRCT?.performanceAS?.[metricKey];
-                return [
-                 metricName,
-                 fCI_pub(sG),
-                 fCI_pub(sD),
-                 fCI_pub(sN)
-                ];
+                const sG = stats?.[overallId]?.performanceAS?.[metricKey];
+                const sD = stats?.[surgeryId]?.performanceAS?.[metricKey];
+                const sN = stats?.[nectId]?.performanceAS?.[metricKey];
+                return [ metricName, fCI_pub(sG), fCI_pub(sD), fCI_pub(sN) ];
              };
              rows = [
-                 getRow('sens', 'Sensitivity'),
-                 getRow('spec', 'Specificity'),
-                 getRow('ppv', 'PPV'),
-                 getRow('npv', 'NPV'),
-                 getRow('acc', 'Accuracy'),
-                 getRow('balAcc', 'Balanced Accuracy'),
+                 getRow('sens', 'Sensitivity'), getRow('spec', 'Specificity'),
+                 getRow('ppv', 'PPV'), getRow('npv', 'NPV'),
+                 getRow('acc', 'Accuracy'), getRow('balAcc', 'Balanced Accuracy'),
                  getRow('auc', 'AUC')
              ];
         } else if (tableId === pubConfig.ergebnisse.diagnostischeGueteOptimierteT2Tabelle.id) {
             caption = pubConfig.ergebnisse.diagnostischeGueteOptimierteT2Tabelle.titleEn.replace('{BF_METRIC}', commonData.bruteForceMetricForPublication);
             headers = ['Cohort', 'Optimized Metric', 'Best Value', 'Logic', 'Criteria', 'Sens. (95% CI)', 'Spec. (95% CI)', 'Acc. (95% CI)', 'AUC (95% CI)'];
-            rows = ['Gesamt', 'direkt OP', 'nRCT'].map(cohortId => {
+            rows = Object.values(APP_CONFIG.COHORTS).map(c => c.id).map(cohortId => {
                 const bfRes = stats?.[cohortId]?.bruteforceDefinition;
                 const perf = stats?.[cohortId]?.performanceT2Bruteforce;
                 if (!bfRes || !perf) return null;
                 return [
                     getCohortDisplayName(cohortId), commonData.bruteForceMetricForPublication, fv(bfRes.metricValue, 4, true),
                     APP_CONFIG.UI_TEXTS.t2LogicDisplayNames[bfRes.logic] || bfRes.logic,
-                    studyT2CriteriaManager.formatCriteriaForDisplay(bfRes.criteria, bfRes.logic, true), // Use short format for criteria
+                    studyT2CriteriaManager.formatCriteriaForDisplay(bfRes.criteria, bfRes.logic, true),
                     fCI_pub(perf.sens), fCI_pub(perf.spec),
                     fCI_pub(perf.acc), fCI_pub(perf.auc)
                 ];
@@ -328,7 +316,7 @@ const publicationTab = (() => {
         } else if (tableId === pubConfig.ergebnisse.vergleichASvsT2Tabelle.id) {
             caption = pubConfig.ergebnisse.vergleichASvsT2Tabelle.titleEn;
             headers = ['Cohort', 'Test', 'Statistic Value', 'p-Value', 'Method'];
-            rows = ['Gesamt', 'direkt OP', 'nRCT'].flatMap(cohortId => {
+            rows = Object.values(APP_CONFIG.COHORTS).map(c => c.id).flatMap(cohortId => {
                 const comp = stats?.[cohortId]?.comparisonASvsT2Bruteforce;
                 if (!comp) return [];
                 const cohortDisplayName = getCohortDisplayName(cohortId);
@@ -356,9 +344,9 @@ const publicationTab = (() => {
         const commonData = {
             appName: APP_CONFIG.APP_NAME,
             appVersion: APP_CONFIG.APP_VERSION,
-            nOverall: allCohortStats.Gesamt?.descriptive?.patientCount || 0,
-            nUpfrontSurgery: allCohortStats['direkt OP']?.descriptive?.patientCount || 0,
-            nNRCT: allCohortStats.nRCT?.descriptive?.patientCount || 0,
+            nOverall: allCohortStats.Overall?.descriptive?.patientCount || 0,
+            nSurgeryAlone: allCohortStats.surgeryAlone?.descriptive?.patientCount || 0,
+            nNeoadjuvantTherapy: allCohortStats.neoadjuvantTherapy?.descriptive?.patientCount || 0,
             references: APP_CONFIG.REFERENCES_FOR_PUBLICATION || {},
             bruteForceMetricForPublication: state.getPublicationBruteForceMetric(),
             currentLanguage: currentLanguage,
@@ -392,10 +380,6 @@ const publicationTab = (() => {
                     finalHTML += _getPublicationTable(pubElements.ergebnisse.patientenCharakteristikaTabelle.id, 'patientenCharakteristikaTabelle', null, currentLanguage, allCohortStats, commonData);
                  } else if (subSection.id === 'ergebnisse_as_diagnostische_guete') {
                     finalHTML += _getPublicationTable(pubElements.ergebnisse.diagnostischeGueteASTabelle.id, 'diagnostischeGueteASTabelle', null, currentLanguage, allCohortStats, commonData);
-                 } else if (subSection.id === 'ergebnisse_t2_literatur_diagnostische_guete') {
-                    // This section currently only has text. If a table were needed for literature T2 performance
-                    // it would be added here, potentially by creating a new table ID in PUBLICATION_CONFIG.
-                    // As per requirement, for now, it's just text.
                  } else if (subSection.id === 'ergebnisse_t2_optimiert_diagnostische_guete') {
                     finalHTML += _getPublicationTable(pubElements.ergebnisse.diagnostischeGueteOptimierteT2Tabelle.id, 'diagnostischeGueteOptimierteT2Tabelle', null, currentLanguage, allCohortStats, commonData);
                  } else if (subSection.id === 'ergebnisse_vergleich_as_vs_t2') {
