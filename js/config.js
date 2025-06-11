@@ -83,7 +83,7 @@ const APP_CONFIG = Object.freeze({
         ICON_COLOR: 'var(--text-dark)',
         TOOLTIP_DELAY: Object.freeze([150, 0]),
         TOAST_DURATION_MS: 4500,
-        TRANSITION_DURATION_MS: 150,
+        TRANSITION_DURATION_MS: 350,
         STICKY_HEADER_OFFSET: '111px'
     }),
     CHART_SETTINGS: Object.freeze({
@@ -273,12 +273,12 @@ const APP_CONFIG = Object.freeze({
                 phi: "<strong>Phi (φ) Coefficient</strong><br>A measure of association for two binary variables in a 2x2 contingency table. It is equivalent to the Pearson correlation coefficient for binary data. Values range from -1 (perfect negative association) to +1 (perfect positive association), with 0 indicating no association."
             },
             tooltipInterpretations: {
-                sens: "A sensitivity of <strong>[VALUE]%</strong> means this test correctly identified <strong>[SUCCESS]</strong> of the <strong>[TOTAL]</strong> patients who are actually N+.",
-                spec: "A specificity of <strong>[VALUE]%</strong> means this test correctly identified <strong>[SUCCESS]</strong> of the <strong>[TOTAL]</strong> patients who are actually N-.",
-                ppv: "A PPV of <strong>[VALUE]%</strong> means that of the <strong>[TOTAL]</strong> patients who tested positive, <strong>[SUCCESS]</strong> actually were N+.",
-                npv: "An NPV of <strong>[VALUE]%</strong> means that of the <strong>[TOTAL]</strong> patients who tested negative, <strong>[SUCCESS]</strong> actually were N-.",
-                acc: "An accuracy of <strong>[VALUE]%</strong> means the test provided the correct result for <strong>[SUCCESS]</strong> out of all <strong>[TOTAL]</strong> patients.",
-                auc: "An AUC of <strong>[VALUE]</strong> indicates a <strong>[STRENGTH]</strong> ability of the test to discriminate between N+ and N- cases.",
+                sens: "A sensitivity of <strong>[VALUE]%</strong> means that the test correctly identified <strong>[TP]</strong> of the <strong>[TP_PLUS_FN]</strong> patients who truly had the disease (N+ status).",
+                spec: "A specificity of <strong>[VALUE]%</strong> means that the test correctly identified <strong>[TN]</strong> of the <strong>[TN_PLUS_FP]</strong> patients who did not have the disease (N- status).",
+                ppv: "A PPV of <strong>[VALUE]%</strong> means that of the <strong>[TP_PLUS_FP]</strong> patients with a positive test result, <strong>[TP]</strong> actually had the disease.",
+                npv: "An NPV of <strong>[VALUE]%</strong> means that of the <strong>[TN_PLUS_FN]</strong> patients with a negative test result, <strong>[TN]</strong> actually did not have the disease.",
+                acc: "An accuracy of <strong>[VALUE]%</strong> means that the test gave the correct result for <strong>[TP_PLUS_TN]</strong> out of all <strong>[TOTAL]</strong> patients in this cohort.",
+                auc: "An AUC of <strong>[VALUE]</strong> indicates a <strong>[STRENGTH]</strong> ability of this test to discriminate between N+ and N- cases in this cohort.",
                 or_sig: "The odds of being N+ are <strong>[FACTOR_TEXT]</strong> by a factor of <strong>[VALUE]</strong> for patients positive for '[FEATURE_NAME]' compared to those without. This result is statistically significant, as the 95% CI ([CI_LOWER] to [CI_UPPER]) does not include 1. This indicates a <strong>[STRENGTH]</strong> association.",
                 or_ns: "The odds of being N+ are <strong>[FACTOR_TEXT]</strong> by a factor of <strong>[VALUE]</strong> for patients positive for '[FEATURE_NAME]'. However, since the 95% CI ([CI_LOWER] to [CI_UPPER]) includes 1, this finding is <strong>not statistically significant</strong>.",
                 rd_sig: "The presence of '[FEATURE_NAME]' is associated with an absolute <strong>[DIRECTION_TEXT]</strong> in the rate of N+ status by <strong>[VALUE]%</strong>. This result is statistically significant, as the 95% CI ([CI_LOWER]% to [CI_UPPER]%) does not include 0.",
