@@ -29,6 +29,13 @@ const APP_CONFIG = Object.freeze({
         PUBLICATION_BRUTE_FORCE_METRIC: 'Balanced Accuracy',
         PUBLICATION_LANG: 'en'
     }),
+    AVAILABLE_BRUTE_FORCE_METRICS: Object.freeze([
+        { value: 'Balanced Accuracy', label: 'Balanced Accuracy' },
+        { value: 'Accuracy', label: 'Accuracy' },
+        { value: 'F1-Score', label: 'F1-Score' },
+        { value: 'PPV', label: 'PPV' },
+        { value: 'NPV', label: 'NPV' }
+    ]),
     STORAGE_KEYS: Object.freeze({
         APPLIED_CRITERIA: 'appliedT2Criteria_v4.2_detailed',
         APPLIED_LOGIC: 'appliedT2Logic_v4.2_detailed',
@@ -103,7 +110,7 @@ const APP_CONFIG = Object.freeze({
         FILENAME_TYPES: Object.freeze({
             STATS_CSV: 'Statistics_CSV',
             BRUTEFORCE_TXT: 'BruteForce_Report_TXT',
-            DESKRIPTIV_MD: 'Descriptive_Statistics_MD',
+            DESCRIPTIVE_MD: 'Descriptive_Statistics_MD',
             DATA_MD: 'Data_List_MD',
             ANALYSIS_MD: 'Analysis_Table_MD',
             FILTERED_DATA_CSV: 'Filtered_Data_CSV',
@@ -460,13 +467,6 @@ const PUBLICATION_CONFIG = Object.freeze({
         },
         { id: 'discussion_main', labelKey: 'discussion_main', subSections: [{ id: 'discussion_main', label: 'Discussion' }] },
         { id: 'references_main', labelKey: 'references_main', subSections: [{ id: 'references_main', label: 'References' }] }
-    ]),
-    bruteForceMetricsForPublication: Object.freeze([
-        { value: 'Balanced Accuracy', label: 'Balanced Accuracy' },
-        { value: 'Accuracy', label: 'Accuracy' },
-        { value: 'F1-Score', label: 'F1-Score' },
-        { value: 'PPV', label: 'PPV' },
-        { value: 'NPV', label: 'NPV' }
     ]),
     literatureCriteriaSets: Object.freeze([
         {
