@@ -311,6 +311,15 @@ const APP_CONFIG = Object.freeze({
                     not_significant: "not statistically significant"
                 }
             },
+            quickGuideButton: { description: "Show a quick guide and important notes about the application." },
+            cohortButtons: { description: "Select the patient cohort for the analysis: <strong>Overall</strong>, <strong>Surgery alone</strong>, or <strong>Neoadjuvant therapy</strong>. This choice filters the data for all application tabs." },
+            headerStats: {
+                cohort: "Currently selected patient cohort for analysis.",
+                patientCount: "Total number of patients in the selected cohort.",
+                statusN: "Percentage of N+ patients (Pathology).",
+                statusAS: "Percentage of AS+ patients (Prediction).",
+                statusT2: "Percentage of T2+ patients (Applied Criteria)."
+            },
             dataTab: {
                 nr: "Patient's sequential ID number.",
                 name: "Patient's last name (anonymized/coded).",
@@ -335,6 +344,38 @@ const APP_CONFIG = Object.freeze({
                 expandAll: "Expand or collapse the detail view of the evaluated T2-weighted lymph nodes and the fulfilled criteria for all patients in the current table view.",
                 collapseAll: "Collapse all detail views of the evaluated T2-weighted lymph nodes and the fulfilled criteria.",
                 expandRow: "Click here or the arrow button to show/hide the detailed evaluation of this patient's individual T2-weighted lymph nodes according to the currently applied criteria. Fulfilled positive criteria are highlighted."
+            },
+            t2Logic: { description: "Logical operator for active T2 criteria: <strong>AND</strong> (A lymph node is positive only if ALL active criteria are met). <strong>OR</strong> (A lymph node is positive if AT LEAST ONE active criterion is met). The choice affects the T2 status calculation." },
+            t2Size: { description: "Size criterion (short axis): Lymph nodes with a diameter <strong>greater than or equal to (≥)</strong> the set threshold are considered suspicious. Adjustable range: [MIN] - [MAX] mm (step: [STEP] mm). Enable/disable with checkbox." },
+            t2Shape: { description: "Shape criterion: Select which shape ('round' or 'oval') is considered suspicious. Enable/disable with checkbox." },
+            t2Border: { description: "Border criterion: Select which border ('sharp' or 'irregular') is considered suspicious. Enable/disable with checkbox." },
+            t2Homogeneity: { description: "Homogeneity criterion: Select whether 'homogeneous' or 'heterogeneous' internal signal on T2w is considered suspicious. Enable/disable with checkbox." },
+            t2Signal: { description: "Signal criterion: Select which T2 signal intensity ('low', 'intermediate', or 'high') relative to surrounding muscle is considered suspicious. Nodes with non-assessable signal (value 'null') never fulfill this criterion. Enable/disable with checkbox." },
+            t2Actions: {
+                reset: "Resets the logic and all criteria to their default settings. The changes are not yet applied.",
+                apply: "Apply the currently set T2 criteria and logic to the entire dataset. This updates the T2 columns in the tables, all statistical analyses, and charts. The setting is also saved for future sessions."
+            },
+            t2CriteriaCard: { unsavedIndicator: "<strong>Attention:</strong> There are unsaved changes to the T2 criteria or logic. Click 'Apply & Save' to update the results and save the settings." },
+            bruteForceMetric: { description: "Select the target metric for the brute-force optimization.<br><strong>Accuracy:</strong> Proportion of correct classifications.<br><strong>Balanced Accuracy:</strong> (Sens+Spec)/2; good for imbalanced classes.<br><strong>F1-Score:</strong> Harmonic mean of PPV & Sensitivity.<br><strong>PPV:</strong> Precision for positive predictions.<br><strong>NPV:</strong> Precision for negative predictions." },
+            bruteForceStart: { description: "Starts the brute-force search for the T2 criteria combination that maximizes the selected target metric in the current cohort. This may take some time and runs in the background." },
+            bruteForceInfo: { description: "Shows the status of the optimization worker and the currently analyzed patient cohort: <strong>[COHORT_NAME]</strong>." },
+            bruteForceResult: {
+                description: "Best result of the completed brute-force optimization for the selected cohort ([N_TOTAL] patients, including [N_PLUS] N+ and [N_MINUS] N-) and the target metric."
+            },
+            bruteForceDetailsButton: { description: "Opens a window with the top 10 results and more details about the completed optimization." },
+            exportTab: {
+                description: "Allows exporting analysis results, tables, and charts based on the currently selected global cohort ([COHORT]) and the currently applied T2 criteria.",
+                statscsv: { description: "Detailed table of all calculated statistical metrics (descriptive, AS & T2 performance, comparisons, associations) from the Statistics tab as a CSV file.", type: 'STATS_CSV', ext: "csv" },
+                bruteforcetxt: { description: "Detailed report of the last brute-force optimization for the current cohort (Top 10 results, configuration) as a text file (.txt), if performed.", type: 'BRUTEFORCE_TXT', ext: "txt" },
+                datamd: { description: "Current data list (Data tab) as a Markdown table (.md).", type: 'DATA_MD', ext: "md" },
+                analysismd: { description: "Current analysis table (Analysis tab, incl. T2 results) as a Markdown (.md) file.", type: 'ANALYSIS_MD', ext: "md" },
+                filtereddatacsv: { description: "Raw data of the currently selected cohort (incl. T2 evaluation) as a CSV file (.csv).", type: 'FILTERED_DATA_CSV', ext: "csv" },
+                comprehensivereport_html: { description: "Comprehensive analysis report as an HTML file (statistics, configurations, charts), printable.", type: 'COMPREHENSIVE_REPORT_HTML', ext: "html" },
+                allzip: { description: "All available single files (Statistics CSV, BruteForce TXT, all MDs, Raw Data CSV, HTML Report) in one ZIP archive.", type: 'ALL_ZIP', ext: "zip"},
+                csvzip: { description: "All available CSV files (Statistics, Raw Data) in one ZIP archive.", type: 'CSV_ZIP', ext: "zip"},
+                mdzip: { description: "All available Markdown files (Descriptive, Data, Analysis, Publication Texts) in one ZIP archive.", type: 'MD_ZIP', ext: "zip"},
+                pngzip: { description: "All currently visible charts (Statistics, Analysis, Presentation) and selected tables as individual PNG files (ZIP archive).", type: 'PNG_ZIP', ext: "zip" },
+                svgzip: { description: "All currently visible charts (Statistics, Analysis, Presentation) as individual SVG files (ZIP archive).", type: 'SVG_ZIP', ext: "zip"}
             }
         })
     }),
