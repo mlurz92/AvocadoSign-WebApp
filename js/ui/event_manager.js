@@ -1,18 +1,20 @@
 const eventManager = (() => {
     let app;
-
-    const debouncedUpdateSizeInput = debounce(value => {
-        if (t2CriteriaManager.updateCriterionThreshold(value)) {
-            if (!t2CriteriaManager.getCurrentCriteria().size?.active) {
-                t2CriteriaManager.toggleCriterionActive('size', true);
-            }
-            uiManager.updateT2CriteriaControlsUI(t2CriteriaManager.getCurrentCriteria(), t2CriteriaManager.getCurrentLogic());
-            uiManager.markCriteriaSavedIndicator(t2CriteriaManager.isUnsaved());
-        }
-    }, APP_CONFIG.PERFORMANCE_SETTINGS.DEBOUNCE_DELAY_MS);
+    let debouncedUpdateSizeInput;
 
     function init(appInstance) {
         app = appInstance;
+
+        debouncedUpdateSizeInput = debounce(value => {
+            if (t2CriteriaManager.updateCriterionThreshold(value)) {
+                if (!t2CriteriaManager.getCurrentCriteria().size?.active) {
+                    t2CriteriaManager.toggleCriterionActive('size', true);
+                }
+                uiManager.updateT2CriteriaControlsUI(t2CriteriaManager.getCurrentCriteria(), t2CriteriaManager.getCurrentLogic());
+                uiManager.markCriteriaSavedIndicator(t2CriteriaManager.isUnsaved());
+            }
+        }, APP_CONFIG.PERFORMANCE_SETTINGS.DEBOUNCE_DELAY_MS);
+
         document.body.addEventListener('click', handleBodyClick);
         document.body.addEventListener('change', handleBodyChange);
         document.body.addEventListener('input', handleBodyInput);
@@ -242,7 +244,7 @@ const eventManager = (() => {
         const exportType = button.id.replace('export-', '');
         if (exportType.endsWith('-zip')) {
             const category = exportType.replace('-zip', '');
-            exportService.exportCategoryZip(category, app.getProcessedData(), bruteForceManager.getAllResults(), state.getCurrentCohort(), t2CriteriaManager.getAppliedCriteria(), t2CriteriaManager.getAppliedLogic());
+            exportService.exportCategoryZip(category, app.getProcessedData(), app.allPublicationStats, bruteForceManager.getAllResults(), state.getCurrentCohort(), t2CriteriaManager.getAppliedCriteria(), t2CriteriaManager.getAppliedLogic());
         } else {
             app.handleSingleExport(exportType);
         }
