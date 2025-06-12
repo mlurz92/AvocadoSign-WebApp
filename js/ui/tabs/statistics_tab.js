@@ -7,7 +7,7 @@ const statisticsTab = (() => {
         const na = '--';
         const fv = (val, dig = 1, useStd = true) => formatNumber(val, dig, na, useStd);
         const fP = (val, dig = 1) => formatPercent(val, dig, na);
-        const fLK = (lkData) => `<span class="math-inline">\{fv\(lkData?\.median,1\)\} \(</span>{fv(lkData?.min,0)}–<span class="math-inline">\{fv\(lkData?\.max,0\)\}\) \[</span>{fv(lkData?.mean,1)} ± ${fv(lkData?.sd,1)}]`;
+        const fLK = (lkData) => `${fv(lkData?.median,1)} (${fv(lkData?.min,0)}–${fv(lkData?.max,0)}) [${fv(lkData?.mean,1)} ± ${fv(lkData?.sd,1)}]`;
         
         // Prepare tooltip content as JSON string for descriptive metrics
         const getDescriptiveTooltip = (key, currentCohortId) => JSON.stringify({
@@ -22,38 +22,38 @@ const statisticsTab = (() => {
             <div class="row g-3 p-2">
                 <div class="col-md-6">
                     <div class="table-responsive mb-3">
-                        <table class="table table-sm table-striped small mb-0 caption-top" id="table-descriptive-demographics-<span class="math-inline">\{indexSuffix\}"\>
-<caption\>Demographics & Status \(N\=</span>{total})</caption>
+                        <table class="table table-sm table-striped small mb-0 caption-top" id="table-descriptive-demographics-${indexSuffix}">
+                            <caption>Demographics & Status (N=${total})</caption>
                             <thead class="visually-hidden"><tr><th>Metric</th><th>Value</th></tr></thead>
                             <tbody>
-                                <tr data-tippy-content='<span class="math-inline">\{getDescriptiveTooltip\("age", cohortId\)\}'\><td\>Age, Median \(Min–Max\) \[Mean ± SD\]</td\><td\></span>{fv(d.age?.median,1)} (<span class="math-inline">\{fv\(d\.age?\.min,0\)\}–</span>{fv(d.age?.max,0)}) [${fv(d.age?.mean,1)} ± <span class="math-inline">\{fv\(d\.age?\.sd,1\)\}\]</td\></tr\>
-<tr data\-tippy\-content\='</span>{getDescriptiveTooltip("sex", cohortId)}'><td>Sex (male / female) (n / %)</td><td>${d.sex?.m ?? 0} / <span class="math-inline">\{d\.sex?\.f ?? 0\} \(</span>{fP((d.sex?.m ?? 0) / total, 1)} / <span class="math-inline">\{fP\(\(d\.sex?\.f ?? 0\) / total, 1\)\}\)</td\></tr\>
-<tr data\-tippy\-content\='</span>{getDescriptiveTooltip("therapy", cohortId)}'><td>Therapy (Surgery alone / Neoadjuvant therapy) (n / %)</td><td>${d.therapy?.surgeryAlone ?? 0} / <span class="math-inline">\{d\.therapy?\.neoadjuvantTherapy ?? 0\} \(</span>{fP((d.therapy?.surgeryAlone ?? 0) / total, 1)} / <span class="math-inline">\{fP\(\(d\.therapy?\.neoadjuvantTherapy ?? 0\) / total, 1\)\}\)</td\></tr\>
-<tr data\-tippy\-content\='</span>{getDescriptiveTooltip("nStatus", cohortId)}'><td>N Status (+ / -) (n / %)</td><td>${d.nStatus?.plus ?? 0} / <span class="math-inline">\{d\.nStatus?\.minus ?? 0\} \(</span>{fP((d.nStatus?.plus ?? 0) / total, 1)} / <span class="math-inline">\{fP\(\(d\.nStatus?\.minus ?? 0\) / total, 1\)\}\)</td\></tr\>
-<tr data\-tippy\-content\='</span>{getDescriptiveTooltip("asStatus", cohortId)}'><td>AS Status (+ / -) (n / %)</td><td>${d.asStatus?.plus ?? 0} / <span class="math-inline">\{d\.asStatus?\.minus ?? 0\} \(</span>{fP((d.asStatus?.plus ?? 0) / total, 1)} / <span class="math-inline">\{fP\(\(d\.asStatus?\.minus ?? 0\) / total, 1\)\}\)</td\></tr\>
-<tr data\-tippy\-content\='</span>{getDescriptiveTooltip("t2Status", cohortId)}'><td>T2 Status (+ / -) (n / %)</td><td>${d.t2Status?.plus ?? 0} / <span class="math-inline">\{d\.t2Status?\.minus ?? 0\} \(</span>{fP((d.t2Status?.plus ?? 0) / total, 1)} / <span class="math-inline">\{fP\(\(d\.t2Status?\.minus ?? 0\) / total, 1\)\}\)</td\></tr\>
-</tbody\>
-</table\>
-</div\>
-<div class\="table\-responsive"\>
-<table class\="table table\-sm table\-striped small mb\-0 caption\-top" id\="table\-descriptive\-ln\-</span>{indexSuffix}">
+                                <tr data-tippy-content='${getDescriptiveTooltip("age", cohortId)}'><td>Age, Median (Min–Max) [Mean ± SD]</td><td>${fv(d.age?.median,1)} (${fv(d.age?.min,0)}–${fv(d.age?.max,0)}) [${fv(d.age?.mean,1)} ± ${fv(d.age?.sd,1)}]</td></tr>
+                                <tr data-tippy-content='${getDescriptiveTooltip("sex", cohortId)}'><td>Sex (male / female) (n / %)</td><td>${d.sex?.m ?? 0} / ${d.sex?.f ?? 0} (${fP((d.sex?.m ?? 0) / total, 1)} / ${fP((d.sex?.f ?? 0) / total, 1)})</td></tr>
+                                <tr data-tippy-content='${getDescriptiveTooltip("therapy", cohortId)}'><td>Therapy (Surgery alone / Neoadjuvant therapy) (n / %)</td><td>${d.therapy?.surgeryAlone ?? 0} / ${d.therapy?.neoadjuvantTherapy ?? 0} (${fP((d.therapy?.surgeryAlone ?? 0) / total, 1)} / ${fP((d.therapy?.neoadjuvantTherapy ?? 0) / total, 1)})</td></tr>
+                                <tr data-tippy-content='${getDescriptiveTooltip("nStatus", cohortId)}'><td>N Status (+ / -) (n / %)</td><td>${d.nStatus?.plus ?? 0} / ${d.nStatus?.minus ?? 0} (${fP((d.nStatus?.plus ?? 0) / total, 1)} / ${fP((d.nStatus?.minus ?? 0) / total, 1)})</td></tr>
+                                <tr data-tippy-content='${getDescriptiveTooltip("asStatus", cohortId)}'><td>AS Status (+ / -) (n / %)</td><td>${d.asStatus?.plus ?? 0} / ${d.asStatus?.minus ?? 0} (${fP((d.asStatus?.plus ?? 0) / total, 1)} / ${fP((d.asStatus?.minus ?? 0) / total, 1)})</td></tr>
+                                <tr data-tippy-content='${getDescriptiveTooltip("t2Status", cohortId)}'><td>T2 Status (+ / -) (n / %)</td><td>${d.t2Status?.plus ?? 0} / ${d.t2Status?.minus ?? 0} (${fP((d.t2Status?.plus ?? 0) / total, 1)} / ${fP((d.t2Status?.minus ?? 0) / total, 1)})</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                     <div class="table-responsive">
+                        <table class="table table-sm table-striped small mb-0 caption-top" id="table-descriptive-ln-${indexSuffix}">
                              <caption>Lymph Node Counts (Median (Min–Max) [Mean ± SD])</caption>
                              <thead class="visually-hidden"><tr><th>Metric</th><th>Value</th></tr></thead>
                              <tbody>
-                                <tr data-tippy-content='<span class="math-inline">\{getDescriptiveTooltip\("lnCounts\_n\_total", cohortId\)\}'\><td\>LN N total</td\><td\></span>{fLK(d.lnCounts?.n?.total)}</td></tr>
-                                <tr data-tippy-content='<span class="math-inline">\{getDescriptiveTooltip\("lnCounts\_n\_plus", cohortId\)\}'\><td\>LN N\+ <sup\>\*</sup\></td\><td\></span>{fLK(d.lnCounts?.n?.plus)}</td></tr>
-                                <tr data-tippy-content='<span class="math-inline">\{getDescriptiveTooltip\("lnCounts\_as\_total", cohortId\)\}'\><td\>LN AS total</td\><td\></span>{fLK(d.lnCounts?.as?.total)}</td></tr>
-                                <tr data-tippy-content='<span class="math-inline">\{getDescriptiveTooltip\("lnCounts\_as\_plus", cohortId\)\}'\><td\>LN AS\+ <sup\>\*\*</sup\></td\><td\></span>{fLK(d.lnCounts?.as?.plus)}</td></tr>
-                                <tr data-tippy-content='<span class="math-inline">\{getDescriptiveTooltip\("lnCounts\_t2\_total", cohortId\)\}'\><td\>LN T2 total</td\><td\></span>{fLK(d.lnCounts?.t2?.total)}</td></tr>
-                                <tr data-tippy-content='<span class="math-inline">\{getDescriptiveTooltip\("lnCounts\_t2\_plus", cohortId\)\}'\><td\>LN T2\+ <sup\>\*\*\*</sup\></td\><td\></span>{fLK(d.lnCounts?.t2?.plus)}</td></tr>
+                                <tr data-tippy-content='${getDescriptiveTooltip("lnCounts_n_total", cohortId)}'><td>LN N total</td><td>${fLK(d.lnCounts?.n?.total)}</td></tr>
+                                <tr data-tippy-content='${getDescriptiveTooltip("lnCounts_n_plus", cohortId)}'><td>LN N+ <sup>*</sup></td><td>${fLK(d.lnCounts?.n?.plus)}</td></tr>
+                                <tr data-tippy-content='${getDescriptiveTooltip("lnCounts_as_total", cohortId)}'><td>LN AS total</td><td>${fLK(d.lnCounts?.as?.total)}</td></tr>
+                                <tr data-tippy-content='${getDescriptiveTooltip("lnCounts_as_plus", cohortId)}'><td>LN AS+ <sup>**</sup></td><td>${fLK(d.lnCounts?.as?.plus)}</td></tr>
+                                <tr data-tippy-content='${getDescriptiveTooltip("lnCounts_t2_total", cohortId)}'><td>LN T2 total</td><td>${fLK(d.lnCounts?.t2?.total)}</td></tr>
+                                <tr data-tippy-content='${getDescriptiveTooltip("lnCounts_t2_plus", cohortId)}'><td>LN T2+ <sup>***</sup></td><td>${fLK(d.lnCounts?.t2?.plus)}</td></tr>
                              </tbody>
                         </table>
                      </div>
-                    <p class="small text-muted mt-1 mb-0"><sup>*</sup> Only in N+ patients (n=<span class="math-inline">\{d\.nStatus?\.plus ?? 0\}\); <sup\>\*\*</sup\> Only in AS\+ patients \(n\=</span>{d.asStatus?.plus ?? 0}); <sup>***</sup> Only in T2+ patients (n=<span class="math-inline">\{d\.t2Status?\.plus ?? 0\}\)\.</p\>
-</div\>
-<div class\="col\-md\-6 d\-flex flex\-column"\>
-<div class\="mb\-2 flex\-grow\-1" id\="chart\-stat\-age\-</span>{indexSuffix}" data-tippy-content='<span class="math-inline">\{getDescriptiveTooltip\("chartAge", cohortId\)\}'\></div\>
-<div class\="flex\-grow\-1" id\="chart\-stat\-gender\-</span>{indexSuffix}" data-tippy-content='${getDescriptiveTooltip("chartGender", cohortId)}'></div>
+                    <p class="small text-muted mt-1 mb-0"><sup>*</sup> Only in N+ patients (n=${d.nStatus?.plus ?? 0}); <sup>**</sup> Only in AS+ patients (n=${d.asStatus?.plus ?? 0}); <sup>***</sup> Only in T2+ patients (n=${d.t2Status?.plus ?? 0}).</p>
+                </div>
+                <div class="col-md-6 d-flex flex-column">
+                    <div class="mb-2 flex-grow-1" id="chart-stat-age-${indexSuffix}" data-tippy-content='${getDescriptiveTooltip("chartAge", cohortId)}'></div>
+                    <div class="flex-grow-1" id="chart-stat-gender-${indexSuffix}" data-tippy-content='${getDescriptiveTooltip("chartGender", cohortId)}'></div>
                 </div>
             </div>`;
     }
@@ -117,25 +117,25 @@ const statisticsTab = (() => {
         if (allTableResults.length === 0) return '<p class="text-muted small p-3">No criteria comparison data.</p>';
 
         let tableHtml = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr>
-            <th data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'criteria\_comparison\_header', key\: 'tableHeaderSet', description\: APP\_CONFIG\.UI\_TEXTS\.tooltips\.criteriaComparisonTable\.tableHeaderSet\}\)\}'\></span>{APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSet}</th>
-            <th data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'criteria\_comparison\_header', key\: 'tableHeaderSens', description\: APP\_CONFIG\.UI\_TEXTS\.tooltips\.criteriaComparisonTable\.tableHeaderSens\}\)\}'\></span>{APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSens}</th>
-            <th data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'criteria\_comparison\_header', key\: 'tableHeaderSpec', description\: APP\_CONFIG\.UI\_TEXTS\.tooltips\.criteriaComparisonTable\.tableHeaderSpec\}\)\}'\></span>{APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSpec}</th>
-            <th data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'criteria\_comparison\_header', key\: 'tableHeaderPPV', description\: APP\_CONFIG\.UI\_TEXTS\.tooltips\.criteriaComparisonTable\.tableHeaderPPV\}\)\}'\></span>{APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderPPV}</th>
-            <th data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'criteria\_comparison\_header', key\: 'tableHeaderNPV', description\: APP\_CONFIG\.UI\_TEXTS\.tooltips\.criteriaComparisonTable\.tableHeaderNPV\}\)\}'\></span>{APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderNPV}</th>
-            <th data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'criteria\_comparison\_header', key\: 'tableHeaderAcc', description\: APP\_CONFIG\.UI\_TEXTS\.tooltips\.criteriaComparisonTable\.tableHeaderAcc\}\)\}'\></span>{APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAcc}</th>
-            <th data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'criteria\_comparison\_header', key\: 'tableHeaderAUC', description\: APP\_CONFIG\.UI\_TEXTS\.tooltips\.criteriaComparisonTable\.tableHeaderAUC\}\)\}'\></span>{APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAUC}</th>
+            <th data-tippy-content='${JSON.stringify({type: 'criteria_comparison_header', key: 'tableHeaderSet', description: APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSet})}'>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSet}</th>
+            <th data-tippy-content='${JSON.stringify({type: 'criteria_comparison_header', key: 'tableHeaderSens', description: APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSens})}'>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSens}</th>
+            <th data-tippy-content='${JSON.stringify({type: 'criteria_comparison_header', key: 'tableHeaderSpec', description: APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSpec})}'>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSpec}</th>
+            <th data-tippy-content='${JSON.stringify({type: 'criteria_comparison_header', key: 'tableHeaderPPV', description: APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderPPV})}'>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderPPV}</th>
+            <th data-tippy-content='${JSON.stringify({type: 'criteria_comparison_header', key: 'tableHeaderNPV', description: APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderNPV})}'>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderNPV}</th>
+            <th data-tippy-content='${JSON.stringify({type: 'criteria_comparison_header', key: 'tableHeaderAcc', description: APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAcc})}'>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAcc}</th>
+            <th data-tippy-content='${JSON.stringify({type: 'criteria_comparison_header', key: 'tableHeaderAUC', description: APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAUC})}'>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAUC}</th>
         </tr></thead><tbody>`;
 
         allTableResults.forEach(r => {
-            const cohortInfo = (r.cohort !== getCohortDisplayName(globalCoh)) ? ` (<span class="math-inline">\{r\.cohort\} N\=</span>{r.n})` : ``;
+            const cohortInfo = (r.cohort !== getCohortDisplayName(globalCoh)) ? ` (${r.cohort} N=${r.n})` : ``;
             tableHtml += `<tr>
-                <td><span class="math-inline">\{r\.name\}</span>{cohortInfo}</td>
-                <td data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'criteria\_comparison\_value', metricName\: 'Sens\.', value\: r\.sens, isPercent\: true\}\)\}'\></span>{formatPercent(r.sens, 1, na_stat)}</td>
-                <td data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'criteria\_comparison\_value', metricName\: 'Spec\.', value\: r\.spec, isPercent\: true\}\)\}'\></span>{formatPercent(r.spec, 1, na_stat)}</td>
-                <td data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'criteria\_comparison\_value', metricName\: 'PPV', value\: r\.ppv, isPercent\: true\}\)\}'\></span>{formatPercent(r.ppv, 1, na_stat)}</td>
-                <td data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'criteria\_comparison\_value', metricName\: 'NPV', value\: r\.npv, isPercent\: true\}\)\}'\></span>{formatPercent(r.npv, 1, na_stat)}</td>
-                <td data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'criteria\_comparison\_value', metricName\: 'Acc\.', value\: r\.acc, isPercent\: true\}\)\}'\></span>{formatPercent(r.acc, 1, na_stat)}</td>
-                <td data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'criteria\_comparison\_value', metricName\: 'AUC/Bal\. Acc\.', value\: r\.auc, isPercent\: false\}\)\}'\></span>{formatNumber(r.auc, 2, na_stat, true)}</td>
+                <td>${r.name}${cohortInfo}</td>
+                <td data-tippy-content='${JSON.stringify({type: 'criteria_comparison_value', metricName: 'Sens.', value: r.sens, isPercent: true})}'>${formatPercent(r.sens, 1, na_stat)}</td>
+                <td data-tippy-content='${JSON.stringify({type: 'criteria_comparison_value', metricName: 'Spec.', value: r.spec, isPercent: true})}'>${formatPercent(r.spec, 1, na_stat)}</td>
+                <td data-tippy-content='${JSON.stringify({type: 'criteria_comparison_value', metricName: 'PPV', value: r.ppv, isPercent: true})}'>${formatPercent(r.ppv, 1, na_stat)}</td>
+                <td data-tippy-content='${JSON.stringify({type: 'criteria_comparison_value', metricName: 'NPV', value: r.npv, isPercent: true})}'>${formatPercent(r.npv, 1, na_stat)}</td>
+                <td data-tippy-content='${JSON.stringify({type: 'criteria_comparison_value', metricName: 'Acc.', value: r.acc, isPercent: true})}'>${formatPercent(r.acc, 1, na_stat)}</td>
+                <td data-tippy-content='${JSON.stringify({type: 'criteria_comparison_value', metricName: 'AUC/Bal. Acc.', value: r.auc, isPercent: false})}'>${formatNumber(r.auc, 2, na_stat, true)}</td>
             </tr>`;
         });
 
@@ -166,7 +166,7 @@ const statisticsTab = (() => {
             const col = document.createElement('div');
             col.className = layout === 'vergleich' ? 'col-xl-6' : 'col-12';
             const innerRowId = `inner-stat-row-${i}`;
-            col.innerHTML = `<h4 class="mb-3">Cohort: <span class="math-inline">\{getCohortDisplayName\(cohortId\)\} \(N\=</span>{data.length})</h4><div class="row g-3" id="${innerRowId}"></div>`;
+            col.innerHTML = `<h4 class="mb-3">Cohort: ${getCohortDisplayName(cohortId)} (N=${data.length})</h4><div class="row g-3" id="${innerRowId}"></div>`;
             outerRow.appendChild(col);
             const innerContainer = col.querySelector(`#${innerRowId}`);
             if (data.length > 0) {
@@ -201,16 +201,16 @@ const statisticsTab = (() => {
 
                         return `
                             <tr>
-                                <td data-tippy-content='<span class="math-inline">\{tooltipContent\}'\></span>{label}</td>
-                                <td data-tippy-content='<span class="math-inline">\{tooltipContent\}'\></span>{metricValueCI}</td>
+                                <td data-tippy-content='${tooltipContent}'>${label}</td>
+                                <td data-tippy-content='${tooltipContent}'>${metricValueCI}</td>
                                 <td data-tippy-content='${JSON.stringify({ type: 'metric', metricKey: 'ci_method', method: metricObj?.method, description: APP_CONFIG.UI_TEXTS.tooltips[`diagnosticPerformance${metricType}`].ci_method.description })}'>${metricObj?.method || na_stat}</td>
                             </tr>
                         `;
                     };
 
                     return `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr>
-                        <th data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'generic', description\: 'Diagnostic metric like Sensitivity, Specificity, Accuracy etc\.'\}\)\}'\>Metric</th\>
-<th data\-tippy\-content\='</span>{JSON.stringify({type: 'generic', description: 'Value of the diagnostic metric with its 95% Confidence Interval.'})}'>Value (95% CI)</th>
+                        <th data-tippy-content='${JSON.stringify({type: 'generic', description: 'Diagnostic metric like Sensitivity, Specificity, Accuracy etc.'})}'>Metric</th>
+                        <th data-tippy-content='${JSON.stringify({type: 'generic', description: 'Value of the diagnostic metric with its 95% Confidence Interval.'})}'>Value (95% CI)</th>
                         <th data-tippy-content='${JSON.stringify({type: 'generic', description: 'Statistical method used to calculate the 95% Confidence Interval.'})}'>CI Method</th>
                     </tr></thead><tbody>
                         ${createPerfRowHTML('sens', 'Sensitivity', perfStats.sens)}
@@ -253,22 +253,22 @@ const statisticsTab = (() => {
                     });
 
                     return `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr>
-                        <th data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'generic', description\: 'Statistical test performed to compare diagnostic methods\.'\}\)\}'\>Test</th\>
-<th data\-tippy\-content\='</span>{JSON.stringify({type: 'generic', description: 'Resulting statistic value from the test.'})}'>Statistic</th>
-                        <th data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'generic', description\: 'Probability \(p\-value\) of observing the results by chance if there is no true difference\.'\}\)\}'\>p\-Value</th\>
-<th data\-tippy\-content\='</span>{JSON.stringify({type: 'generic', description: 'Name of the statistical test used.'})}'>Method</th>
+                        <th data-tippy-content='${JSON.stringify({type: 'generic', description: 'Statistical test performed to compare diagnostic methods.'})}'>Test</th>
+                        <th data-tippy-content='${JSON.stringify({type: 'generic', description: 'Resulting statistic value from the test.'})}'>Statistic</th>
+                        <th data-tippy-content='${JSON.stringify({type: 'generic', description: 'Probability (p-value) of observing the results by chance if there is no true difference.'})}'>p-Value</th>
+                        <th data-tippy-content='${JSON.stringify({type: 'generic', description: 'Name of the statistical test used.'})}'>Method</th>
                     </tr></thead><tbody>
                         <tr>
-                            <td data-tippy-content='<span class="math-inline">\{mcnemarTooltipContent\}'\>McNemar \(Acc\)</td\>
-<td data\-tippy\-content\='</span>{mcnemarTooltipContent}'><span class="math-inline">\{formatNumber\(compStats\.mcnemar?\.statistic, 3, na\_stat, true\)\} \(df\=</span>{compStats.mcnemar?.df || na_stat})</td>
-                            <td data-tippy-content='<span class="math-inline">\{pValueTooltipContent\(compStats\.mcnemar?\.pValue\)\}'\></span>{fPVal(compStats.mcnemar?.pValue)} <span class="math-inline">\{getStatisticalSignificanceSymbol\(compStats\.mcnemar?\.pValue\)\}</td\>
-<td data\-tippy\-content\='</span>{methodTooltipContent(compStats.mcnemar?.method)}'><span class="math-inline">\{compStats\.mcnemar?\.method \|\| na\_stat\}</td\>
-</tr\>
-<tr\>
-<td data\-tippy\-content\='</span>{delongTooltipContent}'>DeLong (AUC)</td>
-                            <td data-tippy-content='<span class="math-inline">\{delongTooltipContent\}'\>Z\=</span>{formatNumber(compStats.delong?.Z, 3, na_stat, true)}</td>
-                            <td data-tippy-content='<span class="math-inline">\{pValueTooltipContent\(compStats\.delong?\.pValue\)\}'\></span>{fPVal(compStats.delong?.pValue)} <span class="math-inline">\{getStatisticalSignificanceSymbol\(compStats\.delong?\.pValue\)\}</td\>
-<td data\-tippy\-content\='</span>{methodTooltipContent(compStats.delong?.method)}'>${compStats.delong?.method || na_stat}</td>
+                            <td data-tippy-content='${mcnemarTooltipContent}'>McNemar (Acc)</td>
+                            <td data-tippy-content='${mcnemarTooltipContent}'>${formatNumber(compStats.mcnemar?.statistic, 3, na_stat, true)} (df=${compStats.mcnemar?.df || na_stat})</td>
+                            <td data-tippy-content='${pValueTooltipContent(compStats.mcnemar?.pValue)}'>${fPVal(compStats.mcnemar?.pValue)} ${getStatisticalSignificanceSymbol(compStats.mcnemar?.pValue)}</td>
+                            <td data-tippy-content='${methodTooltipContent(compStats.mcnemar?.method)}'>${compStats.mcnemar?.method || na_stat}</td>
+                        </tr>
+                        <tr>
+                            <td data-tippy-content='${delongTooltipContent}'>DeLong (AUC)</td>
+                            <td data-tippy-content='${delongTooltipContent}'>Z=${formatNumber(compStats.delong?.Z, 3, na_stat, true)}</td>
+                            <td data-tippy-content='${pValueTooltipContent(compStats.delong?.pValue)}'>${fPVal(compStats.delong?.pValue)} ${getStatisticalSignificanceSymbol(compStats.delong?.pValue)}</td>
+                            <td data-tippy-content='${methodTooltipContent(compStats.delong?.method)}'>${compStats.delong?.method || na_stat}</td>
                         </tr>
                     </tbody></table></div>`;
                 };
@@ -276,17 +276,17 @@ const statisticsTab = (() => {
                 const createAssocTableHTML = (assocStats, appliedCrit) => {
                     if (!assocStats || Object.keys(assocStats).length === 0) return '<p class="text-muted small p-2">No association data.</p>';
                     const fPVal = (p) => (p !== null && !isNaN(p)) ? (p < 0.001 ? '<0.001' : formatNumber(p, 3, na_stat, true)) : na_stat;
-                    const fORCI = (orObj) => { const val = formatNumber(orObj?.value, 2, na_stat, true); const ciL = formatNumber(orObj?.ci?.lower, 2, na_stat, true); const ciU = formatNumber(orObj?.ci?.upper, 2, na_stat, true); return `<span class="math-inline">\{val\} \(</span>{ciL}-${ciU})`; };
-                    const fRDCI = (rdObj) => { const val = formatNumber(rdObj?.value * 100, 1, na_stat, true); const ciL = formatNumber(rdObj?.ci?.lower * 100, 1, na_stat, true); const ciU = formatNumber(rdObj?.ci?.upper * 100, 1, na_stat, true); return `<span class="math-inline">\{val\}% \(</span>{ciL}%-${ciU}%)`; };
+                    const fORCI = (orObj) => { const val = formatNumber(orObj?.value, 2, na_stat, true); const ciL = formatNumber(orObj?.ci?.lower, 2, na_stat, true); const ciU = formatNumber(orObj?.ci?.upper, 2, na_stat, true); return `${val} (${ciL}-${ciU})`; };
+                    const fRDCI = (rdObj) => { const val = formatNumber(rdObj?.value * 100, 1, na_stat, true); const ciL = formatNumber(rdObj?.ci?.lower * 100, 1, na_stat, true); const ciU = formatNumber(rdObj?.ci?.upper * 100, 1, na_stat, true); return `${val}% (${ciL}%-${ciU}%)`; };
                     const fPhi = (phiObj) => formatNumber(phiObj?.value, 2, na_stat, true);
 
                     let html = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr>
-                        <th data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'generic', description\: 'Feature analyzed for association with N\-status\.'\}\)\}'\>Feature</th\>
-<th data\-tippy\-content\='</span>{JSON.stringify({type: 'association', metricKey: 'or', description: APP_CONFIG.UI_TEXTS.tooltips.associationSingleCriteria.or.description})}'>OR (95% CI)</th>
-                        <th data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'association', metricKey\: 'rd', description\: APP\_CONFIG\.UI\_TEXTS\.tooltips\.associationSingleCriteria\.rd\.description\}\)\}'\>RD \(95% CI\)</th\>
-<th data\-tippy\-content\='</span>{JSON.stringify({type: 'association', metricKey: 'phi', description: APP_CONFIG.UI_TEXTS.tooltips.associationSingleCriteria.phi.description})}'>Phi</th>
-                        <th data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'association', metricKey\: 'pValue', description\: APP\_CONFIG\.UI\_TEXTS\.tooltips\.associationSingleCriteria\.pValue\.description\}\)\}'\>p\-Value</th\>
-<th data\-tippy\-content\='</span>{JSON.stringify({type: 'association', metricKey: 'test', description: APP_CONFIG.UI_TEXTS.tooltips.associationSingleCriteria.test.description})}'>Test</th>
+                        <th data-tippy-content='${JSON.stringify({type: 'generic', description: 'Feature analyzed for association with N-status.'})}'>Feature</th>
+                        <th data-tippy-content='${JSON.stringify({type: 'association', metricKey: 'or', description: APP_CONFIG.UI_TEXTS.tooltips.associationSingleCriteria.or.description})}'>OR (95% CI)</th>
+                        <th data-tippy-content='${JSON.stringify({type: 'association', metricKey: 'rd', description: APP_CONFIG.UI_TEXTS.tooltips.associationSingleCriteria.rd.description})}'>RD (95% CI)</th>
+                        <th data-tippy-content='${JSON.stringify({type: 'association', metricKey: 'phi', description: APP_CONFIG.UI_TEXTS.tooltips.associationSingleCriteria.phi.description})}'>Phi</th>
+                        <th data-tippy-content='${JSON.stringify({type: 'association', metricKey: 'pValue', description: APP_CONFIG.UI_TEXTS.tooltips.associationSingleCriteria.pValue.description})}'>p-Value</th>
+                        <th data-tippy-content='${JSON.stringify({type: 'association', metricKey: 'test', description: APP_CONFIG.UI_TEXTS.tooltips.associationSingleCriteria.test.description})}'>Test</th>
                     </tr></thead><tbody>`;
 
                     const addRow = (key, name, obj) => {
@@ -304,12 +304,12 @@ const statisticsTab = (() => {
                         const testName = obj.testName;
 
                         html += `<tr>
-                            <td><span class="math-inline">\{name\}</td\>
-<td data\-tippy\-content\='</span>{JSON.stringify({type: 'association', metricKey: 'or', value: orValue, ci_lower: orCIL, ci_upper: orCIU, pValue: pValue, featureName: name, testName: testName})}'><span class="math-inline">\{fORCI\(obj\.or\)\}</td\>
-<td data\-tippy\-content\='</span>{JSON.stringify({type: 'association', metricKey: 'rd', value: rdValue, ci_lower: rdCIL, ci_upper: rdCIU, pValue: pValue, featureName: name, testName: testName})}'><span class="math-inline">\{fRDCI\(obj\.rd\)\}</td\>
-<td data\-tippy\-content\='</span>{JSON.stringify({type: 'association', metricKey: 'phi', value: phiValue, pValue: pValue, featureName: name, testName: testName})}'><span class="math-inline">\{fPhi\(obj\.phi\)\}</td\>
-<td data\-tippy\-content\='</span>{JSON.stringify({type: 'association', metricKey: 'pValue', pValue: pValue, featureName: name})}'>${fPVal(pValue)} <span class="math-inline">\{getStatisticalSignificanceSymbol\(pValue\)\}</td\>
-<td data\-tippy\-content\='</span>{JSON.stringify({type: 'association', metricKey: 'test', testName: testName})}'>${testName || na_stat}</td>
+                            <td>${name}</td>
+                            <td data-tippy-content='${JSON.stringify({type: 'association', metricKey: 'or', value: orValue, ci_lower: orCIL, ci_upper: orCIU, pValue: pValue, featureName: name, testName: testName})}'>${fORCI(obj.or)}</td>
+                            <td data-tippy-content='${JSON.stringify({type: 'association', metricKey: 'rd', value: rdValue, ci_lower: rdCIL, ci_upper: rdCIU, pValue: pValue, featureName: name, testName: testName})}'>${fRDCI(obj.rd)}</td>
+                            <td data-tippy-content='${JSON.stringify({type: 'association', metricKey: 'phi', value: phiValue, pValue: pValue, featureName: name, testName: testName})}'>${fPhi(obj.phi)}</td>
+                            <td data-tippy-content='${JSON.stringify({type: 'association', metricKey: 'pValue', pValue: pValue, featureName: name})}'>${fPVal(pValue)} ${getStatisticalSignificanceSymbol(pValue)}</td>
+                            <td data-tippy-content='${JSON.stringify({type: 'association', metricKey: 'test', testName: testName})}'>${testName || na_stat}</td>
                         </tr>`;
                     };
 
@@ -318,16 +318,67 @@ const statisticsTab = (() => {
                         const mwuPValue = assocStats.size_mwu.pValue;
                         const mwuTestName = assocStats.size_mwu.testName;
                         html += `<tr>
-                            <td><span class="math-inline">\{assocStats\.size\_mwu\.featureName\}</td\>
-<td\></span>{na_stat}</td>
-                            <td><span class="math-inline">\{na\_stat\}</td\>
-<td\></span>{na_stat}</td>
-                            <td data-tippy-content='<span class="math-inline">\{JSON\.stringify\(\{type\: 'association', metricKey\: 'pValue', pValue\: mwuPValue, featureName\: assocStats\.size\_mwu\.featureName\}\)\}'\></span>{fPVal(mwuPValue)} <span class="math-inline">\{getStatisticalSignificanceSymbol\(mwuPValue\)\}</td\>
-<td data\-tippy\-content\='</span>{JSON.stringify({type: 'association', metricKey: 'test', testName: mwuTestName})}'>${mwuTestName || na_stat}</td>
+                            <td>${assocStats.size_mwu.featureName}</td>
+                            <td>${na_stat}</td>
+                            <td>${na_stat}</td>
+                            <td>${na_stat}</td>
+                            <td data-tippy-content='${JSON.stringify({type: 'association', metricKey: 'pValue', pValue: mwuPValue, featureName: assocStats.size_mwu.featureName})}'>${fPVal(mwuPValue)} ${getStatisticalSignificanceSymbol(mwuPValue)}</td>
+                            <td data-tippy-content='${JSON.stringify({type: 'association', metricKey: 'test', testName: mwuTestName})}'>${mwuTestName || na_stat}</td>
                         </tr>`;
                     }
 
                     ['size', 'shape', 'border', 'homogeneity', 'signal'].forEach(fKey => {
                         if (assocStats[fKey]) {
                             const activeStatus = appliedCrit?.[fKey]?.active ? '' : ' (inactive)';
-                            addRow(fKey, `${assocStats[fK<ctrl63>
+                            addRow(fKey, `${assocStats[fKey].featureName}${activeStatus}`, assocStats[fKey]);
+                        }
+                    });
+                    html += `</tbody></table></div>`;
+                    return html;
+                };
+
+                innerContainer.innerHTML += uiComponents.createStatisticsCard(`performance-as-${i}`, 'Diagnostic Performance: Avocado Sign (AS vs. N)', createPerfTableHTML(stats.performanceAS, 'AS'), false, 'diagnosticPerformanceAS', [{id: `dl-as-perf-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `performance-as-${i}-content table`, tableName: `AS_Performance_${cohortId.replace(/\s+/g, '_')}`}], `performance-as-${i}-content table`);
+                innerContainer.innerHTML += uiComponents.createStatisticsCard(`performance-t2-${i}`, 'Diagnostic Performance: T2 (Applied Criteria vs. N)', createPerfTableHTML(stats.performanceT2, 'T2'), false, 'diagnosticPerformanceT2', [{id: `dl-t2-perf-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `performance-t2-${i}-content table`, tableName: `T2_Applied_Performance_${cohortId.replace(/\s+/g, '_')}`}], `performance-t2-${i}-content table`);
+                innerContainer.innerHTML += uiComponents.createStatisticsCard(`comparison-as-t2-${i}`, 'Statistical Comparison: AS vs. T2 (Applied Criteria)', createCompTableHTML(stats.comparisonASvsT2), false, 'statisticalComparisonASvsT2', [{id: `dl-comp-as-t2-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `comparison-as-t2-${i}-content table`, tableName: `Comp_AS_T2_Applied_${cohortId.replace(/\s+/g, '_')}`}], `comparison-as-t2-${i}-content table`);
+                innerContainer.innerHTML += uiComponents.createStatisticsCard(`associations-${i}`, 'Association with N-Status', createAssocTableHTML(stats.associations, appliedCriteria), false, 'associationSingleCriteria', [{id: `dl-assoc-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `associations-${i}-content table`, tableName: `Associations_${cohortId.replace(/\s+/g, '_')}`}], `associations-${i}-content table`);
+
+            } else {
+                innerContainer.innerHTML = '<div class="col-12"><div class="alert alert-warning small p-2">No data for this cohort.</div></div>';
+            }
+        });
+        if (layout === 'einzel') {
+            const criteriaComparisonCard = document.createElement('div');
+            criteriaComparisonCard.className = 'col-12';
+            criteriaComparisonCard.innerHTML = uiComponents.createStatisticsCard(
+                'criteria-comparison',
+                `Criteria Comparison: AS, Applied T2, & Literature Sets (for Cohort: ${getCohortDisplayName(globalCohort)})`,
+                createCriteriaComparisonTableHTML(statisticsService.calculateAllPublicationStats(processedData, appliedCriteria, appliedLogic, bruteForceManager.getAllResults()), globalCohort),
+                false,
+                'criteriaComparisonTable',
+                [{id: 'dl-criteria-comp-table-png', icon: 'fa-image', format: 'png', tableId: 'criteria-comparison-content table', tableName: `Criteria_Comparison_${globalCohort.replace(/\s+/g, '_')}`}],
+                'criteria-comparison-content table'
+            );
+            outerRow.appendChild(criteriaComparisonCard);
+        }
+
+        setTimeout(() => {
+            datasets.forEach((data, i) => {
+                if (data.length > 0) {
+                    const stats = statisticsService.calculateDescriptiveStats(data);
+                    if (document.getElementById(`chart-stat-age-${i}`)) {
+                        chartRenderer.renderAgeDistributionChart(stats.ageData, `chart-stat-age-${i}`, { height: 180, margin: { top: 10, right: 10, bottom: 35, left: 40 } });
+                    }
+                    if (document.getElementById(`chart-stat-gender-${i}`)) {
+                        const genderData = [{label: 'Male', value: stats.sex.m ?? 0}, {label: 'Female', value: stats.sex.f ?? 0}];
+                        if (stats.sex.unknown > 0) genderData.push({label: 'Unknown', value: stats.sex.unknown });
+                        chartRenderer.renderPieChart(genderData, `chart-stat-gender-${i}`, { height: 180, margin: { top: 10, right: 10, bottom: 35, left: 10 }, innerRadiusFactor: 0.0, legendBelow: true });
+                    }
+                }
+            });
+            uiManager.initializeTooltips(outerRow);
+        }, 50);
+        return outerRow.outerHTML;
+    }
+
+    return { render };
+})();
