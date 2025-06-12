@@ -34,7 +34,7 @@ function formatCriteriaForDisplay(criteria, logic = null) {
     };
 
     const priorityOrder = ['size', 'border', 'homogeneity', 'shape', 'signal'];
-    const sortedActiveKeys = [...activeKeys].sort((a, b) => {
+    const sortedActiveKeys = [...activeKeys].sort((a, b) => { // Ensure sortedActiveKeys is always defined
         const indexA = priorityOrder.indexOf(a);
         const indexB = priorityOrder.indexOf(b);
         if (indexA === -1 && indexB === -1) return a.localeCompare(b);
@@ -448,3 +448,4 @@ self.onerror = function(error) {
     self.postMessage({ type: 'error', payload: { message: `Global worker error: ${error.message || 'Unknown worker error'}` } });
     isRunning = false;
 };
+
