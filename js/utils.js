@@ -247,6 +247,72 @@ function getPValueText(pValue, forPublication = false) {
     return formattedP;
 }
 
+function getPValueInterpretation(pValue) {
+    const val = parseFloat(pValue);
+    if (isNaN(val) || !isFinite(val)) return 'not assessable';
+    if (val < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL) {
+        return 'statistically significant';
+    }
+    return 'not statistically significant';
+}
+
+function getORInterpretation(value, featureName = 'the feature') {
+    const val = parseFloat(value);
+    if (isNaN(val)) return 'The Odds Ratio could not be calculated.';
+    const templates = APP_CONFIG.UI_TEXTS.tooltips.statisticsTab.associationAnalysis.or;
+    if (val > 1) {
+        return templates.interpretation_gt1
+            .replace('{value}', formatNumber(val, 2, 'N/A', true))
+            .replace('{feature}', `<strong>${featureName}</strong>`);
+    } else if (val < 1) {
+        return templates.interpretation_lt1
+            .replace('{value}', formatNumber(val, 2, 'N/A', true))
+            .replace('{value_inv}', formatNumber(1 / val, 2, 'N/A', true))
+            .replace('{feature}', `<strong>${featureName}</strong>`);
+    } else {
+        return templates.interpretation_eq1.replace('{feature}', `<strong>${featureName}</strong>`);
+    }
+}
+
+function getRDInterpretation(value, featureName = 'the feature') {
+    const val = parseFloat(value);
+    if (isNaN(val)) return 'The Risk Difference could not be calculated.';
+    const templates = APP_CONFIG.UI_TEXTS.tooltips.statisticsTab.associationAnalysis.rd;
+    if (val > 0) {
+        return templates.interpretation_pos
+            .replace('{value_pct}', formatNumber(val * 100, 1, 'N/A', true))
+            .replace('{feature}', `<strong>${featureName}</strong>`);
+    } else {
+        return templates.interpretation_neg
+            .replace('{value_pct_abs}', formatNumber(Math.abs(val * 100), 1, 'N/A', true))
+            .replace('{feature}', `<strong>${featureName}</strong>`);
+    }
+}
+
+function getSimpleMetricInterpretation(metricKey, value) {
+    const val = parseFloat(value);
+    if (isNaN(val)) return 'Value is not available.';
+    const template = APP_CONFIG.UI_TEXTS.tooltips.statisticsTab.diagnosticPerformance[metricKey]?.interpretation;
+    if (!template) return `No interpretation available for ${metricKey}.`;
+
+    if (metricKey === 'auc' || metricKey === 'balAcc') {
+        const value_pct = formatPercent(val, 1);
+        const interpretation_strength = getAUCInterpretation(val);
+        return template.replace('{value}', formatNumber(val, 2, 'N/A', true)).replace('{value_pct}', value_pct).replace('{interpretation}', `<strong>${interpretation_strength}</strong>`);
+    }
+    
+    return template.replace(/{value}/g, formatPercent(val, 1));
+}
+
+function getComparativeTestInterpretation(testKey, pValue) {
+    const val = parseFloat(pValue);
+    if (isNaN(val)) return 'The p-value could not be calculated.';
+    const templates = APP_CONFIG.UI_TEXTS.tooltips.statisticsTab.statisticalComparison[testKey];
+    const significance = (val < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL) ? templates.interpretation_s : templates.interpretation_ns;
+    return templates.interpretation
+        .replace('{p_value}', getPValueText(val, true))
+        .replace('{significance}', `<strong>${significance}</strong>`);
+}
 
 function generateUUID() {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
