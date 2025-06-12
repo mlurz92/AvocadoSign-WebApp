@@ -21,22 +21,26 @@ function formatNumber(num, digits = 1, placeholder = '--', useStandardFormat = f
     }
 }
 
-function formatPercent(num, digits = 1, placeholder = '--%') {
+function formatPercent(num, digits = 0, placeholder = '--%') { // Default digits changed to 0
     const number = parseFloat(num);
     if (num === null || num === undefined || isNaN(number) || !isFinite(number)) {
         return placeholder;
     }
+    // Radiology style: Sensitivity, Specificity, Accuracy, NPV, PPV use percentages without decimals.
+    // However, for other percentages, 1 or more digits might be needed.
+    // The `digits` parameter now explicitly controls this.
     return `${(number * 100).toFixed(digits)}%`;
 }
 
-function formatCI(value, ciLower, ciUpper, digits = 1, isPercent = false, placeholder = '--') {
+function formatCI(value, ciLower, ciUpper, digits = 0, isPercent = false, placeholder = '--') { // Default digits changed to 0
     const formatFn = isPercent
         ? (val, dig) => formatNumber(val * 100, dig, placeholder, true)
         : (val, dig) => formatNumber(val, dig, placeholder, true);
 
-    const formattedValue = formatFn(value, digits);
+    // For percentages like Sens, Spec, Acc, PPV, NPV, format to whole number
+    const formattedValue = isPercent ? formatPercent(value, digits, placeholder) : formatFn(value, digits);
 
-    if (formattedValue === placeholder && !(value === 0 && placeholder === '--')) {
+    if ((value === null || value === undefined || isNaN(parseFloat(value)) || !isFinite(parseFloat(value))) && !(value === 0 && placeholder === '--')) {
         return placeholder;
     }
 
@@ -44,10 +48,9 @@ function formatCI(value, ciLower, ciUpper, digits = 1, isPercent = false, placeh
     const formattedUpper = formatFn(ciUpper, digits);
 
     if (formattedLower !== placeholder && formattedUpper !== placeholder) {
-        const ciStr = `(95% CI: ${formattedLower}, ${formattedUpper})`;
-        return `${formattedValue}${isPercent ? '%' : ''} ${ciStr}`;
+        return `${formattedValue} (95% CI: ${formattedLower}, ${formattedUpper})`;
     }
-    return `${formattedValue}${isPercent ? '%' : ''}`;
+    return formattedValue;
 }
 
 function getCurrentDateString(format = 'YYYY-MM-DD') {
@@ -214,37 +217,44 @@ function getStatisticalSignificanceSymbol(pValue) {
 function getPValueText(pValue, forPublication = false) {
     if (pValue === null || pValue === undefined || isNaN(pValue) || !isFinite(pValue)) return 'N/A';
 
-    const pLessThanThreshold = 0.001;
-    const pDot01Threshold = 0.01;
-    const pDot05Threshold = 0.05;
-    const pGreater099Threshold = 0.99;
-
+    // Radiology style guide:
+    // p-values: 2 digits unless < .01, then 3 digits. Exact P unless < .001. Smallest <.001, largest >.99. No leading zeros.
     let formattedP;
 
-    if (forPublication) {
-        const prefix = 'P';
-        if (pValue < pLessThanThreshold) {
-            formattedP = `${prefix} < .001`;
-        } else if (pValue >= pLessThanThreshold && pValue < pDot01Threshold) {
-            formattedP = `${prefix} = ${formatNumber(pValue, 3, 'N/A', true)}`;
-        } else if (pValue >= pDot01Threshold && pValue < pDot05Threshold) {
-             formattedP = `${prefix} = ${formatNumber(pValue, 3, 'N/A', true)}`;
-        } else if (pValue >= pDot05Threshold && pValue <= pGreater099Threshold) {
-            formattedP = `${prefix} = ${formatNumber(pValue, 2, 'N/A', true)}`;
-        } else if (pValue > pGreater099Threshold) {
-            formattedP = `${prefix} > .99`;
+    if (pValue < 0.001) {
+        formattedP = '<.001';
+    } else if (pValue < 0.01) {
+        formattedP = `.${Math.round(pValue * 1000)}`; // e.g. .005
+    } else if (pValue < 0.05) {
+        // For values close to .05, you may provide a third digit (ie, .046)
+        // Check if rounding to 2 digits would make it non-significant (>= .05)
+        const roundedToTwoDigits = parseFloat(pValue.toFixed(2));
+        if (roundedToTwoDigits >= 0.05 && pValue < 0.05) {
+            formattedP = `.${Math.round(pValue * 1000)}`; // Keep 3 digits if it's like 0.046
         } else {
-            formattedP = `${prefix} = ${formatNumber(pValue, 2, 'N/A', true)}`;
+            formattedP = parseFloat(pValue.toFixed(2)).toString().substring(1); // Remove leading zero
         }
     } else {
-        const prefix = 'p';
-        if (pValue < 0.001) {
-            formattedP = `${prefix} < 0.001`;
-        } else {
-            formattedP = `${prefix} = ${formatNumber(pValue, 3, 'N/A', true)}`;
-        }
+        formattedP = parseFloat(pValue.toFixed(2)).toString().substring(1); // Remove leading zero
     }
-    return formattedP;
+    if (formattedP === ".00") formattedP = "<.001"; // Edge case for very small numbers rounded to .00
+    if (parseFloat(formattedP) === 0 && formattedP !== "<.001") formattedP = "<.001"; // Ensure 0 is handled as <.001
+
+    if (forPublication) {
+        // Specific Radiology style for p-values: "P = .xx", "P < .001" etc.
+        if (pValue < 0.001) {
+            return `P < .001`;
+        } else if (pValue > 0.99) {
+            return `P > .99`;
+        } else if (pValue < 0.01) {
+            return `P = ${parseFloat(pValue.toFixed(3)).toString().substring(1)}`; // Remove leading zero, 3 digits
+        } else {
+            return `P = ${parseFloat(pValue.toFixed(2)).toString().substring(1)}`; // Remove leading zero, 2 digits
+        }
+    } else {
+        // General UI display (e.g., Statistics tab)
+        return `p = ${pValue < 0.001 ? '0.001' : formatNumber(pValue, 3, 'N/A', true)}`; // Display with leading zero for general UI
+    }
 }
 
 
@@ -340,26 +350,28 @@ function getInterpretationTooltip(metricKey, data, context = {}) {
         case 'ppv':
         case 'npv':
         case 'acc':
+            // Radiology style: Use percentages without decimals, e.g., "85%"
             baseText = template
-                .replace(/{value}/g, `<strong>${formatPercent(value, 1)}</strong>`)
-                .replace('{lower}', `<strong>${formatPercent(ci?.lower, 1)}</strong>`)
-                .replace('{upper}', `<strong>${formatPercent(ci?.upper, 1)}</strong>`);
+                .replace(/{value}/g, `<strong>${formatPercent(value, 0)}</strong>`)
+                .replace('{lower}', `<strong>${formatPercent(ci?.lower, 0)}</strong>`)
+                .replace('{upper}', `<strong>${formatPercent(ci?.upper, 0)}</strong>`);
             break;
 
         case 'balAcc':
         case 'auc':
             const strength = getAUCInterpretation(value);
+            // AUC and Kappa values should have 2 digits only (e.g., .82).
             baseText = template
                 .replace(/{value}/g, `<strong>${formatNumber(value, 2)}</strong>`)
                 .replace('{strength}', `<strong>${strength}</strong>`);
             break;
             
         case 'f1':
-             baseText = template.replace('{value}', `<strong>${formatNumber(value, 3)}</strong>`);
+             baseText = template.replace('{value}', `<strong>${formatNumber(value, 3)}</strong>`); // F1-Score typically 3 decimal places
              break;
 
         case 'pValue':
-            const pValueFormatted = getPValueText(value);
+            const pValueFormatted = getPValueText(value, true); // Use forPublication formatting for p-value
             const significance = value < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL;
             const significanceText = significance ? templates.significance.significant : templates.significance.not_significant;
             const pStrength = significance ? templates.strength.strong : templates.strength.very_weak;
@@ -382,11 +394,11 @@ function getInterpretationTooltip(metricKey, data, context = {}) {
         case 'or':
             const orDirection = value > 1 ? templates.direction.increased : (value < 1 ? templates.direction.decreased : templates.direction.unchanged);
             const orStrength = getORInterpretation(value);
+            // Odds ratios, risk ratios, hazard ratios, and 95% CIs should have significant digits extending to the one hundredths place (eg, 1.01).
             baseText = template.value
                 .replace('{value}', `<strong>${formatNumber(value, 2)}</strong>`)
                 .replace('{direction}', orDirection)
-                .replace('{featureName}', `<strong>${escapeHTML(data.featureName)}</strong>`)
-                .replace('{strength}', orStrength);
+                .replace('{featureName}', `<strong>${escapeHTML(data.featureName)}</strong>`);
             if (ci) {
                 const includesOne = ci.lower < 1 && ci.upper > 1;
                 const ciText = includesOne ? templates.ci.includesOne : templates.ci.excludesOne;
@@ -399,22 +411,24 @@ function getInterpretationTooltip(metricKey, data, context = {}) {
 
         case 'rd':
             const rdDirection = value > 0 ? templates.direction.increased : (value < 0 ? templates.direction.decreased : templates.direction.unchanged);
+            // Risk Difference (Absolute Risk Reduction) - Often reported as percentage with 1 decimal
             baseText = template.value
-                .replace('{value}', `<strong>${formatPercent(value, 1)}</strong>`)
+                .replace('{value}', `<strong>${formatPercent(value, 1)}</strong>`) // Display as percentage with 1 decimal
                 .replace('{direction}', rdDirection)
                 .replace('{featureName}', `<strong>${escapeHTML(data.featureName)}</strong>`);
             if (ci) {
                 const includesZero = ci.lower < 0 && ci.upper > 0;
                 const ciText = includesZero ? templates.ci.includesZero : templates.ci.excludesZero;
                 baseText += '<br>' + template.ci
-                    .replace('{lower}', `<strong>${formatPercent(ci.lower, 1)}</strong>`)
-                    .replace('{upper}', `<strong>${formatPercent(ci.upper, 1)}</strong>`)
+                    .replace('{lower}', `<strong>${formatPercent(ci.lower, 1)}</strong>`) // Display as percentage with 1 decimal
+                    .replace('{upper}', `<strong>${formatPercent(ci.upper, 1)}</strong>`) // Display as percentage with 1 decimal
                     .replace('{ciInterpretationText}', ciText);
             }
             break;
 
         case 'phi':
             const phiStrength = getPhiInterpretation(value);
+            // Phi coefficient: 2 digits only (e.g., .82)
             baseText = template.value
                 .replace('{value}', `<strong>${formatNumber(value, 2)}</strong>`)
                 .replace('{strength}', `<strong>${phiStrength}</strong>`)
