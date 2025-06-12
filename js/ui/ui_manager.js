@@ -136,7 +136,7 @@ const uiManager = (() => {
         }
         let modalElement = document.getElementById('quick-guide-modal');
         if (!modalElement) {
-            const appVersion = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG.APP_VERSION : '3.0.0';
+            const appVersion = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG.APP_VERSION : '3.0.1';
             const quickGuideContent = `
                 <h2>1. Introduction</h2>
                 <p>The <strong>Nodal Staging: Avocado Sign vs. T2 Criteria</strong> analysis tool is a client-side web application designed for scientific research in the radiological diagnosis of rectal cancer. It enables in-depth analyses and detailed comparisons of diagnostic performance for various MRI-based criteria for assessing mesorectal lymph node status (N-status). The application focuses on evaluating the novel "Avocado Sign" (AS) against established T2-weighted (T2w) morphological criteria. It is intended solely as a <strong>research instrument</strong>. The results are <strong>not for clinical diagnosis or direct patient treatment decisions</strong>. </p>
@@ -201,7 +201,7 @@ const uiManager = (() => {
                     <li><strong>Configuration:</strong> <code>js/config.js</code> centralizes settings, UI texts, statistical constants, and publication configurations.</li>
                     <li><strong>Glossary of Key Terms:</strong> AS (Avocado Sign), AUC (Area Under the Curve), BF (Brute-Force), CI (Confidence Interval), nRCT (Neoadjuvant Chemoradiotherapy), NPV (Negative Predictive Value), OR (Odds Ratio), PPV (Positive Predictive Value), RD (Risk Difference), T2w (T2-weighted).</li>
                 </ul>
-                <p class="small text-muted text-end"><em>Description generated for Application Version ${appVersion}. Last updated: June 11, 2025.</em></p>
+                <p class="small text-muted text-end"><em>Description generated for Application Version ${appVersion}. Last updated: June 12, 2025.</em></p>
             `;
             const modalHTML = `
                 <div class="modal fade" id="quick-guide-modal" tabindex="-1" aria-labelledby="quickGuideModalLabel" aria-hidden="true">
@@ -366,7 +366,7 @@ const uiManager = (() => {
                 const criteriaDisplay = studyT2CriteriaManager.formatCriteriaForDisplay(best.criteria, best.logic);
                 let cohortStats = `(N=${bfResult.nTotal}, N+: ${bfResult.nPlus}, N-: ${bfResult.nMinus})`;
 
-                const resultTooltipTemplate = APP_CONFIG.UI_TEXTS.tooltips.bruteForceResult.description;
+                const resultTooltipTemplate = `Best result of the completed brute-force optimization for the selected cohort ([N_TOTAL] patients, including [N_PLUS] N+ and [N_MINUS] N-) and the target metric.`;
                 const resultTooltip = resultTooltipTemplate
                     .replace('[N_TOTAL]', bfResult.nTotal)
                     .replace('[N_PLUS]', bfResult.nPlus)
@@ -388,7 +388,7 @@ const uiManager = (() => {
             }
         }
 
-        const infoTooltipTemplate = APP_CONFIG.UI_TEXTS.tooltips.bruteForceInfo.description;
+        const infoTooltipTemplate = `Shows the status of the optimization worker and the currently analyzed patient cohort: [COHORT_NAME].`;
         const cardTitleTooltip = infoTooltipTemplate.replace('[COHORT_NAME]', `<strong>${cohortDisplayName}</strong>`);
         const isRunning = status === 'started' || status === 'progress';
 
@@ -397,14 +397,14 @@ const uiManager = (() => {
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span data-tippy-content="${cardTitleTooltip}">Criteria Optimization (Brute-Force)</span>
                     <div class="d-flex align-items-center">
-                        <label for="brute-force-metric" class="me-2 small text-muted" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.bruteForceMetric.description}">Target:</label>
+                        <label for="brute-force-metric" class="me-2 small text-muted" data-tippy-content="Select the target metric for the brute-force optimization.">Target:</label>
                         <select class="form-select form-select-sm me-2" id="brute-force-metric" ${isRunning ? 'disabled' : ''}>
                             ${APP_CONFIG.AVAILABLE_BRUTE_FORCE_METRICS.map(metric => `<option value="${metric.value}" ${payload.metric === metric.value ? 'selected' : ''}>${metric.label}</option>`).join('')}
                         </select>
-                        <button class="btn btn-sm btn-success me-2" id="btn-start-brute-force" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.bruteForceStart.description}" ${isRunning || !isWorkerAvailable ? 'disabled' : ''}><i class="fas fa-play me-1"></i> Start</button>
+                        <button class="btn btn-sm btn-success me-2" id="btn-start-brute-force" data-tippy-content="Starts the brute-force search." ${isRunning || !isWorkerAvailable ? 'disabled' : ''}><i class="fas fa-play me-1"></i> Start</button>
                         <button class="btn btn-sm btn-danger me-2" id="btn-cancel-brute-force" ${!isRunning ? 'disabled' : ''}><i class="fas fa-stop me-1"></i> Cancel</button>
                         <button class="btn btn-sm btn-primary" id="btn-apply-best-bf-criteria" ${!showResultControls || isRunning ? 'disabled' : ''}><i class="fas fa-magic me-1"></i> Apply Best</button>
-                        <button class="btn btn-sm btn-outline-info ms-2" ${!showResultControls ? 'disabled' : ''} data-bs-toggle="modal" data-bs-target="#brute-force-modal" id="btn-show-bf-details" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.bruteForceDetailsButton.description}"><i class="fas fa-info-circle"></i> Top 10</button>
+                        <button class="btn btn-sm btn-outline-info ms-2" ${!showResultControls ? 'disabled' : ''} data-bs-toggle="modal" data-bs-target="#brute-force-modal" id="btn-show-bf-details" data-tippy-content="Opens a window with the top 10 results."><i class="fas fa-info-circle"></i> Top 10</button>
                     </div>
                 </div>
                 <div class="card-body">
@@ -454,15 +454,16 @@ const uiManager = (() => {
         if (criteriaCard) {
             criteriaCard.classList.toggle('criteria-unsaved-indicator', isUnsaved);
             let instance = criteriaCard._tippy;
+            const unsavedTooltipText = "<strong>Attention:</strong> There are unsaved changes to the T2 criteria or logic. Click 'Apply & Save' to update the results and save the settings.";
             if (isUnsaved && !instance) {
                 tippy(criteriaCard, {
-                    content: APP_CONFIG.UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator,
+                    content: unsavedTooltipText,
                     theme: 'warning',
                     placement: 'top',
                 });
             } else if (instance) {
                 instance.setProps({
-                    content: APP_CONFIG.UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator,
+                    content: unsavedTooltipText,
                 });
                 if (isUnsaved) instance.enable(); else instance.disable();
             }
@@ -483,8 +484,8 @@ const uiManager = (() => {
         });
 
         toggleButton.dataset.action = isExpanding ? 'collapse' : 'expand';
-        const expandAllTooltip = APP_CONFIG.UI_TEXTS.tooltips.dataTab.expandAll;
-        const collapseAllTooltip = APP_CONFIG.UI_TEXTS.tooltips.dataTab.collapseAll;
+        const expandAllTooltip = "Expand All Details";
+        const collapseAllTooltip = "Collapse All Details";
         toggleButton.innerHTML = isExpanding
             ? `Collapse All Details <i class="fas fa-chevron-up ms-1"></i>`
             : `Expand All Details <i class="fas fa-chevron-down ms-1"></i>`;
