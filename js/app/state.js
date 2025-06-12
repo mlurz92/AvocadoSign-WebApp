@@ -7,6 +7,8 @@ const state = (() => {
         analysisTableSort: cloneDeep(APP_CONFIG.DEFAULT_SETTINGS.ANALYSIS_TABLE_SORT),
         publicationSection: APP_CONFIG.DEFAULT_SETTINGS.PUBLICATION_SECTION,
         publicationBruteForceMetric: APP_CONFIG.DEFAULT_SETTINGS.PUBLICATION_BRUTE_FORCE_METRIC,
+        publicationSummaryStatement: APP_CONFIG.DEFAULT_SETTINGS.PUBLICATION_SUMMARY_STATEMENT,
+        publicationKeyResults: APP_CONFIG.DEFAULT_SETTINGS.PUBLICATION_KEY_RESULTS,
         publicationLang: APP_CONFIG.DEFAULT_SETTINGS.PUBLICATION_LANG,
         statsLayout: APP_CONFIG.DEFAULT_SETTINGS.STATS_LAYOUT,
         statsCohort1: APP_CONFIG.DEFAULT_SETTINGS.STATS_COHORT1,
@@ -24,6 +26,8 @@ const state = (() => {
             currentCohort: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.CURRENT_COHORT) ?? defaultState.currentCohort,
             publicationSection: isValidSection ? loadedSection : defaultState.publicationSection,
             publicationBruteForceMetric: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PUBLICATION_BRUTE_FORCE_METRIC) ?? defaultState.publicationBruteForceMetric,
+            publicationSummaryStatement: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PUBLICATION_SUMMARY_STATEMENT) ?? defaultState.publicationSummaryStatement,
+            publicationKeyResults: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PUBLICATION_KEY_RESULTS) ?? defaultState.publicationKeyResults,
             publicationLang: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.PUBLICATION_LANG) ?? defaultState.publicationLang,
             statsLayout: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.STATS_LAYOUT) ?? defaultState.statsLayout,
             statsCohort1: loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.STATS_COHORT1) ?? defaultState.statsCohort1,
@@ -80,6 +84,16 @@ const state = (() => {
     function setPublicationBruteForceMetric(newMetric) {
         const isValid = APP_CONFIG.AVAILABLE_BRUTE_FORCE_METRICS.some(m => m.value === newMetric);
         return isValid ? _setter('publicationBruteForceMetric', APP_CONFIG.STORAGE_KEYS.PUBLICATION_BRUTE_FORCE_METRIC, newMetric) : false;
+    }
+
+    function getPublicationSummaryStatement() { return currentState.publicationSummaryStatement; }
+    function setPublicationSummaryStatement(newText) {
+        return _setter('publicationSummaryStatement', APP_CONFIG.STORAGE_KEYS.PUBLICATION_SUMMARY_STATEMENT, newText);
+    }
+
+    function getPublicationKeyResults() { return currentState.publicationKeyResults; }
+    function setPublicationKeyResults(newText) {
+        return _setter('publicationKeyResults', APP_CONFIG.STORAGE_KEYS.PUBLICATION_KEY_RESULTS, newText);
     }
 
     function getCurrentPublikationLang() { return currentState.publicationLang; }
@@ -150,6 +164,10 @@ const state = (() => {
         setPublicationSection,
         getPublicationBruteForceMetric,
         setPublicationBruteForceMetric,
+        getPublicationSummaryStatement,
+        setPublicationSummaryStatement,
+        getPublicationKeyResults,
+        setPublicationKeyResults,
         getCurrentPublikationLang,
         setPublicationLang,
         getStatsLayout,
