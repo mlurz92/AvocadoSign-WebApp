@@ -31,23 +31,23 @@ function formatPercent(num, digits = 1, placeholder = '--%') {
 
 function formatCI(value, ciLower, ciUpper, digits = 1, isPercent = false, placeholder = '--') {
     const formatFn = isPercent
-        ? (val, dig) => formatNumber(val * 100, dig, placeholder, true)
-        : (val, dig) => formatNumber(val, dig, placeholder, true);
+        ? (val, dig, ph) => formatNumber(val * 100, dig, ph, true)
+        : (val, dig, ph) => formatNumber(val, dig, ph, true);
 
-    const formattedValue = formatFn(value, digits);
+    const formattedValue = formatFn(value, digits, placeholder);
 
     if (formattedValue === placeholder && !(value === 0 && placeholder === '--')) {
         return placeholder;
     }
 
-    const formattedLower = formatFn(ciLower, digits);
-    const formattedUpper = formatFn(ciUpper, digits);
+    const formattedLower = formatFn(ciLower, digits, placeholder);
+    const formattedUpper = formatFn(ciUpper, digits, placeholder);
 
     if (formattedLower !== placeholder && formattedUpper !== placeholder) {
         const ciStr = `(95% CI: ${formattedLower}, ${formattedUpper})`;
-        return `${formattedValue}${isPercent ? '%' : ''} ${ciStr}`;
+        return `${formattedValue}${isPercent && formattedValue !== placeholder ? '%' : ''} ${ciStr}`;
     }
-    return `${formattedValue}${isPercent ? '%' : ''}`;
+    return `${formattedValue}${isPercent && formattedValue !== placeholder ? '%' : ''}`;
 }
 
 function getCurrentDateString(format = 'YYYY-MM-DD') {
@@ -342,4 +342,114 @@ function getT2IconSVG(type, value) {
             svgContent = APP_CONFIG.T2_ICON_SVGS.UNKNOWN(s, sw, iconColor, c, r, sq, sqPos);
     }
     return `<svg class="icon-t2 icon-${type}" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${type}: ${value || 'unknown'}">${svgContent}</svg>`;
+}
+
+function getMetricInterpretation(metricKey, value, ci_lower, ci_upper, type = 'AS', method = null) {
+    const tooltipTexts = APP_CONFIG.UI_TEXTS.tooltips[`diagnosticPerformance${type}`];
+    if (!tooltipTexts || !tooltipTexts[metricKey]) return 'No interpretation available.';
+
+    const explanation = tooltipTexts[metricKey].description;
+    const interpretationFn = tooltipTexts[metricKey].value_interpretation;
+    let interpretation = '';
+
+    if (typeof interpretationFn === 'function') {
+        const isPercent = !(metricKey === 'auc' || metricKey === 'f1');
+        const digits = (metricKey === 'auc' || metricKey === 'f1') ? 2 : 1;
+        
+        let formattedValue = isPercent ? formatPercent(value, digits) : formatNumber(value, digits);
+        let formattedCI = ci_lower !== null && ci_upper !== null 
+            ? `(95% CI: ${isPercent ? formatPercent(ci_lower, digits) : formatNumber(ci_lower, digits)}, ${isPercent ? formatPercent(ci_upper, digits) : formatNumber(ci_upper, digits)})` 
+            : '';
+
+        if (metricKey === 'auc') {
+            interpretation = interpretationFn(value);
+        } else if (metricKey === 'f1') {
+            interpretation = interpretationFn(value);
+        } else {
+            interpretation = interpretationFn(value);
+        }
+    }
+    
+    let methodExplanation = '';
+    if (method && tooltipTexts.ci_method) {
+        methodExplanation = `<br><strong>CI Method:</strong> ${tooltipTexts.ci_method.value_interpretation(method, tooltipTexts[metricKey].description.split(':')[0].trim())}`;
+    }
+
+    return `${explanation}<br><br><strong>Interpretation:</strong> ${interpretation}${methodExplanation}`;
+}
+
+function getComparisonInterpretation(testKey, statistic, pValue, diffAUC = null, cohortName = 'the selected cohort', method1 = 'Avocado Sign', method2 = 'T2 Criteria') {
+    const tooltipTexts = APP_CONFIG.UI_TEXTS.tooltips.statisticalComparisonASvsT2;
+    if (!tooltipTexts || !tooltipTexts[testKey]) return 'No interpretation available.';
+
+    const explanation = tooltipTexts[testKey].description;
+    const interpretationFn = tooltipTexts[testKey].value_interpretation;
+    let interpretation = '';
+
+    if (typeof interpretationFn === 'function') {
+        if (testKey === 'delong') {
+            interpretation = interpretationFn(statistic, pValue, diffAUC);
+        } else {
+            interpretation = interpretationFn(statistic, pValue);
+        }
+    }
+
+    const pValueExplanation = tooltipTexts.pValue.value_interpretation(pValue);
+
+    return `${explanation}<br><br><strong>Interpretation:</strong> ${interpretation}<br><strong>P-value interpretation:</strong> ${pValueExplanation}`;
+}
+
+function getAssociationInterpretation(metricKey, value, ci_lower, ci_upper, pValue, featureName, testName) {
+    const tooltipTexts = APP_CONFIG.UI_TEXTS.tooltips.associationSingleCriteria;
+    if (!tooltipTexts || !tooltipTexts[metricKey]) return 'No interpretation available.';
+
+    const explanation = tooltipTexts[metricKey].description;
+    const interpretationFn = tooltipTexts[metricKey].value_interpretation;
+    let interpretation = '';
+
+    if (typeof interpretationFn === 'function') {
+        if (metricKey === 'or' || metricKey === 'rd') {
+            interpretation = interpretationFn(value, ci_lower, ci_upper, featureName);
+        } else if (metricKey === 'phi') {
+            interpretation = interpretationFn(value);
+        }
+    }
+    
+    const pValueExplanation = tooltipTexts.pValue.value_interpretation(pValue, featureName);
+    const testMethodExplanation = tooltipTexts.test.value_interpretation(testName);
+
+    return `${explanation}<br><br><strong>Interpretation:</strong> ${interpretation}<br><strong>P-value interpretation:</strong> ${pValueExplanation}<br><strong>Test Method:</strong> ${testMethodExplanation}`;
+}
+
+function getPValueInterpretation(pValue) {
+    return APP_CONFIG.UI_TEXTS.tooltips.statisticalComparisonASvsT2.pValue.value_interpretation(pValue);
+}
+
+function getTooltipContent(type, context = {}) {
+    switch (type) {
+        case 'metric':
+            return getMetricInterpretation(context.metricKey, context.value, context.ci_lower, context.ci_upper, context.metricType, context.method);
+        case 'comparison':
+            return getComparisonInterpretation(context.testKey, context.statistic, context.pValue, context.diffAUC, context.cohortName, context.method1, context.method2);
+        case 'association':
+            return getAssociationInterpretation(context.metricKey, context.value, context.ci_lower, context.ci_upper, context.pValue, context.featureName, context.testName);
+        case 'p_value':
+            return getPValueInterpretation(context.pValue);
+        case 'header_metric':
+            const tooltipConfig = APP_CONFIG.UI_TEXTS.tooltips.headerStats[context.key];
+            if (tooltipConfig) return tooltipConfig.description;
+            return context.description || '';
+        case 'descriptive':
+            const descTooltip = APP_CONFIG.UI_TEXTS.tooltips.descriptiveStatistics[context.key];
+            if (descTooltip) return descTooltip.description;
+            return context.description || '';
+        case 'criteria_comparison_header':
+             const headerTooltip = APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable[context.key];
+             if (headerTooltip) return headerTooltip;
+             return context.description || '';
+        case 'criteria_comparison_value':
+            return APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.metric_value_interpretation(context.metricName, context.value, context.isPercent);
+        default:
+            return context.description || '';
+    }
 }
