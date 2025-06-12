@@ -254,6 +254,42 @@ const publicationTab = (() => {
         const pubConfig = PUBLICATION_CONFIG.publicationElements;
         const getPValueTextForPub = (pValue) => getPValueText(pValue, true);
 
+        // Helper to generate tooltip content for table headers based on a descriptive key
+        const getHeaderTooltip = (key, defaultText) => JSON.stringify({
+            type: 'generic', // Use generic type for simple header descriptions
+            description: defaultText
+        });
+
+        // Helper to generate tooltip content for metric values in tables
+        const getMetricValueTooltip = (metricKey, value, ci_lower, ci_upper, metricType, method = null) => {
+            return JSON.stringify({
+                type: 'metric',
+                metricKey: metricKey,
+                value: value,
+                ci_lower: ci_lower,
+                ci_upper: ci_upper,
+                metricType: metricType,
+                method: method
+            });
+        };
+
+        // Helper to generate tooltip content for comparison test values
+        const getComparisonValueTooltip = (testKey, statistic, pValue, diffAUC = null, cohortName = '') => {
+            return JSON.stringify({
+                type: 'comparison',
+                testKey: testKey,
+                statistic: statistic,
+                pValue: pValue,
+                diffAUC: diffAUC,
+                cohortName: cohortName
+            });
+        };
+
+        // Helper to generate tooltip content for p-values
+        const getPValueTooltip = (pValue) => JSON.stringify({
+            type: 'p_value',
+            pValue: pValue
+        });
 
         if (tableId === pubConfig.methoden.literaturT2KriterienTabelle.id) {
             caption = pubConfig.methoden.literaturT2KriterienTabelle.titleEn;
@@ -294,7 +330,10 @@ const publicationTab = (() => {
                 const sG = stats?.[overallId]?.performanceAS?.[metricKey];
                 const sD = stats?.[surgeryId]?.performanceAS?.[metricKey];
                 const sN = stats?.[nectId]?.performanceAS?.[metricKey];
-                return [ metricName, fCI_pub(sG), fCI_pub(sD), fCI_pub(sN) ];
+                return [`<span data-tippy-content='${getMetricValueTooltip(metricKey, sG?.value, sG?.ci?.lower, sG?.ci?.upper, 'AS', sG?.method)}'>${metricName}</span>`, 
+                        `<span data-tippy-content='${getMetricValueTooltip(metricKey, sG?.value, sG?.ci?.lower, sG?.ci?.upper, 'AS', sG?.method)}'>${fCI_pub(sG)}</span>`, 
+                        `<span data-tippy-content='${getMetricValueTooltip(metricKey, sD?.value, sD?.ci?.lower, sD?.ci?.upper, 'AS', sD?.method)}'>${fCI_pub(sD)}</span>`, 
+                        `<span data-tippy-content='${getMetricValueTooltip(metricKey, sN?.value, sN?.ci?.lower, sN?.ci?.upper, 'AS', sN?.method)}'>${fCI_pub(sN)}</span>`];
              };
              rows = [
                  getRow('sens', 'Sensitivity'), getRow('spec', 'Specificity'),
@@ -310,11 +349,15 @@ const publicationTab = (() => {
                 const perf = stats?.[cohortId]?.performanceT2Bruteforce;
                 if (!bfRes || !perf) return null;
                 return [
-                    getCohortDisplayName(cohortId), commonData.bruteForceMetricForPublication, fv(bfRes.metricValue, 4, true),
-                    APP_CONFIG.UI_TEXTS.t2LogicDisplayNames[bfRes.logic] || bfRes.logic,
-                    studyT2CriteriaManager.formatCriteriaForDisplay(bfRes.criteria, bfRes.logic, true),
-                    fCI_pub(perf.sens), fCI_pub(perf.spec),
-                    fCI_pub(perf.acc), fCI_pub(perf.auc)
+                    `<span data-tippy-content='${getHeaderTooltip('cohort', `Patient cohort for analysis: ${getCohortDisplayName(cohortId)}. (N = ${stats?.[cohortId]?.descriptive?.patientCount||'?'})`)}'>${getCohortDisplayName(cohortId)}</span>`, 
+                    `<span data-tippy-content='${getHeaderTooltip('optimizedMetric', `The diagnostic metric (${commonData.bruteForceMetricForPublication}) that was maximized by the brute-force optimization.`)}'>${commonData.bruteForceMetricForPublication}</span>`, 
+                    `<span data-tippy-content='${getMetricValueTooltip(bfRes.metricName, bfRes.metricValue, null, null, 'T2-BF', null)}'>${fv(bfRes.metricValue, 4, true)}</span>`,
+                    `<span data-tippy-content='${getHeaderTooltip('logic', `Logical operator used for combining T2 criteria: ${APP_CONFIG.UI_TEXTS.t2LogicDisplayNames[bfRes.logic] || bfRes.logic}.`)}'>${APP_CONFIG.UI_TEXTS.t2LogicDisplayNames[bfRes.logic] || bfRes.logic}</span>`,
+                    `<span data-tippy-content='${getHeaderTooltip('criteria', `Specific T2 morphological criteria (size, shape, border, homogeneity, signal) that constitute the optimized set.`)}'><code>${studyT2CriteriaManager.formatCriteriaForDisplay(bfRes.criteria, bfRes.logic, true)}</code></span>`,
+                    `<span data-tippy-content='${getMetricValueTooltip('sens', perf.sens?.value, perf.sens?.ci?.lower, perf.sens?.ci?.upper, 'T2-BF', perf.sens?.method)}'>${fCI_pub(perf.sens)}</span>`, 
+                    `<span data-tippy-content='${getMetricValueTooltip('spec', perf.spec?.value, perf.spec?.ci?.lower, perf.spec?.ci?.upper, 'T2-BF', perf.spec?.method)}'>${fCI_pub(perf.spec)}</span>`,
+                    `<span data-tippy-content='${getMetricValueTooltip('acc', perf.acc?.value, perf.acc?.ci?.lower, perf.acc?.ci?.upper, 'T2-BF', perf.acc?.method)}'>${fCI_pub(perf.acc)}</span>`,
+                    `<span data-tippy-content='${getMetricValueTooltip('auc', perf.auc?.value, perf.auc?.ci?.lower, perf.auc?.ci?.upper, 'T2-BF', perf.auc?.method)}'>${fCI_pub(perf.auc)}</span>`
                 ];
             }).filter(Boolean);
         } else if (tableId === pubConfig.ergebnisse.vergleichASvsT2Tabelle.id) {
@@ -325,8 +368,16 @@ const publicationTab = (() => {
                 if (!comp) return [];
                 const cohortDisplayName = getCohortDisplayName(cohortId);
                 return [
-                    [cohortDisplayName, 'McNemar (Accuracy)', `${fv(comp.mcnemar?.statistic, 3, true)} (df=${comp.mcnemar?.df || na})`, `${getPValueTextForPub(comp.mcnemar?.pValue)} ${getStatisticalSignificanceSymbol(comp.mcnemar?.pValue)}`, comp.mcnemar?.method || na],
-                    ['', 'DeLong (AUC)', `Z=${fv(comp.delong?.Z, 3, true)}`, `${getPValueTextForPub(comp.delong?.pValue)} ${getStatisticalSignificanceSymbol(comp.delong?.pValue)}`, comp.delong?.method || na]
+                    [`<span data-tippy-content='${getHeaderTooltip('cohort', `Patient cohort for analysis: ${cohortDisplayName}.`)}'>${cohortDisplayName}</span>`, 
+                     `<span data-tippy-content='${getComparisonValueTooltip('mcnemar', comp.mcnemar?.statistic, comp.mcnemar?.pValue, null, cohortDisplayName)}'>McNemar (Accuracy)</span>`, 
+                     `<span data-tippy-content='${getComparisonValueTooltip('mcnemar', comp.mcnemar?.statistic, comp.mcnemar?.pValue, null, cohortDisplayName)}'>${fv(comp.mcnemar?.statistic, 3, true)} (df=${comp.mcnemar?.df || na})</span>`, 
+                     `<span data-tippy-content='${getPValueTooltip(comp.mcnemar?.pValue)}'>${getPValueTextForPub(comp.mcnemar?.pValue)} ${getStatisticalSignificanceSymbol(comp.mcnemar?.pValue)}</span>`, 
+                     `<span data-tippy-content='${getHeaderTooltip('method', `Statistical method used: ${comp.mcnemar?.method || na}.`)}'>${comp.mcnemar?.method || na}</span>`],
+                    ['', 
+                     `<span data-tippy-content='${getComparisonValueTooltip('delong', comp.delong?.Z, comp.delong?.pValue, comp.delong?.diffAUC, cohortDisplayName)}'>DeLong (AUC)</span>`, 
+                     `<span data-tippy-content='${getComparisonValueTooltip('delong', comp.delong?.Z, comp.delong?.pValue, comp.delong?.diffAUC, cohortDisplayName)}'>Z=${fv(comp.delong?.Z, 3, true)}</span>`, 
+                     `<span data-tippy-content='${getPValueTooltip(comp.delong?.pValue)}'>${getPValueTextForPub(comp.delong?.pValue)} ${getStatisticalSignificanceSymbol(comp.delong?.pValue)}</span>`, 
+                     `<span data-tippy-content='${getHeaderTooltip('method', `Statistical method used: ${comp.delong?.method || na}.`)}'>${comp.delong?.method || na}</span>`]
                 ];
             });
         }
@@ -334,7 +385,63 @@ const publicationTab = (() => {
 
         let tableHtml = `<div class="table-responsive"><table class="table table-sm table-striped small">`;
         tableHtml += `<caption>${caption}</caption>`;
-        tableHtml += `<thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+        // Headers with tooltips
+        tableHtml += `<thead><tr>`;
+        headers.forEach(h => {
+            let headerText = h;
+            let tooltipData = {};
+            // Special handling for predefined headers
+            if (tableId === pubConfig.methoden.literaturT2KriterienTabelle.id) {
+                switch(h) {
+                    case 'Criteria Set (Evaluated Cohort)': tooltipData = getHeaderTooltip('criteriaSet', 'Name of the literature-based criteria set and the patient cohort it was evaluated on.'); break;
+                    case 'Size Threshold': tooltipData = getHeaderTooltip('sizeThreshold', 'Minimum short-axis diameter in millimeters for a lymph node to be considered suspicious by size criteria.'); break;
+                    case 'Shape': tooltipData = getHeaderTooltip('shape', 'Shape characteristic considered suspicious (e.g., round, oval).'); break;
+                    case 'Border': tooltipData = getHeaderTooltip('border', 'Border characteristic considered suspicious (e.g., sharp, irregular).'); break;
+                    case 'Homogeneity': tooltipData = getHeaderTooltip('homogeneity', 'Homogeneity characteristic considered suspicious (e.g., homogeneous, heterogeneous).'); break;
+                    case 'Signal': tooltipData = getHeaderTooltip('signal', 'Signal intensity characteristic considered suspicious (e.g., low, intermediate, high signal).'); break;
+                    case 'Logic': tooltipData = getHeaderTooltip('logic', 'Logical operator used to combine criteria (AND, OR, or Combined for ESGAR).'); break;
+                    case 'Reference': tooltipData = getHeaderTooltip('reference', 'Source publication for the criteria set.'); break;
+                    default: tooltipData = getHeaderTooltip('generic', h); break;
+                }
+            } else if (tableId === pubConfig.ergebnisse.patientenCharakteristikaTabelle.id) {
+                switch(h) {
+                    case 'Characteristic': tooltipData = getHeaderTooltip('characteristic', 'Demographic or clinical characteristic of the patient cohort.'); break;
+                    case 'Value': tooltipData = getHeaderTooltip('value', 'Value or distribution for the corresponding characteristic.'); break;
+                    default: tooltipData = getHeaderTooltip('generic', h); break;
+                }
+            } else if (tableId === pubConfig.ergebnisse.diagnostischeGueteASTabelle.id) {
+                switch(h) {
+                    case 'Metric': tooltipData = getHeaderTooltip('metric', 'Diagnostic performance metric (e.g., Sensitivity, Specificity, AUC).'); break;
+                    default: tooltipData = getHeaderTooltip('cohortSummary', 'Summary of diagnostic performance for the Avocado Sign in the specified cohort. (Value, 95% Confidence Interval)'); break;
+                }
+            } else if (tableId === pubConfig.ergebnisse.diagnostischeGueteOptimierteT2Tabelle.id) {
+                switch(h) {
+                    case 'Cohort': tooltipData = getHeaderTooltip('cohort', 'Patient cohort for which criteria were optimized.'); break;
+                    case 'Optimized Metric': tooltipData = getHeaderTooltip('optimizedMetric', `The diagnostic metric (${commonData.bruteForceMetricForPublication}) that was maximized by the brute-force optimization.`); break;
+                    case 'Best Value': tooltipData = getHeaderTooltip('bestValue', 'The highest value achieved for the optimized metric by the identified criteria set.'); break;
+                    case 'Logic': tooltipData = getHeaderTooltip('logic', 'Logical operator used in the optimized criteria set (AND or OR).'); break;
+                    case 'Criteria': tooltipData = getHeaderTooltip('criteria', 'Specific T2 morphological criteria identified as optimal.'); break;
+                    case 'Sens. (95% CI)': tooltipData = getHeaderTooltip('sensCI', 'Sensitivity with 95% Confidence Interval for the optimized T2 criteria.'); break;
+                    case 'Spec. (95% CI)': tooltipData = getHeaderTooltip('specCI', 'Specificity with 95% Confidence Interval for the optimized T2 criteria.'); break;
+                    case 'Acc. (95% CI)': tooltipData = getHeaderTooltip('accCI', 'Accuracy with 95% Confidence Interval for the optimized T2 criteria.'); break;
+                    case 'AUC (95% CI)': tooltipData = getHeaderTooltip('aucCI', 'Area Under the ROC Curve with 95% Confidence Interval for the optimized T2 criteria.'); break;
+                    default: tooltipData = getHeaderTooltip('generic', h); break;
+                }
+            } else if (tableId === pubConfig.ergebnisse.vergleichASvsT2Tabelle.id) {
+                switch(h) {
+                    case 'Cohort': tooltipData = getHeaderTooltip('cohort', 'Patient cohort in which the comparison was performed.'); break;
+                    case 'Test': tooltipData = getHeaderTooltip('testName', 'Statistical test used for comparison (McNemar for Accuracy, DeLong for AUC).'); break;
+                    case 'Statistic Value': tooltipData = getHeaderTooltip('statisticValue', 'The resulting test statistic value (e.g., Chi-square for McNemar, Z-statistic for DeLong).'); break;
+                    case 'p-Value': tooltipData = getHeaderTooltip('pValueHeader', 'The p-value indicating statistical significance of the comparison.'); break;
+                    case 'Method': tooltipData = getHeaderTooltip('testMethod', 'Name of the statistical method used for the comparison test.'); break;
+                    default: tooltipData = getHeaderTooltip('generic', h); break;
+                }
+            } else {
+                 tooltipData = getHeaderTooltip('generic', h);
+            }
+            tableHtml += `<th data-tippy-content='${JSON.stringify(tooltipData)}'>${h}</th>`;
+        });
+        tableHtml += `</tr></thead><tbody>`;
         rows.forEach(row => {
             tableHtml += `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
         });
@@ -362,7 +469,7 @@ const publicationTab = (() => {
 
         let finalHTML = `<div class="row mb-3 sticky-top bg-light py-2 shadow-sm" style="top: var(--sticky-header-offset, 111px); z-index: 1015;">
             <div class="col-md-3">${uiComponents.createPublicationNav(currentSectionId)}<div class="mt-3">
-                <label for="publication-bf-metric-select" class="form-label small text-muted">${APP_CONFIG.UI_TEXTS.publicationTab.bfMetricSelectLabel}</label>
+                <label for="publication-bf-metric-select" class="form-label small text-muted" data-tippy-content='${JSON.stringify({type: 'generic', description: APP_CONFIG.UI_TEXTS.publicationTab.bfMetricSelectLabel})}'>${APP_CONFIG.UI_TEXTS.publicationTab.bfMetricSelectLabel}</label>
                 <select class="form-select form-select-sm" id="publication-bf-metric-select">
                     ${APP_CONFIG.AVAILABLE_BRUTE_FORCE_METRICS.map(m => `<option value="${m.value}" ${m.value === commonData.bruteForceMetricForPublication ? 'selected' : ''}>${m.label}</option>`).join('')}
                 </select>
