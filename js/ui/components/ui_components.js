@@ -247,6 +247,15 @@ const uiComponents = (() => {
         return html;
     }
 
+    function createPublicationTextarea(id, label, tooltipText, initialValue, wordLimit, rows = 3) {
+        return `
+            <div class="mb-4">
+                <label for="pub-textarea-${id}" class="form-label fw-bold">${label} <i class="fas fa-info-circle text-muted ms-1" data-tippy-content="${tooltipText}"></i></label>
+                <textarea class="form-control form-control-sm publication-textarea" id="pub-textarea-${id}" data-component-id="${id}" rows="${rows}">${escapeHTML(initialValue)}</textarea>
+                <div class="text-end small text-muted" id="word-count-${id}">0 / ${wordLimit} words</div>
+            </div>
+        `;
+    }
 
     return Object.freeze({
         createHeaderButtonHTML,
@@ -254,6 +263,7 @@ const uiComponents = (() => {
         createT2CriteriaControls,
         createStatisticsCard,
         createPublicationNav,
-        createBruteForceModalContent
+        createBruteForceModalContent,
+        createPublicationTextarea
     });
 })();
