@@ -247,70 +247,6 @@ const uiComponents = (() => {
         return html;
     }
 
-    function createPublicationFlowchartHTML(stats) {
-        if (!stats) return '<p class="text-muted small">Flowchart data not available.</p>';
-        const s = stats.Overall?.descriptive;
-        const sa = stats.surgeryAlone?.descriptive;
-        const nrct = stats.neoadjuvantTherapy?.descriptive;
-
-        if (!s || !sa || !nrct) return '<p class="text-muted small">Data for one or more cohorts missing.</p>';
-
-        return `
-            <div class="d-flex justify-content-center my-3">
-            <svg width="700" height="450" viewBox="0 0 700 450" class="flow-diagram-container" font-family="sans-serif" font-size="12" text-anchor="middle">
-                <defs>
-                    <marker id="arrowhead" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#333" />
-                    </marker>
-                </defs>
-                <style>
-                    .box { fill: #f8f9fa; stroke: #6c757d; stroke-width: 1.5; }
-                    .box-final { fill: #e9f5ff; stroke: #005f73; }
-                    .line { stroke: #333; stroke-width: 1.5; marker-end: url(#arrowhead); }
-                    .label { fill: #212529; }
-                    .label-reason { fill: #495057; font-size: 11px; }
-                </style>
-                
-                <g id="box-initial">
-                    <rect x="225" y="10" width="250" height="50" class="box" rx="5" />
-                    <text x="350" y="30" class="label">Patients with rectal cancer assessed for eligibility</text>
-                    <text x="350" y="48" class="label" font-weight="bold">(n = ${s.patientCount})</text>
-                </g>
-
-                <path class="line" d="M 350 60 L 350 90" />
-                
-                <g id="box-included">
-                    <rect x="225" y="90" width="250" height="50" class="box" rx="5" />
-                    <text x="350" y="110" class="label">Included in final analysis</text>
-                    <text x="350" y="128" class="label" font-weight="bold">(n = ${s.patientCount})</text>
-                </g>
-
-                <path class="line" d="M 350 140 L 350 170" />
-                
-                <path class="line" d="M 175 200 L 525 200" />
-                <path class="line" d="M 175 200 L 175 230" />
-                <path class="line" d="M 525 200 L 525 230" />
-                
-                <g id="box-surgery-alone">
-                    <rect x="50" y="230" width="250" height="90" class="box box-final" rx="5" />
-                    <text x="175" y="250" class="label" font-weight="bold">Surgery Alone Cohort</text>
-                    <text x="175" y="268" class="label">(n = ${sa.patientCount})</text>
-                    <text x="175" y="290" class="label">N-positive: ${sa.nStatus.plus}</text>
-                    <text x="175" y="308" class="label">N-negative: ${sa.nStatus.minus}</text>
-                </g>
-                
-                <g id="box-nrct">
-                    <rect x="400" y="230" width="250" height="90" class="box box-final" rx="5" />
-                    <text x="525" y="250" class="label" font-weight="bold">Neoadjuvant Therapy Cohort</text>
-                    <text x="525" y="268" class="label">(n = ${nrct.patientCount})</text>
-                    <text x="525" y="290" class="label">N-positive: ${nrct.nStatus.plus}</text>
-                    <text x="525" y="308" class="label">N-negative: ${nrct.nStatus.minus}</text>
-                </g>
-
-            </svg>
-            </div>
-        `;
-    }
 
     return Object.freeze({
         createHeaderButtonHTML,
@@ -318,7 +254,6 @@ const uiComponents = (() => {
         createT2CriteriaControls,
         createStatisticsCard,
         createPublicationNav,
-        createBruteForceModalContent,
-        createPublicationFlowchartHTML
+        createBruteForceModalContent
     });
 })();

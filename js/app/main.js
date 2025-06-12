@@ -3,8 +3,8 @@ class App {
         this.rawData = typeof patientDataRaw !== 'undefined' ? patientDataRaw : [];
         this.processedData = [];
         this.currentCohortData = [];
-        this.allPublicationStats = null;
         this.presentationDataForExport = null;
+        this.allPublicationStats = null;
     }
 
     init() {
@@ -21,7 +21,9 @@ class App {
                 uiManager.showToast("Warning: No valid patient data loaded.", "warning");
             }
             
-            this.refreshCurrentTab(true);
+            this.filterAndPrepareData();
+            this.updateUI();
+            this.renderCurrentTab();
             
             if (!loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.FIRST_APP_START)) {
                 uiManager.showQuickGuide();
@@ -66,9 +68,7 @@ class App {
                     uiManager.updateElementHTML('brute-force-modal-body', uiComponents.createBruteForceModalContent(payload));
                     uiManager.initializeTooltips(document.getElementById('brute-force-modal-body'));
                     uiManager.showToast('Optimization finished.', 'success');
-                    if (state.getActiveTabId() === 'publication' || state.getActiveTabId() === 'statistics' || state.getActiveTabId() === 'presentation') {
-                        this.refreshCurrentTab();
-                    }
+                    if (state.getActiveTabId() === 'publication') this.refreshCurrentTab();
                 } else {
                     uiManager.showToast('Optimization finished with no valid results.', 'warning');
                 }
@@ -140,61 +140,35 @@ class App {
         const criteria = t2CriteriaManager.getAppliedCriteria();
         const logic = t2CriteriaManager.getAppliedLogic();
         const bruteForceResults = bruteForceManager.getAllResults();
-
-        this.allPublicationStats = statisticsService.calculateAllPublicationStats(this.processedData, criteria, logic, bruteForceResults);
         
+        this.allPublicationStats = statisticsService.calculateAllPublicationStats(this.processedData, criteria, logic, bruteForceResults);
+
         const publicationData = {
+            rawData: this.rawData,
             allCohortStats: this.allPublicationStats,
             bruteForceResults: bruteForceResults,
             currentLanguage: state.getCurrentPublikationLang()
         };
 
-        switch (tabId) {
-            case 'data':
-                uiManager.renderTabContent(tabId, () => dataTab.render(this.currentCohortData, state.getDataTableSort()));
-                break;
-            case 'analysis':
-                uiManager.renderTabContent(tabId, () => analysisTab.render(this.currentCohortData, t2CriteriaManager.getCurrentCriteria(), t2CriteriaManager.getAppliedLogic(), state.getAnalysisTableSort(), cohort, bruteForceManager.isWorkerAvailable(), this.allPublicationStats[cohort], bruteForceResults[cohort]));
-                break;
-            case 'statistics':
-                uiManager.renderTabContent(tabId, () => statisticsTab.render(this.processedData, this.allPublicationStats, criteria, logic, state.getStatsLayout(), state.getStatsCohort1(), state.getStatsCohort2(), cohort));
-                break;
-            case 'presentation':
-                let currentPresentationData = this.preparePresentationData(this.allPublicationStats);
-                this.presentationDataForExport = currentPresentationData;
-                uiManager.renderTabContent(tabId, () => presentationTab.render(state.getPresentationView(), currentPresentationData, state.getPresentationStudyId(), cohort, this.processedData, criteria, logic));
-                break;
-            case 'publication':
-                uiManager.renderTabContent(tabId, () => publicationTab.render(publicationData, state.getPublicationSection()));
-                break;
-            case 'export':
-                uiManager.renderTabContent(tabId, () => exportTab.render(cohort));
-                break;
-        }
-    }
+        let currentPresentationData = null;
+        if (tabId === 'presentation') {
+            const currentPresentationView = state.getPresentationView();
+            const selectedStudyId = state.getPresentationStudyId();
+            const cohortForPresentation = state.getCurrentCohort(); 
+            const filteredDataForPresentation = dataProcessor.filterDataByCohort(this.processedData, cohortForPresentation);
+            
+            const statsCurrentCohort = this.allPublicationStats[cohortForPresentation];
+            const statsOverall = this.allPublicationStats[APP_CONFIG.COHORTS.OVERALL.id];
+            const statsSurgeryAlone = this.allPublicationStats[APP_CONFIG.COHORTS.SURGERY_ALONE.id];
+            const statsNeoadjuvantTherapy = this.allPublicationStats[APP_CONFIG.COHORTS.NEOADJUVANT.id];
 
-    preparePresentationData(allStats) {
-        const currentPresentationView = state.getPresentationView();
-        const selectedStudyId = state.getPresentationStudyId();
-        const cohortForPresentation = state.getCurrentCohort();
-        
-        const statsCurrentCohort = allStats[cohortForPresentation];
-        const statsOverall = allStats[APP_CONFIG.COHORTS.OVERALL.id];
-        const statsSurgeryAlone = allStats[APP_CONFIG.COHORTS.SURGERY_ALONE.id];
-        const statsNeoadjuvantTherapy = allStats[APP_CONFIG.COHORTS.NEOADJUVANT.id];
-    
-        let performanceT2 = null;
-        let comparisonCriteriaSet = null;
-        let t2ShortName = null;
-        let comparisonASvsT2 = null;
-        let cohortForComparison = cohortForPresentation;
-        let patientCountForComparison = this.currentCohortData.length;
-    
-        if (currentPresentationView === 'as-vs-t2' && selectedStudyId) {
+            let performanceT2 = null;
+            let comparisonCriteriaSet = null;
+            let t2ShortName = null;
+            let comparisonASvsT2 = null;
+
             if (selectedStudyId === APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_STUDY_ID) {
                 performanceT2 = statsCurrentCohort?.performanceT2Applied;
-                const criteria = t2CriteriaManager.getAppliedCriteria();
-                const logic = t2CriteriaManager.getAppliedLogic();
                 comparisonCriteriaSet = {
                     id: APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_STUDY_ID,
                     name: APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_DISPLAY_NAME,
@@ -203,43 +177,54 @@ class App {
                     logic: logic,
                     studyInfo: {
                         reference: 'User-defined criteria',
-                        patientCohort: `Current: ${getCohortDisplayName(cohortForPresentation)} (N=${patientCountForComparison})`,
+                        patientCohort: `Current: ${getCohortDisplayName(cohortForPresentation)} (N=${filteredDataForPresentation.length})`,
+                        investigationType: 'Interactive analysis',
+                        focus: 'Custom T2 criteria',
                         keyCriteriaSummary: studyT2CriteriaManager.formatCriteriaForDisplay(criteria, logic, false)
                     }
                 };
                 t2ShortName = APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_DISPLAY_NAME;
                 comparisonASvsT2 = statsCurrentCohort?.comparisonASvsT2Applied;
-            } else {
+            } else if (selectedStudyId) {
                 const studySet = studyT2CriteriaManager.getStudyCriteriaSetById(selectedStudyId);
                 if (studySet) {
-                    cohortForComparison = studySet.applicableCohort || APP_CONFIG.COHORTS.OVERALL.id;
-                    const statsForStudyCohort = allStats[cohortForComparison];
-                    patientCountForComparison = dataProcessor.filterDataByCohort(this.processedData, cohortForComparison).length;
-
+                    const cohortForStudySet = studySet.applicableCohort || APP_CONFIG.COHORTS.OVERALL.id;
+                    const statsForStudyCohort = this.allPublicationStats[cohortForStudySet];
+                    
                     performanceT2 = statsForStudyCohort?.performanceT2Literature?.[selectedStudyId];
                     comparisonCriteriaSet = studySet;
                     t2ShortName = studySet.displayShortName || studySet.name;
                     comparisonASvsT2 = statsForStudyCohort?.[`comparisonASvsT2_literature_${selectedStudyId}`];
                 }
             }
+
+            currentPresentationData = {
+                view: currentPresentationView,
+                cohort: cohortForPresentation,
+                patientCount: filteredDataForPresentation.length,
+                statsCurrentCohort: statsCurrentCohort,
+                statsGesamt: statsOverall,
+                statsSurgeryAlone: statsSurgeryAlone,
+                statsNeoadjuvantTherapy: statsNeoadjuvantTherapy,
+                performanceAS: statsCurrentCohort?.performanceAS,
+                performanceT2: performanceT2,
+                comparison: comparisonASvsT2,
+                comparisonCriteriaSet: comparisonCriteriaSet,
+                cohortForComparison: selectedStudyId ? (comparisonCriteriaSet?.applicableCohort || cohortForPresentation) : cohortForPresentation,
+                patientCountForComparison: selectedStudyId ? (dataProcessor.filterDataByCohort(this.processedData, comparisonCriteriaSet?.applicableCohort || cohortForPresentation).length) : filteredDataForPresentation.length,
+                t2ShortName: t2ShortName
+            };
+            this.presentationDataForExport = currentPresentationData;
         }
-    
-        return {
-            view: currentPresentationView,
-            cohort: cohortForPresentation,
-            patientCount: this.currentCohortData.length,
-            statsCurrentCohort: statsCurrentCohort,
-            statsGesamt: statsOverall,
-            statsSurgeryAlone: statsSurgeryAlone,
-            statsNeoadjuvantTherapy: statsNeoadjuvantTherapy,
-            performanceAS: allStats[cohortForComparison]?.performanceAS, // Use the comparison cohort's AS performance for a fair comparison
-            performanceT2: performanceT2,
-            comparison: comparisonASvsT2,
-            comparisonCriteriaSet: comparisonCriteriaSet,
-            cohortForComparison: cohortForComparison,
-            patientCountForComparison: patientCountForComparison,
-            t2ShortName: t2ShortName
-        };
+
+        switch (tabId) {
+            case 'data': uiManager.renderTabContent(tabId, () => dataTab.render(this.currentCohortData, state.getDataTableSort())); break;
+            case 'analysis': uiManager.renderTabContent(tabId, () => analysisTab.render(this.currentCohortData, t2CriteriaManager.getCurrentCriteria(), t2CriteriaManager.getAppliedLogic(), state.getAnalysisTableSort(), cohort, bruteForceManager.isWorkerAvailable(), this.allPublicationStats[cohort], bruteForceResults[cohort])); break;
+            case 'statistics': uiManager.renderTabContent(tabId, () => statisticsTab.render(this.processedData, criteria, logic, state.getStatsLayout(), state.getStatsCohort1(), state.getStatsCohort2(), cohort)); break;
+            case 'presentation': uiManager.renderTabContent(tabId, () => presentationTab.render(state.getPresentationView(), currentPresentationData, state.getPresentationStudyId(), cohort, this.processedData, criteria, logic)); break;
+            case 'publication': uiManager.renderTabContent(tabId, () => publicationTab.render(publicationData, state.getPublicationSection())); break;
+            case 'export': uiManager.renderTabContent(tabId, () => exportTab.render(cohort)); break;
+        }
     }
 
     handleCohortChange(newCohort, source = "user") {
@@ -312,12 +297,25 @@ class App {
         const bfResults = bruteForceManager.getAllResults();
         const criteria = t2CriteriaManager.getAppliedCriteria();
         const logic = t2CriteriaManager.getAppliedLogic();
-        
+        const allCohortStats = this.allPublicationStats;
+
         const currentFilteredData = dataProcessor.filterDataByCohort(data, cohort);
         const evaluatedCurrentFilteredData = t2CriteriaManager.evaluateDataset(currentFilteredData, criteria, logic);
+        
+        const commonDataForPublication = {
+            appName: APP_CONFIG.APP_NAME,
+            appVersion: APP_CONFIG.APP_VERSION,
+            nOverall: allCohortStats.Overall?.descriptive?.patientCount || 0,
+            nSurgeryAlone: allCohortStats.surgeryAlone?.descriptive?.patientCount || 0,
+            nNeoadjuvantTherapy: allCohortStats.neoadjuvantTherapy?.descriptive?.patientCount || 0,
+            references: APP_CONFIG.REFERENCES_FOR_PUBLICATION || {},
+            bruteForceMetricForPublication: state.getPublicationBruteForceMetric(),
+            currentLanguage: state.getCurrentPublikationLang(),
+            rawData: this.rawData
+        };
 
         const exporter = {
-            'stats-csv': () => exportService.exportStatistikCSV(this.allPublicationStats[cohort], cohort, criteria, logic),
+            'stats-csv': () => exportService.exportStatistikCSV(allCohortStats[cohort], cohort, criteria, logic),
             'bruteforce-txt': () => exportService.exportBruteForceReport(bfResults[cohort]),
             'datatable-md': () => exportService.exportTableMarkdown(currentFilteredData, 'daten', cohort),
             'analysistable-md': () => exportService.exportTableMarkdown(evaluatedCurrentFilteredData, 'auswertung', cohort, criteria, logic),
@@ -332,10 +330,8 @@ class App {
         }
     }
 
-    refreshCurrentTab(isInitialLoad = false) {
+    refreshCurrentTab() {
         this.filterAndPrepareData();
-        // On initial load, the active tab is already set, so we render it.
-        // On subsequent refreshes, we re-render the currently active tab.
         this.renderCurrentTab();
         this.updateUI();
     }

@@ -2,7 +2,6 @@ const publicationTab = (() => {
 
     function _generateAbstractHTML(stats, commonData) {
         const gesamtStats = stats?.[APP_CONFIG.COHORTS.OVERALL.id];
-        if (!gesamtStats) return '<p class="text-warning">Overall cohort statistics are required to generate the abstract.</p>';
         const asGesamt = gesamtStats?.performanceAS;
         const bfGesamtStats = gesamtStats?.performanceT2Bruteforce;
         const vergleichASvsBFGesamt = gesamtStats?.comparisonASvsT2Bruteforce;
@@ -12,7 +11,7 @@ const publicationTab = (() => {
         const iqrAgeLower = gesamtStats?.descriptive?.age?.q1 !== undefined ? formatNumber(gesamtStats.descriptive.age.q1, 0) : 'N/A';
         const iqrAgeUpper = gesamtStats?.descriptive?.age?.q3 !== undefined ? formatNumber(gesamtStats.descriptive.age.q3, 0) : 'N/A';
         const ageRangeText = (medianAge !== 'N/A' && iqrAgeLower !== 'N/A' && iqrAgeUpper !== 'N/A') ?
-            `${medianAge} years (IQR, ${iqrAgeLower}–${iqrAgeUpper} years)` : 'not available';
+            `${medianAge} years (IQR: ${iqrAgeLower}–${iqrAgeUpper} years)` : 'not available';
         
         const maleCount = gesamtStats?.descriptive?.sex?.m || 0;
         const sexText = `${maleCount} men`;
@@ -22,7 +21,7 @@ const publicationTab = (() => {
         const formatCIForPublication = (metric) => {
             if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return 'N/A';
             const isPercent = !(metric.name === 'auc' || metric.name === 'f1');
-            const digits = (metric.name === 'auc' || metric.name === 'f1') ? 2 : 0;
+            const digits = (metric.name === 'auc' || metric.name === 'f1') ? 2 : 1;
             const valueStr = isPercent ? formatPercent(metric.value, digits) : formatNumber(metric.value, digits, 'N/A', true);
 
             if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) {
@@ -38,8 +37,8 @@ const publicationTab = (() => {
         return `
             <p><strong>Background:</strong> Accurate pretherapeutic determination of mesorectal lymph node status (N-status) is crucial for treatment decisions in rectal cancer. Standard magnetic resonance imaging (MRI) criteria have limitations.</p>
             <p><strong>Purpose:</strong> To evaluate the diagnostic performance of the "Avocado Sign" (AS), a novel contrast-enhanced (CE) MRI marker, compared to literature-based and cohort-optimized T2-weighted (T2w) criteria for predicting N-status.</p>
-            <p><strong>Materials and Methods:</strong> This retrospective, single-center study analyzed data from consecutive patients with histologically confirmed rectal cancer enrolled between ${studyPeriod}. Two blinded radiologists evaluated the AS (hypointense core within a hyperintense lymph node on T1w CE sequences) and morphological T2w criteria. Histopathological examination of surgical specimens served as the reference standard. A brute-force algorithm identified cohort-optimized T2w criteria. Diagnostic performance was assessed using the area under the receiver operating characteristic curve (AUC), with comparisons made using the DeLong test.</p>
-            <p><strong>Results:</strong> A total of ${formatNumber(nGesamt,0)} patients (median age, ${ageRangeText}; ${sexText}) were analyzed. The AS showed a sensitivity of ${formatPercent(asGesamt?.sens?.value, 0)} (${asGesamt?.matrix.tp} of ${asGesamt?.matrix.tp + asGesamt?.matrix.fn}), a specificity of ${formatPercent(asGesamt?.spec?.value, 0)} (${asGesamt?.matrix.tn} of ${asGesamt?.matrix.tn + asGesamt?.matrix.fp}), and an AUC of ${formatNumber(asGesamt?.auc?.value, 2, 'N/A', true)} (95% CI: ${formatNumber(asGesamt?.auc?.ci?.lower, 2, 'N/A', true)}, ${formatNumber(asGesamt?.auc?.ci?.upper, 2, 'N/A', true)}). For cohort-optimized T2w criteria, the AUC was ${formatNumber(bfGesamtStats?.auc?.value, 2, 'N/A', true)} (95% CI: ${formatNumber(bfGesamtStats?.auc?.ci?.lower, 2, 'N/A', true)}, ${formatNumber(bfGesamtStats?.auc?.ci?.upper, 2, 'N/A', true)}). The difference in AUC between AS and optimized T2w criteria was not statistically significant (${getPValueTextForPublication(vergleichASvsBFGesamt?.delong?.pValue)}).</p>
+            <p><strong>Materials and Methods:</strong> This retrospective, ethics committee-approved, single-center study analyzed data from consecutive patients with histologically confirmed rectal cancer enrolled between ${studyPeriod}. Two blinded radiologists evaluated the AS (hypointense core within a hyperintense lymph node on T1w CE sequences) and morphological T2w criteria. Histopathological examination of surgical specimens served as the reference standard.</p>
+            <p><strong>Results:</strong> A total of ${formatNumber(nGesamt,0)} patients (median age, ${ageRangeText}; ${sexText}) were analyzed. The AS showed a sensitivity of ${formatCIForPublication(asGesamt?.sens)}, specificity of ${formatCIForPublication(asGesamt?.spec)}, and an AUC of ${formatNumber(asGesamt?.auc?.value, 2, 'N/A', true)} (95% CI: ${formatNumber(asGesamt?.auc?.ci?.lower, 2, 'N/A', true)}, ${formatNumber(asGesamt?.auc?.ci?.upper, 2, 'N/A', true)}). For optimized T2w criteria, the AUC was ${formatNumber(bfGesamtStats?.auc?.value, 2, 'N/A', true)}. The difference in AUC between AS and optimized T2w criteria was not statistically significant (${getPValueTextForPublication(vergleichASvsBFGesamt?.delong?.pValue)}).</p>
             <p><strong>Conclusion:</strong> The Avocado Sign is a promising MRI marker for predicting lymph node status in rectal cancer, demonstrating high diagnostic performance comparable to cohort-optimized T2w criteria, with potential to improve preoperative staging.</p>
             <p class="small text-muted mt-2">Abbreviations: ACC = Accuracy, AS = Avocado Sign, AUC = Area Under the Curve, CE = Contrast-Enhanced, CI = Confidence Interval, MRI = Magnetic Resonance Imaging, N-status = Nodal status, T2w = T2-weighted.</p>
         `;
@@ -55,8 +54,8 @@ const publicationTab = (() => {
     function _generateMethodsStudyDesignHTML(stats, commonData) {
         return `
             <p>We conducted a single-institution retrospective study to evaluate the diagnostic performance of the Avocado Sign, a novel MR imaging marker, in predicting locoregional lymph node status in patients with rectal cancer. The study was approved by the institutional review board of Klinikum St. Georg Leipzig, Germany, and written informed consent was obtained from all patients before enrolment. This study was compliant with HIPAA regulations.
-            Patients were eligible for inclusion if they were 18 years of age or older and had histologically confirmed rectal cancer. Exclusion criteria included unresectable tumors and contraindications to MRI. From ${commonData.references.STUDY_PERIOD_2020_2023}, ${formatNumber(commonData.nOverall, 0)} consecutive patients underwent baseline staging MRI. Of these, ${formatNumber(commonData.nNeoadjuvantTherapy, 0)} patients (${formatPercent(commonData.nNeoadjuvantTherapy / commonData.nOverall, 0)}) received standard neoadjuvant chemoradiotherapy (nCRT) followed by restaging MRI prior to rectal surgery, according to current guidelines and the decision of a multidisciplinary tumor board. The remaining ${formatNumber(commonData.nSurgeryAlone, 0)} patients (${formatPercent(commonData.nSurgeryAlone / commonData.nOverall, 0)}) underwent primary surgery without prior therapy. For patients undergoing surgery alone, the mean interval between MRI and surgery was 7 days (range: 5–14 days). For nCRT patients, restaging MRI was performed a mean of 6 weeks (range: 5–8 weeks) after completion of therapy, with surgery occurring approximately 10 days (range: 7–15 days) post-MRI.
-            Histopathological examination of the resected specimens served as the reference standard.
+            Patients were eligible for inclusion if they were 18 years of age or older and had histologically confirmed rectal cancer. Exclusion criteria included unresectable tumors and contraindications to MRI. From ${commonData.references.STUDY_PERIOD_2020_2023}, ${formatNumber(commonData.nOverall, 0)} consecutive patients underwent baseline staging MRI. Of these, ${formatNumber(commonData.nNeoadjuvantTherapy, 0)} patients (${formatPercent(commonData.nNeoadjuvantTherapy / commonData.nOverall, 1)}) received standard neoadjuvant chemoradiotherapy (nCRT) followed by restaging MRI prior to rectal surgery, according to current guidelines and the decision of a multidisciplinary tumor board. The remaining ${formatNumber(commonData.nSurgeryAlone, 0)} patients (${formatPercent(commonData.nSurgeryAlone / commonData.nOverall, 1)}) underwent primary surgery without prior therapy. For patients undergoing surgery alone, the mean interval between MRI and surgery was 7 days (range: 5–14 days). For nCRT patients, restaging MRI was performed a mean of 6 weeks (range: 5–8 weeks) after completion of therapy, with surgery occurring approximately 10 days (range: 7–15 days) post-MRI.
+            Histopathological examination of the resected specimens served as the reference standard (Fig. 1).
             </p>
         `;
     }
@@ -70,7 +69,7 @@ const publicationTab = (() => {
 
     function _generateMethodsImageAnalysisASHTML(stats, commonData) {
          return `
-            <p>Two radiologists (with 29 and 7 years of experience in abdominal MRI, respectively) independently assessed the images for the presence of the Avocado Sign. The Avocado Sign was defined as a hypointense core within an otherwise homogeneously hyperintense lymph node on contrast-enhanced T1-weighted images, regardless of node size or shape [${commonData.references.REFERENCE_LURZ_SCHAEFER_2025.id}]. The sign was assessed in all visible mesorectal lymph nodes, without a minimum size threshold, to ensure comprehensive evaluation across the full spectrum of lymph node sizes. Extramesorectal nodes and tumor deposits were not included in this assessment. Radiologists were blinded to histopathological results to prevent bias. Discrepancies were resolved by consensus with a third radiologist (with 19 years of experience in abdominal MRI). In the neoadjuvant subgroup, the Avocado Sign was assessed on restaging MRI images obtained after nCRT, aligning findings with post-therapy histopathological results. A direct comparison between pre- and post-nCRT MRI images was not performed, as the study focused on the diagnostic performance of the Avocado Sign after neoadjuvant treatment. Lymph node status was categorized as positive if the Avocado Sign was present in at least one node and negative if the sign was absent. Before the study, radiologists underwent a joint training session, including a written definition and example images, to standardize assessment and ensure consistent interpretation. The Avocado Sign was initially identified during routine clinical practice, and for this study, predefined imaging criteria were retrospectively applied to a separate cohort to minimize in-sample bias and enhance generalizability.</p>
+            <p>Two radiologists (with 29 and 7 years of experience in abdominal MRI, respectively) independently assessed the images for the presence of the Avocado Sign. The Avocado Sign was defined as a hypointense core within an otherwise homogeneously hyperintense lymph node on contrast-enhanced T1-weighted images, regardless of node size or shape (Fig. 2) [${commonData.references.REFERENCE_LURZ_SCHAEFER_2025.id}]. The sign was assessed in all visible mesorectal lymph nodes, without a minimum size threshold, to ensure comprehensive evaluation across the full spectrum of lymph node sizes. Extramesorectal nodes and tumor deposits were not included in this assessment. Radiologists were blinded to histopathological results to prevent bias. Discrepancies were resolved by consensus with a third radiologist (with 19 years of experience in abdominal MRI). In the neoadjuvant subgroup, the Avocado Sign was assessed on restaging MRI images obtained after nCRT, aligning findings with post-therapy histopathological results. A direct comparison between pre- and post-nCRT MRI images was not performed, as the study focused on the diagnostic performance of the Avocado Sign after neoadjuvant treatment. Lymph node status was categorized as positive if the Avocado Sign was present in at least one node and negative if the sign was absent. Before the study, radiologists underwent a joint training session, including a written definition and example images, to standardize assessment and ensure consistent interpretation. The Avocado Sign was initially identified during routine clinical practice, and for this study, predefined imaging criteria were retrospectively applied to a separate cohort to minimize in-sample bias and enhance generalizability.</p>
         `;
     }
 
@@ -112,19 +111,19 @@ const publicationTab = (() => {
         if (!gesamtStats) return `<p class="text-warning">Patient characteristics data not available for the overall cohort.</p>`;
         
         const maleCount = gesamtStats.sex?.m ?? 0;
-        const malePercentage = formatPercent(maleCount / gesamtStats.patientCount, 0);
+        const malePercentage = formatPercent(maleCount / gesamtStats.patientCount, 1);
 
         const surgeryAloneCount = gesamtStats.therapy?.surgeryAlone ?? 0;
-        const surgeryAlonePercentage = formatPercent(surgeryAloneCount / gesamtStats.patientCount, 0);
+        const surgeryAlonePercentage = formatPercent(surgeryAloneCount / gesamtStats.patientCount, 1);
 
         const neoadjuvantTherapyCount = gesamtStats.therapy?.neoadjuvantTherapy ?? 0;
-        const neoadjuvantTherapyPercentage = formatPercent(neoadjuvantTherapyCount / gesamtStats.patientCount, 0);
+        const neoadjuvantTherapyPercentage = formatPercent(neoadjuvantTherapyCount / gesamtStats.patientCount, 1);
 
         const nPlusCount = gesamtStats.nStatus?.plus ?? 0;
-        const nPlusPercentage = formatPercent(nPlusCount / gesamtStats.patientCount, 0);
+        const nPlusPercentage = formatPercent(nPlusCount / gesamtStats.patientCount, 1);
 
         return `
-            <p>A total of ${gesamtStats.patientCount} patients with histologically confirmed rectal cancer were included in the study (Figure 1). The mean age was ${formatNumber(gesamtStats.age?.mean, 1)} years ± ${formatNumber(gesamtStats.age?.sd, 1)} (standard deviation), and ${malePercentage} (${maleCount} of ${gesamtStats.patientCount}) were male. ${surgeryAloneCount} patients (${surgeryAlonePercentage}) underwent surgery alone, while ${neoadjuvantTherapyCount} patients (${neoadjuvantTherapyPercentage}) received neoadjuvant chemoradiotherapy. Histopathological examination revealed lymph node metastases in ${nPlusCount} patients (${nPlusPercentage}). Detailed patient characteristics are provided in Table 2.</p>
+            <p>A total of ${gesamtStats.patientCount} patients with histologically confirmed rectal cancer were included in the study (Table 2). The mean age was ${formatNumber(gesamtStats.age?.mean, 1)} ± ${formatNumber(gesamtStats.age?.sd, 1)} years, and ${malePercentage} were male. ${surgeryAloneCount} patients (${surgeryAlonePercentage}) underwent surgery alone, while ${neoadjuvantTherapyCount} patients (${neoadjuvantTherapyPercentage}) received neoadjuvant chemoradiotherapy. Histopathological examination revealed lymph node metastases in ${nPlusCount} patients (${nPlusPercentage}).</p>
         `;
     }
 
@@ -133,11 +132,11 @@ const publicationTab = (() => {
         const surgeryAloneStats = stats?.[APP_CONFIG.COHORTS.SURGERY_ALONE.id]?.performanceAS;
         const nRCTStats = stats?.[APP_CONFIG.COHORTS.NEOADJUVANT.id]?.performanceAS;
 
-        if (!gesamtStats || !surgeryAloneStats || !nRCTStats) return `<p class="text-warning">Avocado Sign diagnostic performance data not available for all cohorts.</p>`;
+        if (!gesamtStats) return `<p class="text-warning">Avocado Sign diagnostic performance data not available.</p>`;
 
         const formatCIForPub = (metric) => {
             if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return 'N/A';
-            const digits = (metric.name === 'auc') ? 2 : 0;
+            const digits = (metric.name === 'auc') ? 2 : 1;
             const isPercent = !(metric.name === 'auc');
             const valueStr = isPercent ? formatPercent(metric.value, digits) : formatNumber(metric.value, digits, 'N/A', true);
             if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) {
@@ -154,14 +153,17 @@ const publicationTab = (() => {
 
         return `
             <p>In the overall cohort, the Avocado Sign was positive in ${formatNumber(gesamtStats.matrix?.tp + gesamtStats.matrix?.fp, 0)} patients and negative in ${formatNumber(gesamtStats.matrix?.fn + gesamtStats.matrix?.tn, 0)} patients. Histopathological examination revealed lymph node metastases in ${formatNumber(gesamtStats.matrix?.tp + gesamtStats.matrix?.fn, 0)} patients, while ${formatNumber(gesamtStats.matrix?.fp + gesamtStats.matrix?.tn, 0)} patients were classified N0.</p>
-            <p>The Avocado Sign demonstrated high diagnostic accuracy for predicting lymph node involvement across the overall cohort and subgroups. Overall sensitivity was ${formatCIForPub(gesamtStats.sens)}, specificity was ${formatCIForPub(gesamtStats.spec)}, PPV was ${formatCIForPub(gesamtStats.ppv)}, NPV was ${formatCIForPub(gesamtStats.npv)}, and accuracy was ${formatCIForPub(gesamtStats.acc)}. The area under the ROC curve (AUC) was ${formatCIForPub(gesamtStats.auc)} for the overall cohort, indicating high diagnostic performance (Figure 2).</p>
-            <p>Subgroup analysis revealed excellent performance of the Avocado Sign in patients undergoing surgery alone, with a sensitivity of ${formatCIForPub(surgeryAloneStats?.sens)}, specificity of ${formatCIForPub(surgeryAloneStats?.spec)}, PPV of ${formatCIForPub(surgeryAloneStats?.ppv)}, NPV of ${formatCIForPub(surgeryAloneStats?.npv)}, and accuracy of ${formatCIForPub(surgeryAloneStats?.acc)}. The AUC was ${formatCIForPub(surgeryAloneStats?.auc)} (Figure 3).</p>
-            <p>In patients receiving neoadjuvant chemoradiotherapy, the Avocado Sign showed a sensitivity of ${formatCIForPub(nRCTStats?.sens)}, specificity of ${formatCIForPub(nRCTStats?.spec)}, PPV of ${formatCIForPub(nRCTStats?.ppv)}, NPV of ${formatCIForPub(nRCTStats?.npv)}, and accuracy of ${formatCIForPub(nRCTStats?.acc)}. The AUC was ${formatCIForPub(nRCTStats?.auc)} (Figure 4). An overview of nominal values and diagnostic performance metrics for the overall cohort and subgroups is provided in Table 3.</p>
-            <p>Interobserver agreement for assessing the Avocado Sign was almost perfect, with a Cohen’s kappa value of ${formatNumber(interobserverKappa, 2, 'N/A', true)} (95% CI: ${formatNumber(interobserverKappaCI.lower, 2, 'N/A', true)}, ${formatNumber(interobserverKappaCI.upper, 2, 'N/A', true)}) and an absolute agreement rate of 95% (101 of 106 cases) [${commonData.references.REFERENCE_LURZ_SCHAEFER_2025.id}].</p>
+            <p>The Avocado Sign demonstrated high diagnostic accuracy for predicting lymph node involvement across the overall cohort and subgroups. Overall sensitivity was ${formatCIForPub(gesamtStats.sens)}, specificity was ${formatCIForPub(gesamtStats.spec)}, PPV was ${formatCIForPub(gesamtStats.ppv)}, NPV was ${formatCIForPub(gesamtStats.npv)}, and accuracy was ${formatCIForPub(gesamtStats.acc)}. The area under the ROC curve (AUC) was ${formatCIForPub(gesamtStats.auc)} for the overall cohort, indicating high diagnostic performance (Figure 1).</p>
+            <p>Subgroup analysis revealed excellent performance of the Avocado Sign in patients undergoing surgery alone, with a sensitivity of ${formatCIForPub(surgeryAloneStats?.sens)}, specificity of ${formatCIForPub(surgeryAloneStats?.spec)}, PPV of ${formatCIForPub(surgeryAloneStats?.ppv)}, NPV of ${formatCIForPub(surgeryAloneStats?.npv)}, and accuracy of ${formatCIForPub(surgeryAloneStats?.acc)}. The AUC was ${formatCIForPub(surgeryAloneStats?.auc)} (Figure 2).</p>
+            <p>In patients receiving neoadjuvant chemoradiotherapy, the Avocado Sign showed a sensitivity of ${formatCIForPub(nRCTStats?.sens)}, specificity of ${formatCIForPub(nRCTStats?.spec)}, PPV of ${formatCIForPub(nRCTStats?.ppv)}, NPV of ${formatCIForPub(nRCTStats?.npv)}, and accuracy of ${formatCIForPub(nRCTStats?.acc)}. The AUC was ${formatCIForPub(nRCTStats?.auc)} (Figure 3). Chi-square tests indicated no significant differences in diagnostic performance between subgroups (${getPValueTextForPub(stats?.[APP_CONFIG.COHORTS.OVERALL.id]?.comparisonASvsT2Applied?.mcnemar?.pValue)}), affirming the robustness of the Avocado Sign across treatment types. An overview of nominal values and diagnostic performance metrics for overall cohort and subgroups is provided in Table 3.</p>
+            <p>Interobserver agreement for assessing the Avocado Sign was almost perfect, with a Cohen’s kappa value of ${formatNumber(interobserverKappa, 2, 'N/A', true)} (95% CI: ${formatNumber(interobserverKappaCI.lower, 2, 'N/A', true)}, ${formatNumber(interobserverKappaCI.upper, 2, 'N/A', true)}) and an absolute agreement rate of 95% (101 out of 106 cases) [${commonData.references.REFERENCE_LURZ_SCHAEFER_2025.id}].</p>
         `;
     }
     
     function _generateResultsT2LiteratureHTML(stats, commonData) {
+         const overallCohortId = APP_CONFIG.COHORTS.OVERALL.id;
+         const evaluatedSets = PUBLICATION_CONFIG.literatureCriteriaSets.filter(set => stats?.[set.applicableCohort || overallCohortId]?.performanceT2Literature?.[set.id]);
+         if (evaluatedSets.length === 0) return `<p class="text-warning">No literature-based T2 performance data available for this cohort.</p>`;
          return `<p>We evaluated the diagnostic performance of several literature-based T2-weighted MRI criteria sets for N-status prediction within their applicable cohorts. The results, including sensitivity, specificity, and AUC, are summarized in Table 4, showing variable performance depending on the criteria set and the patient cohort.</p>`;
     }
 
@@ -171,14 +173,14 @@ const publicationTab = (() => {
     }
     
     function _generateResultsComparisonHTML(stats, commonData) {
-        return `<p>We conducted statistical comparisons between the diagnostic performance of the Avocado Sign and the brute-force optimized T2 criteria for each cohort, focusing on Accuracy (McNemar's test) and AUC (DeLong's test). As shown in Table 6, while there were numerical differences in performance, none reached statistical significance, suggesting that the Avocado Sign is a non-inferior alternative to a data-optimized morphological approach. Figure 5 illustrates these comparative metrics visually.</p>`;
+        return `<p>We conducted statistical comparisons between the diagnostic performance of the Avocado Sign and the brute-force optimized T2 criteria for each cohort, focusing on Accuracy (McNemar's test) and AUC (DeLong's test). As shown in Table 6, while there were numerical differences in performance, none reached statistical significance, suggesting that the Avocado Sign is a non-inferior alternative to a data-optimized morphological approach. Figure 4 illustrates these comparative metrics visually.</p>`;
     }
 
     function _generateDiscussionHTML(stats, commonData) {
         const gesamtStatsAS = stats?.[APP_CONFIG.COHORTS.OVERALL.id]?.performanceAS;
         const formatCIForPub = (metric) => {
             if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return 'N/A';
-            const digits = (metric.name === 'auc') ? 2 : 0;
+            const digits = (metric.name === 'auc') ? 2 : 1;
             const isPercent = !(metric.name === 'auc');
             const valueStr = isPercent ? formatPercent(metric.value, digits) : formatNumber(metric.value, digits, 'N/A', true);
             if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) {
@@ -191,7 +193,7 @@ const publicationTab = (() => {
         const interobserverKappa = stats?.[APP_CONFIG.COHORTS.OVERALL.id]?.interobserverKappa || 0.92;
 
         return `
-            <p>This retrospective study demonstrates that the Avocado Sign can accurately predict mesorectal lymph node status in patients with rectal cancer [${commonData.references.REFERENCE_LURZ_SCHAEFER_2025.id}]. Its high diagnostic performance across patient subgroups underlines its potential to ameliorate MRI nodal staging. The Avocado Sign showed an overall sensitivity of ${formatPercent(gesamtStatsAS?.sens?.value, 0)}, specificity of ${formatPercent(gesamtStatsAS?.spec?.value, 0)}, and an AUC of ${formatNumber(gesamtStatsAS?.auc?.value, 2, 'N/A', true)}, which are comparable to or exceed previously reported accuracies of T2-weighted MRI.</p>
+            <p>This retrospective study demonstrates that the Avocado Sign can accurately predict mesorectal lymph node status in patients with rectal cancer [${commonData.references.REFERENCE_LURZ_SCHAEFER_2025.id}]. Its high diagnostic performance across patient subgroups underlines its potential to ameliorate MRI nodal staging. The Avocado Sign showed an overall sensitivity of ${formatPercent(gesamtStatsAS?.sens?.value, 1)}, specificity of ${formatPercent(gesamtStatsAS?.spec?.value, 1)}, and an AUC of ${formatNumber(gesamtStatsAS?.auc?.value, 2, 'N/A', true)}, which are comparable to or exceed previously reported accuracies of T2-weighted MRI.</p>
             <p>Earlier studies have focused predominantly on morphological criteria on T2-weighted MRI sequences for lymph node assessment. Koh et al. reported sensitivities up to 85% with combined size and morphological criteria [${commonData.references.REFERENCE_KOH_2008.id}], but systematic reviews and large trials like OCUM have often reported lower overall diagnostic accuracy, with pooled sensitivities around 77% and specificities around 71% [${commonData.references.REFERENCE_AL_SUKHNI_2012.id}]. Stelzner et al. reported an accuracy of only 56.5% for lymph node staging using morphological criteria on T2-weighted MRI [${commonData.references.REFERENCE_STELZNER_2022.id}]. Our findings suggest that the Avocado Sign offers superior performance, potentially simplifying nodal assessment by reducing reliance on subjective size thresholds.</p>
             <p>The strength of the Avocado Sign lies in its contrast-enhancement-based assessment, which may provide additional insights into nodal viability and metastatic involvement. While Gadofosveset-enhanced MRI showed promise in differentiating benign from metastatic nodes [${commonData.references.REFERENCE_LAMBREGTS_2013.id}], its clinical applicability was limited by the contrast agent's commercial discontinuation. Barbaro et al. and Horvat et al. have explored size-based criteria and other advanced techniques for restaging after nCRT, showing varied diagnostic value [${commonData.references.REFERENCE_BARBARO_2024.id}, ${commonData.references.REFERENCE_HORVAT_2023.id}]. In comparison, the Avocado Sign's diagnostic performance, as reported in this study, appears to be robust across different treatment settings.</p>
             <p>In the evolving landscape of rectal cancer treatment, with increasing emphasis on personalized and organ-preserving strategies [${commonData.references.REFERENCE_HABR_GAMA_2019.id}, ${commonData.references.REFERENCE_SMITH_2015.id}, ${commonData.references.REFERENCE_KENNEDY_2019.id}, ${commonData.references.REFERENCE_HANNA_2021.id}], accurate nodal staging is pivotal. Schrag et al. recently highlighted the expanding range of treatment options for locally advanced rectal cancer [${commonData.references.REFERENCE_SCHRAG_2023.id}]. In the era of total neoadjuvant therapy, as demonstrated in the OPRA trial [${commonData.references.REFERENCE_GARCIA_AGUILAR_2022.id}] and more recently in the PROSPECT trial [${commonData.references.REFERENCE_SCHRAG_2023.id}], accurate nodal staging has become pivotal. The straightforward application and high reproducibility (Cohen’s kappa = ${formatNumber(interobserverKappa, 2, 'N/A', true)}) [${commonData.references.REFERENCE_LURZ_SCHAEFER_2025.id}] of the Avocado Sign are significant advantages, potentially facilitating its integration into routine clinical practice. Assessment of the Avocado Sign only requires routine high-resolution, thin-slice, fat-saturated contrast-enhanced T1-weighted sequences.</p>
@@ -205,7 +207,7 @@ const publicationTab = (() => {
     function _generateReferencesHTML(stats, commonData) {
         const allReferences = Object.values(commonData.references).filter(ref => typeof ref === 'object' && ref.id).sort((a,b) => a.id - b.id);
         const filteredReferences = allReferences.filter(ref => !ref.id.toString().startsWith('STUDY_PERIOD_'));
-        return `<ul>${filteredReferences.map(ref => `<li>[${ref.id}] ${ref.text}</li>`).join('')}</ul>`;
+        return `<ul>${filteredReferences.map(ref => `<li>${ref.text}</li>`).join('')}</ul>`;
     }
 
     const contentGenerators = {
@@ -233,7 +235,7 @@ const publicationTab = (() => {
         return `<p class="text-warning">Content for section '${sectionId}' in language '${lang}' is not available.</p>`;
     }
 
-    function getTableHTMLForExport(tableId, allStats, commonData, options = {}) {
+    function _getPublicationTable(tableId, tableType, data, lang, stats, commonData, options = {}) {
         let headers = [], rows = [], caption = '';
         const na = 'N/A';
         const fv = (val, dig = 1, useStd = true) => formatNumber(val, dig, na, useStd);
@@ -242,7 +244,7 @@ const publicationTab = (() => {
         const fCI_pub = (metric) => {
             if (!metric || typeof metric.value !== 'number' || isNaN(metric.value)) return na;
             const isPercent = !(metric.name === 'auc' || metric.name === 'f1');
-            const digits = (metric.name === 'auc' || metric.name === 'f1') ? 2 : 0;
+            const digits = (metric.name === 'auc' || metric.name === 'f1') ? 2 : 1;
             const valueStr = isPercent ? fp(metric.value, digits) : fv(metric.value, digits, true);
             if (!metric.ci || typeof metric.ci.lower !== 'number' || typeof metric.ci.upper !== 'number' || isNaN(metric.ci.lower) || isNaN(metric.ci.upper)) return valueStr;
             const lowerStr = isPercent ? fp(metric.ci.lower, digits) : fv(metric.ci.lower, digits, true);
@@ -251,6 +253,7 @@ const publicationTab = (() => {
         };
         const pubConfig = PUBLICATION_CONFIG.publicationElements;
         const getPValueTextForPub = (pValue) => getPValueText(pValue, true);
+
 
         if (tableId === pubConfig.methoden.literaturT2KriterienTabelle.id) {
             caption = pubConfig.methoden.literaturT2KriterienTabelle.titleEn;
@@ -268,17 +271,17 @@ const publicationTab = (() => {
         } else if (tableId === pubConfig.ergebnisse.patientenCharakteristikaTabelle.id) {
             caption = pubConfig.ergebnisse.patientenCharakteristikaTabelle.titleEn;
             headers = ['Characteristic', 'Value'];
-            const d = allStats?.[APP_CONFIG.COHORTS.OVERALL.id]?.descriptive;
+            const d = stats?.[APP_CONFIG.COHORTS.OVERALL.id]?.descriptive;
             if (d) {
                 const total = d.patientCount;
                 rows = [
                     ['Age—mean ± SD (years)', `${fv(d.age?.mean, 1, true)} ± ${fv(d.age?.sd, 1, true)}`],
-                    ['Male—no. (%)', `${d.sex?.m ?? 0} (${fp(d.sex?.m / total, 0)})`],
-                    ['Female—no. (%)', `${d.sex?.f ?? 0} (${fp(d.sex?.f / total, 0)})`],
+                    ['Male—no. (%)', `${d.sex?.m ?? 0} (${fp(d.sex?.m / total, 1)})`],
+                    ['Female—no. (%)', `${d.sex?.f ?? 0} (${fp(d.sex?.f / total, 1)})`],
                     ['Treatment approach—no. (%)', ''],
-                    ['  Surgery alone', `${d.therapy?.surgeryAlone ?? 0} (${fp(d.therapy?.surgeryAlone / total, 0)})`],
-                    ['  Neoadjuvant therapy', `${d.therapy?.neoadjuvantTherapy ?? 0} (${fp(d.therapy?.neoadjuvantTherapy / total, 0)})`],
-                    ['N+ patients—no. (%)', `${d.nStatus?.plus ?? 0} (${fp(d.nStatus?.plus / total, 0)})`]
+                    ['  Surgery alone', `${d.therapy?.surgeryAlone ?? 0} (${fp(d.therapy?.surgeryAlone / total, 1)})`],
+                    ['  Neoadjuvant therapy', `${d.therapy?.neoadjuvantTherapy ?? 0} (${fp(d.therapy?.neoadjuvantTherapy / total, 1)})`],
+                    ['N+ patients—no. (%)', `${d.nStatus?.plus ?? 0} (${fp(d.nStatus?.plus / total, 1)})`]
                 ];
             }
         } else if (tableId === pubConfig.ergebnisse.diagnostischeGueteASTabelle.id) {
@@ -286,11 +289,11 @@ const publicationTab = (() => {
              const overallId = APP_CONFIG.COHORTS.OVERALL.id;
              const surgeryId = APP_CONFIG.COHORTS.SURGERY_ALONE.id;
              const nectId = APP_CONFIG.COHORTS.NEOADJUVANT.id;
-             headers = ['Metric', `Overall (n = ${allStats?.[overallId]?.descriptive?.patientCount||'?'})`, `Surgery alone (n = ${allStats?.[surgeryId]?.descriptive?.patientCount||'?'})`, `Neoadjuvant therapy (n = ${allStats?.[nectId]?.descriptive?.patientCount||'?'})`];
+             headers = ['Metric', `Overall (n = ${stats?.[overallId]?.descriptive?.patientCount||'?'})`, `Surgery alone (n = ${stats?.[surgeryId]?.descriptive?.patientCount||'?'})`, `Neoadjuvant therapy (n = ${stats?.[nectId]?.descriptive?.patientCount||'?'})`];
              const getRow = (metricKey, metricName) => {
-                const sG = allStats?.[overallId]?.performanceAS?.[metricKey];
-                const sD = allStats?.[surgeryId]?.performanceAS?.[metricKey];
-                const sN = allStats?.[nectId]?.performanceAS?.[metricKey];
+                const sG = stats?.[overallId]?.performanceAS?.[metricKey];
+                const sD = stats?.[surgeryId]?.performanceAS?.[metricKey];
+                const sN = stats?.[nectId]?.performanceAS?.[metricKey];
                 return [ metricName, fCI_pub(sG), fCI_pub(sD), fCI_pub(sN) ];
              };
              rows = [
@@ -303,8 +306,8 @@ const publicationTab = (() => {
             caption = pubConfig.ergebnisse.diagnostischeGueteOptimierteT2Tabelle.titleEn.replace('{BF_METRIC}', commonData.bruteForceMetricForPublication);
             headers = ['Cohort', 'Optimized Metric', 'Best Value', 'Logic', 'Criteria', 'Sens. (95% CI)', 'Spec. (95% CI)', 'Acc. (95% CI)', 'AUC (95% CI)'];
             rows = Object.values(APP_CONFIG.COHORTS).map(c => c.id).map(cohortId => {
-                const bfRes = allStats?.[cohortId]?.bruteforceDefinition;
-                const perf = allStats?.[cohortId]?.performanceT2Bruteforce;
+                const bfRes = stats?.[cohortId]?.bruteforceDefinition;
+                const perf = stats?.[cohortId]?.performanceT2Bruteforce;
                 if (!bfRes || !perf) return null;
                 return [
                     getCohortDisplayName(cohortId), commonData.bruteForceMetricForPublication, fv(bfRes.metricValue, 4, true),
@@ -318,7 +321,7 @@ const publicationTab = (() => {
             caption = pubConfig.ergebnisse.vergleichASvsT2Tabelle.titleEn;
             headers = ['Cohort', 'Test', 'Statistic Value', 'p-Value', 'Method'];
             rows = Object.values(APP_CONFIG.COHORTS).map(c => c.id).flatMap(cohortId => {
-                const comp = allStats?.[cohortId]?.comparisonASvsT2Bruteforce;
+                const comp = stats?.[cohortId]?.comparisonASvsT2Bruteforce;
                 if (!comp) return [];
                 const cohortDisplayName = getCohortDisplayName(cohortId);
                 return [
@@ -327,6 +330,7 @@ const publicationTab = (() => {
                 ];
             });
         }
+
 
         let tableHtml = `<div class="table-responsive"><table class="table table-sm table-striped small">`;
         tableHtml += `<caption>${caption}</caption>`;
@@ -339,7 +343,7 @@ const publicationTab = (() => {
     }
 
     function render(data, currentSectionId) {
-        const { allCohortStats, bruteForceResults, currentLanguage } = data;
+        const { rawData, allCohortStats, bruteForceResults, currentLanguage } = data;
         
         const commonData = {
             appName: APP_CONFIG.APP_NAME,
@@ -349,7 +353,8 @@ const publicationTab = (() => {
             nNeoadjuvantTherapy: allCohortStats.neoadjuvantTherapy?.descriptive?.patientCount || 0,
             references: APP_CONFIG.REFERENCES_FOR_PUBLICATION || {},
             bruteForceMetricForPublication: state.getPublicationBruteForceMetric(),
-            currentLanguage: currentLanguage
+            currentLanguage: currentLanguage,
+            rawData: rawData
         };
         
         const mainSection = PUBLICATION_CONFIG.sections.find(s => s.id === currentSectionId);
@@ -363,7 +368,7 @@ const publicationTab = (() => {
                 </select>
             </div></div>
             <div class="col-md-9"><div id="publication-content-area" class="bg-white p-3 border rounded">
-                <h2 class="mb-4">${APP_CONFIG.UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey]}</h2>`;
+                <h1 class="mb-4 display-6">${APP_CONFIG.UI_TEXTS.publicationTab.sectionLabels[mainSection.labelKey]}</h1>`;
 
         mainSection.subSections.forEach(subSection => {
             finalHTML += `<div class="publication-sub-section border-bottom pb-4 mb-4" id="pub-content-${subSection.id}">`;
@@ -373,17 +378,16 @@ const publicationTab = (() => {
             
             const pubElements = PUBLICATION_CONFIG.publicationElements;
             if (currentSectionId === 'methoden_main' && subSection.id === 'methoden_bildanalyse_t2_kriterien') {
-                 finalHTML += getTableHTMLForExport(pubElements.methoden.literaturT2KriterienTabelle.id, allCohortStats, commonData);
+                 finalHTML += _getPublicationTable(pubElements.methoden.literaturT2KriterienTabelle.id, 'literaturT2KriterienTabelle', null, currentLanguage, allCohortStats, commonData);
             } else if (currentSectionId === 'ergebnisse_main') {
                  if (subSection.id === 'ergebnisse_patientencharakteristika') {
-                    finalHTML += uiComponents.createPublicationFlowchartHTML(allCohortStats);
-                    finalHTML += getTableHTMLForExport(pubElements.ergebnisse.patientenCharakteristikaTabelle.id, allCohortStats, commonData);
+                    finalHTML += _getPublicationTable(pubElements.ergebnisse.patientenCharakteristikaTabelle.id, 'patientenCharakteristikaTabelle', null, currentLanguage, allCohortStats, commonData);
                  } else if (subSection.id === 'ergebnisse_as_diagnostische_guete') {
-                    finalHTML += getTableHTMLForExport(pubElements.ergebnisse.diagnostischeGueteASTabelle.id, allCohortStats, commonData);
+                    finalHTML += _getPublicationTable(pubElements.ergebnisse.diagnostischeGueteASTabelle.id, 'diagnostischeGueteASTabelle', null, currentLanguage, allCohortStats, commonData);
                  } else if (subSection.id === 'ergebnisse_t2_optimiert_diagnostische_guete') {
-                    finalHTML += getTableHTMLForExport(pubElements.ergebnisse.diagnostischeGueteOptimierteT2Tabelle.id, allCohortStats, commonData);
+                    finalHTML += _getPublicationTable(pubElements.ergebnisse.diagnostischeGueteOptimierteT2Tabelle.id, 'diagnostischeGueteOptimierteT2Tabelle', null, currentLanguage, allCohortStats, commonData);
                  } else if (subSection.id === 'ergebnisse_vergleich_as_vs_t2') {
-                    finalHTML += getTableHTMLForExport(pubElements.ergebnisse.vergleichASvsT2Tabelle.id, allCohortStats, commonData);
+                    finalHTML += _getPublicationTable(pubElements.ergebnisse.vergleichASvsT2Tabelle.id, 'vergleichASvsT2Tabelle', null, currentLanguage, allCohortStats, commonData);
                  }
             }
             
@@ -392,6 +396,14 @@ const publicationTab = (() => {
 
         finalHTML += `</div></div></div>`;
         return finalHTML;
+    }
+
+    function getSectionContentForExport(sectionId, lang, allStats, commonData) {
+        return _getSectionContent(sectionId, lang, allStats, commonData);
+    }
+    
+    function getTableHTMLForExport(tableId, tableType, data, lang, stats, commonData, options = {}) {
+        return _getPublicationTable(tableId, tableType, data, lang, stats, commonData, options);
     }
 
     return {

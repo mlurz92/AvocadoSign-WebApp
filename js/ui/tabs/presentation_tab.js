@@ -10,31 +10,30 @@ const presentationTab = (() => {
         ];
 
         const currentCohortName = getCohortDisplayName(cohort);
-        const displayPatientCount = patientCount > 0 ? patientCount : (statsCurrentCohort?.descriptive?.patientCount) || 0;
-        const hasDataForCurrent = !!(statsCurrentCohort && statsCurrentCohort.descriptive && displayPatientCount > 0);
+        const displayPatientCount = patientCount > 0 ? patientCount : (statsCurrentCohort?.matrix?.tp + statsCurrentCohort?.matrix?.fp + statsCurrentCohort?.matrix?.fn + statsCurrentCohort?.matrix?.tn) || 0;
+        const hasDataForCurrent = !!(statsCurrentCohort && statsCurrentCohort.matrix && displayPatientCount > 0);
 
         const createPerfTableRow = (stats, cohortKey) => {
             const cohortDisplayName = getCohortDisplayName(cohortKey);
-            const perfStats = stats?.performanceAS;
             const na = '--';
             const fCI_p = (m, k) => { 
                 const d = (k === 'auc') ? 2 : ((k === 'f1') ? 3 : 1); 
                 const p = !(k === 'auc' || k === 'f1'); 
                 return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, d, p, na); 
             };
-            if (!perfStats || typeof perfStats.matrix !== 'object') {
-                const nPatients = stats?.descriptive?.patientCount ?? '?';
+            if (!stats || typeof stats.matrix !== 'object') {
+                const nPatients = stats?.patientCount || '?';
                 return `<tr><td class="fw-bold">${cohortDisplayName} (N=${nPatients})</td><td colspan="6" class="text-muted text-center">Data missing</td></tr>`;
             }
-            const count = perfStats.matrix ? (perfStats.matrix.tp + perfStats.matrix.fp + perfStats.matrix.fn + perfStats.matrix.tn) : 0;
+            const count = stats.matrix ? (stats.matrix.tp + stats.matrix.fp + stats.matrix.fn + stats.matrix.tn) : 0;
             return `<tr>
                         <td class="fw-bold">${cohortDisplayName} (N=${count})</td>
-                        <td data-tippy-content="${getInterpretationTooltip('sens', perfStats.sens)}">${fCI_p(perfStats.sens, 'sens')}</td>
-                        <td data-tippy-content="${getInterpretationTooltip('spec', perfStats.spec)}">${fCI_p(perfStats.spec, 'spec')}</td>
-                        <td data-tippy-content="${getInterpretationTooltip('ppv', perfStats.ppv)}">${fCI_p(perfStats.ppv, 'ppv')}</td>
-                        <td data-tippy-content="${getInterpretationTooltip('npv', perfStats.npv)}">${fCI_p(perfStats.npv, 'npv')}</td>
-                        <td data-tippy-content="${getInterpretationTooltip('acc', perfStats.acc)}">${fCI_p(perfStats.acc, 'acc')}</td>
-                        <td data-tippy-content="${getInterpretationTooltip('auc', perfStats.auc)}">${fCI_p(perfStats.auc, 'auc')}</td>
+                        <td data-tippy-content="${getInterpretationTooltip('sens', stats.sens)}">${fCI_p(stats.sens, 'sens')}</td>
+                        <td data-tippy-content="${getInterpretationTooltip('spec', stats.spec)}">${fCI_p(stats.spec, 'spec')}</td>
+                        <td data-tippy-content="${getInterpretationTooltip('ppv', stats.ppv)}">${fCI_p(stats.ppv, 'ppv')}</td>
+                        <td data-tippy-content="${getInterpretationTooltip('npv', stats.npv)}">${fCI_p(stats.npv, 'npv')}</td>
+                        <td data-tippy-content="${getInterpretationTooltip('acc', stats.acc)}">${fCI_p(stats.acc, 'acc')}</td>
+                        <td data-tippy-content="${getInterpretationTooltip('auc', stats.auc)}">${fCI_p(stats.auc, 'auc')}</td>
                     </tr>`;
         };
         const tableId = "pres-as-perf-table";
@@ -152,7 +151,7 @@ const presentationTab = (() => {
         return `<div class="row mb-4"><div class="col-12"><h4 class="text-center mb-1">Comparison: Avocado Sign vs. T2 Criteria</h4><p class="text-center text-muted small mb-3">Current comparison cohort: <strong>${displayCohortForComparison}</strong> ${cohortNotice}</p><div class="row justify-content-center"><div class="col-md-9 col-lg-7"><div class="input-group input-group-sm"><label class="input-group-text" for="pres-study-select">T2 Comparison Basis:</label><select class="form-select" id="pres-study-select"><option value="" ${!selectedStudyId ? 'selected' : ''} disabled>-- Please select --</option>${appliedOptionHTML}<option value="" disabled>--- Published Criteria ---</option>${studyOptionsHTML}</select></div></div></div></div></div><div id="presentation-as-vs-t2-results">${resultsHTML}</div>`;
     }
 
-    function render(view, presentationData, selectedStudyIdFromState, currentGlobalCohort, processedData) {
+    function render(view, presentationData, selectedStudyIdFromState, currentGlobalCohort, processedData, criteria, logic) {
         let chartDataForComparison = [];
         let t2ShortNameEffectiveForChart = "T2";
 

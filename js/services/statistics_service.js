@@ -403,6 +403,16 @@ const statisticsService = (() => {
         }
     }
 
+    function calculateZTestForAUCComparison(auc1, se1, n1, auc2, se2, n2) {
+        const defaultReturn = { pValue: NaN, Z: NaN, method: "Z-Test (AUC - Independent Samples, Invalid Input)" };
+        if (auc1 === null || auc2 === null || se1 === null || se2 === null || isNaN(auc1) || isNaN(auc2) || isNaN(se1) || isNaN(se2) || n1 < 2 || n2 < 2) return defaultReturn;
+        const varDiff = se1 * se1 + se2 * se2;
+        if (isNaN(varDiff) || varDiff <= 1e-12) return { pValue: 1.0, Z: 0, method: "Z-Test (AUC - Independent Samples, Zero Variance)" };
+        const z = (auc1 - auc2) / Math.sqrt(varDiff);
+        const pValue = 2.0 * (1.0 - normalCDF(Math.abs(z)));
+        return { pValue, Z: z, method: "Z-Test (AUC - Independent Samples)" };
+    }
+
     function calculateConfusionMatrix(data, predictionKey, referenceKey) {
         let tp = 0, fp = 0, fn = 0, tn = 0;
         if (!Array.isArray(data)) return { tp, fp, fn, tn };
@@ -558,6 +568,58 @@ const statisticsService = (() => {
         };
     }
 
+    function calculateAllPublicationStats(data, appliedT2Criteria, appliedT2Logic, bruteForceResultsPerCohort) {
+        if (!data || !Array.isArray(data)) return null;
+        const results = {};
+        const cohorts = Object.values(APP_CONFIG.COHORTS).map(c => c.id);
+
+        cohorts.forEach(cohortId => {
+            const cohortData = dataProcessor.filterDataByCohort(data, cohortId);
+            if (cohortData.length === 0) { results[cohortId] = null; return; }
+
+            const evaluatedDataApplied = t2CriteriaManager.evaluateDataset(cloneDeep(cohortData), appliedT2Criteria, appliedT2Logic);
+
+            results[cohortId] = {
+                descriptive: calculateDescriptiveStats(evaluatedDataApplied),
+                performanceAS: calculateDiagnosticPerformance(evaluatedDataApplied, 'asStatus', 'nStatus'),
+                performanceT2Applied: calculateDiagnosticPerformance(evaluatedDataApplied, 't2Status', 'nStatus'),
+                comparisonASvsT2Applied: compareDiagnosticMethods(evaluatedDataApplied, 'asStatus', 't2Status', 'nStatus'),
+                associationsApplied: calculateAssociations(evaluatedDataApplied, appliedT2Criteria),
+                performanceT2Literature: {},
+                performanceT2Bruteforce: null,
+                comparisonASvsT2Bruteforce: null,
+                bruteforceDefinition: null
+            };
+
+            PUBLICATION_CONFIG.literatureCriteriaSets.forEach(studySetConf => {
+                const applicableCohort = studySetConf.applicableCohort;
+                if (applicableCohort === cohortId || applicableCohort === APP_CONFIG.COHORTS.OVERALL.id) {
+                    const studySet = studyT2CriteriaManager.getStudyCriteriaSetById(studySetConf.id);
+                    if (studySet) {
+                        const evaluatedDataStudy = studyT2CriteriaManager.applyStudyCriteriaToDataset(cloneDeep(cohortData), studySet);
+                        results[cohortId].performanceT2Literature[studySetConf.id] = calculateDiagnosticPerformance(evaluatedDataStudy, 't2Status', 'nStatus');
+                        results[cohortId][`comparisonASvsT2_literature_${studySetConf.id}`] = compareDiagnosticMethods(evaluatedDataStudy, 'asStatus', 't2Status', 'nStatus');
+                    }
+                }
+            });
+
+            const bfResult = bruteForceResultsPerCohort?.[cohortId];
+            if (bfResult && bfResult.bestResult?.criteria) {
+                const evaluatedDataBF = t2CriteriaManager.evaluateDataset(cloneDeep(cohortData), bfResult.bestResult.criteria, bfResult.bestResult.logic);
+                results[cohortId].performanceT2Bruteforce = calculateDiagnosticPerformance(evaluatedDataBF, 't2Status', 'nStatus');
+                results[cohortId].comparisonASvsT2Bruteforce = compareDiagnosticMethods(evaluatedDataBF, 'asStatus', 't2Status', 'nStatus');
+                results[cohortId].bruteforceDefinition = { criteria: bfResult.bestResult.criteria, logic: bfResult.bestResult.logic, metricValue: bfResult.bestResult.metricValue, metricName: bfResult.metric };
+            }
+        });
+
+        if (results.Overall) {
+            results.Overall.interobserverKappa = 0.92;
+            results.Overall.interobserverKappaCI = { lower: 0.85, upper: 0.99 };
+        }
+
+        return results;
+    }
+
     function calculateAssociations(data, t2Criteria) {
         if (!Array.isArray(data) || data.length === 0 || !t2Criteria) return {};
         const results = {};
@@ -624,56 +686,6 @@ const statisticsService = (() => {
                 };
             }
         });
-        return results;
-    }
-
-    function calculateAllPublicationStats(data, appliedT2Criteria, appliedT2Logic, bruteForceResultsPerCohort) {
-        if (!data || !Array.isArray(data)) return null;
-        const results = {};
-        const cohorts = Object.values(APP_CONFIG.COHORTS).map(c => c.id);
-
-        cohorts.forEach(cohortId => {
-            const cohortData = dataProcessor.filterDataByCohort(data, cohortId);
-            if (cohortData.length === 0) { results[cohortId] = null; return; }
-
-            const evaluatedDataApplied = t2CriteriaManager.evaluateDataset(cloneDeep(cohortData), appliedT2Criteria, appliedT2Logic);
-
-            results[cohortId] = {
-                descriptive: calculateDescriptiveStats(evaluatedDataApplied),
-                performanceAS: calculateDiagnosticPerformance(evaluatedDataApplied, 'asStatus', 'nStatus'),
-                performanceT2Applied: calculateDiagnosticPerformance(evaluatedDataApplied, 't2Status', 'nStatus'),
-                comparisonASvsT2Applied: compareDiagnosticMethods(evaluatedDataApplied, 'asStatus', 't2Status', 'nStatus'),
-                associationsApplied: calculateAssociations(evaluatedDataApplied, appliedT2Criteria),
-                performanceT2Literature: {},
-                performanceT2Bruteforce: null,
-                comparisonASvsT2Bruteforce: null,
-                bruteforceDefinition: null
-            };
-
-            PUBLICATION_CONFIG.literatureCriteriaSets.forEach(studySetConf => {
-                const applicableCohort = studySetConf.applicableCohort;
-                const dataForStudySet = dataProcessor.filterDataByCohort(data, applicableCohort);
-                if(dataForStudySet.length > 0) {
-                     const evaluatedDataStudy = studyT2CriteriaManager.evaluateDatasetWithStudyCriteria(cloneDeep(dataForStudySet), studySetConf);
-                     results[applicableCohort].performanceT2Literature[studySetConf.id] = calculateDiagnosticPerformance(evaluatedDataStudy, 't2Status', 'nStatus');
-                     results[applicableCohort][`comparisonASvsT2_literature_${studySetConf.id}`] = compareDiagnosticMethods(evaluatedDataStudy, 'asStatus', 't2Status', 'nStatus');
-                }
-            });
-
-            const bfResult = bruteForceResultsPerCohort?.[cohortId];
-            if (bfResult && bfResult.bestResult?.criteria) {
-                const evaluatedDataBF = t2CriteriaManager.evaluateDataset(cloneDeep(cohortData), bfResult.bestResult.criteria, bfResult.bestResult.logic);
-                results[cohortId].performanceT2Bruteforce = calculateDiagnosticPerformance(evaluatedDataBF, 't2Status', 'nStatus');
-                results[cohortId].comparisonASvsT2Bruteforce = compareDiagnosticMethods(evaluatedDataBF, 'asStatus', 't2Status', 'nStatus');
-                results[cohortId].bruteforceDefinition = { criteria: bfResult.bestResult.criteria, logic: bfResult.bestResult.logic, metricValue: bfResult.bestResult.metricValue, metricName: bfResult.metric };
-            }
-        });
-
-        if (results.Overall) {
-            results.Overall.interobserverKappa = 0.92;
-            results.Overall.interobserverKappaCI = { lower: 0.85, upper: 0.99 };
-        }
-
         return results;
     }
 

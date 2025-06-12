@@ -152,48 +152,40 @@ const statisticsTab = (() => {
     }
 
 
-    function render(processedData, allPublicationStats, appliedCriteria, appliedLogic, layout, cohort1, cohort2, globalCohort) {
-        if (!allPublicationStats) throw new Error("Statistics data not available.");
-
+    function render(processedData, appliedCriteria, appliedLogic, layout, cohort1, cohort2, globalCohort) {
+        if (!processedData) throw new Error("Statistics data not available.");
         let datasets = [], cohortNames = [];
+        let baseEvaluatedData = t2CriteriaManager.evaluateDataset(cloneDeep(processedData), appliedCriteria, appliedLogic);
         if (layout === 'einzel') {
-            const stats = allPublicationStats[globalCohort];
-            if (stats) {
-                datasets.push(stats);
-                cohortNames.push(globalCohort);
-            }
+            datasets.push(dataProcessor.filterDataByCohort(baseEvaluatedData, globalCohort));
+            cohortNames.push(globalCohort);
         } else {
-            const stats1 = allPublicationStats[cohort1];
-            const stats2 = allPublicationStats[cohort2];
-            if (stats1) {
-                datasets.push(stats1);
-                cohortNames.push(cohort1);
-            }
-            if (stats2) {
-                datasets.push(stats2);
-                cohortNames.push(cohort2);
-            }
+            datasets.push(dataProcessor.filterDataByCohort(baseEvaluatedData, cohort1));
+            datasets.push(dataProcessor.filterDataByCohort(baseEvaluatedData, cohort2));
+            cohortNames.push(cohort1, cohort2);
         }
-        
-        if (datasets.length === 0 || datasets.every(d => !d || !d.descriptive)) {
+        if (datasets.length === 0 || datasets.every(d => !Array.isArray(d) || d.length === 0)) {
             return '<div class="col-12"><div class="alert alert-warning">No data available for the selected statistics cohort(s).</div></div>';
         }
-
         const outerRow = document.createElement('div');
         outerRow.className = 'row g-4';
-
-        datasets.forEach((stats, i) => {
+        datasets.forEach((data, i) => {
             const cohortId = cohortNames[i];
             const col = document.createElement('div');
             col.className = layout === 'vergleich' ? 'col-xl-6' : 'col-12';
             const innerRowId = `inner-stat-row-${i}`;
-            const patientCount = stats.descriptive?.patientCount || 0;
-            col.innerHTML = `<h4 class="mb-3">Cohort: ${getCohortDisplayName(cohortId)} (N=${patientCount})</h4><div class="row g-3" id="${innerRowId}"></div>`;
+            col.innerHTML = `<h4 class="mb-3">Cohort: ${getCohortDisplayName(cohortId)} (N=${data.length})</h4><div class="row g-3" id="${innerRowId}"></div>`;
             outerRow.appendChild(col);
             const innerContainer = col.querySelector(`#${innerRowId}`);
-
-            if (patientCount > 0) {
-                innerContainer.innerHTML += uiComponents.createStatisticsCard(`descriptive-stats-${i}`, 'Descriptive Statistics', createDescriptiveStatsContentHTML(stats, i, cohortId), true, null, [{id: `dl-desc-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `table-descriptive-demographics-${i}`, tableName: `Descriptive_Demographics_${cohortId.replace(/\s+/g, '_')}`}], `table-descriptive-demographics-${i}`);
+            if (data.length > 0) {
+                const stats = {
+                    descriptive: statisticsService.calculateDescriptiveStats(data),
+                    performanceAS: statisticsService.calculateDiagnosticPerformance(data, 'asStatus', 'nStatus'),
+                    performanceT2: statisticsService.calculateDiagnosticPerformance(data, 't2Status', 'nStatus'),
+                    comparisonASvsT2: statisticsService.compareDiagnosticMethods(data, 'asStatus', 't2Status', 'nStatus'),
+                    associations: statisticsService.calculateAssociations(data, appliedCriteria)
+                };
+                innerContainer.innerHTML += uiComponents.createStatisticsCard(`descriptive-stats-${i}`, 'Descriptive Statistics', createDescriptiveStatsContentHTML({descriptive: stats.descriptive}, i, cohortId), true, null, [{id: `dl-desc-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `table-descriptive-demographics-${i}`, tableName: `Descriptive_Demographics_${cohortId.replace(/\s+/g, '_')}`}], `table-descriptive-demographics-${i}`);
 
                 const fCI_p_stat = (m, k) => { const d = (k === 'auc') ? 2 : ((k === 'f1') ? 3 : 1); const p = !(k === 'auc'||k==='f1'); return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, d, p, '--'); };
                 const na_stat = '--';
@@ -272,9 +264,9 @@ const statisticsTab = (() => {
                 };
 
                 innerContainer.innerHTML += uiComponents.createStatisticsCard(`performance-as-${i}`, 'Diagnostic Performance: Avocado Sign (AS vs. N)', createPerfTableHTML(stats.performanceAS), false, null, [{id: `dl-as-perf-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `performance-as-${i}-content table`, tableName: `AS_Performance_${cohortId.replace(/\s+/g, '_')}`}], `performance-as-${i}-content table`);
-                innerContainer.innerHTML += uiComponents.createStatisticsCard(`performance-t2-${i}`, 'Diagnostic Performance: T2 (Applied Criteria vs. N)', createPerfTableHTML(stats.performanceT2Applied), false, null, [{id: `dl-t2-perf-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `performance-t2-${i}-content table`, tableName: `T2_Applied_Performance_${cohortId.replace(/\s+/g, '_')}`}], `performance-t2-${i}-content table`);
-                innerContainer.innerHTML += uiComponents.createStatisticsCard(`comparison-as-t2-${i}`, 'Statistical Comparison: AS vs. T2 (Applied Criteria)', createCompTableHTML(stats.comparisonASvsT2Applied), false, null, [{id: `dl-comp-as-t2-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `comparison-as-t2-${i}-content table`, tableName: `Comp_AS_T2_Applied_${cohortId.replace(/\s+/g, '_')}`}], `comparison-as-t2-${i}-content table`);
-                innerContainer.innerHTML += uiComponents.createStatisticsCard(`associations-${i}`, 'Association with N-Status', createAssocTableHTML(stats.associationsApplied, appliedCriteria), false, null, [{id: `dl-assoc-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `associations-${i}-content table`, tableName: `Associations_${cohortId.replace(/\s+/g, '_')}`}], `associations-${i}-content table`);
+                innerContainer.innerHTML += uiComponents.createStatisticsCard(`performance-t2-${i}`, 'Diagnostic Performance: T2 (Applied Criteria vs. N)', createPerfTableHTML(stats.performanceT2), false, null, [{id: `dl-t2-perf-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `performance-t2-${i}-content table`, tableName: `T2_Applied_Performance_${cohortId.replace(/\s+/g, '_')}`}], `performance-t2-${i}-content table`);
+                innerContainer.innerHTML += uiComponents.createStatisticsCard(`comparison-as-t2-${i}`, 'Statistical Comparison: AS vs. T2 (Applied Criteria)', createCompTableHTML(stats.comparisonASvsT2), false, null, [{id: `dl-comp-as-t2-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `comparison-as-t2-${i}-content table`, tableName: `Comp_AS_T2_Applied_${cohortId.replace(/\s+/g, '_')}`}], `comparison-as-t2-${i}-content table`);
+                innerContainer.innerHTML += uiComponents.createStatisticsCard(`associations-${i}`, 'Association with N-Status', createAssocTableHTML(stats.associations, appliedCriteria), false, null, [{id: `dl-assoc-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `associations-${i}-content table`, tableName: `Associations_${cohortId.replace(/\s+/g, '_')}`}], `associations-${i}-content table`);
 
             } else {
                 innerContainer.innerHTML = '<div class="col-12"><div class="alert alert-warning small p-2">No data for this cohort.</div></div>';
@@ -286,7 +278,7 @@ const statisticsTab = (() => {
             criteriaComparisonCard.innerHTML = uiComponents.createStatisticsCard(
                 'criteria-comparison',
                 `Criteria Comparison: AS, Applied T2, & Literature Sets (for Cohort: ${getCohortDisplayName(globalCohort)})`,
-                createCriteriaComparisonTableHTML(allPublicationStats, globalCohort),
+                createCriteriaComparisonTableHTML(statisticsService.calculateAllPublicationStats(processedData, appliedCriteria, appliedLogic, bruteForceManager.getAllResults()), globalCohort),
                 false,
                 'criteriaComparisonTable',
                 [{id: 'dl-criteria-comp-table-png', icon: 'fa-image', format: 'png', tableId: 'criteria-comparison-content table', tableName: `Criteria_Comparison_${globalCohort.replace(/\s+/g, '_')}`}],
@@ -296,14 +288,15 @@ const statisticsTab = (() => {
         }
 
         setTimeout(() => {
-            datasets.forEach((stats, i) => {
-                if (stats && stats.descriptive) {
+            datasets.forEach((data, i) => {
+                if (data.length > 0) {
+                    const stats = statisticsService.calculateDescriptiveStats(data);
                     if (document.getElementById(`chart-stat-age-${i}`)) {
-                        chartRenderer.renderAgeDistributionChart(stats.descriptive.ageData, `chart-stat-age-${i}`, { height: 180, margin: { top: 10, right: 10, bottom: 35, left: 40 } });
+                        chartRenderer.renderAgeDistributionChart(stats.ageData, `chart-stat-age-${i}`, { height: 180, margin: { top: 10, right: 10, bottom: 35, left: 40 } });
                     }
                     if (document.getElementById(`chart-stat-gender-${i}`)) {
-                        const genderData = [{label: 'Male', value: stats.descriptive.sex.m ?? 0}, {label: 'Female', value: stats.descriptive.sex.f ?? 0}];
-                        if (stats.descriptive.sex.unknown > 0) genderData.push({label: 'Unknown', value: stats.descriptive.sex.unknown });
+                        const genderData = [{label: 'Male', value: stats.sex.m ?? 0}, {label: 'Female', value: stats.sex.f ?? 0}];
+                        if (stats.sex.unknown > 0) genderData.push({label: 'Unknown', value: stats.sex.unknown });
                         chartRenderer.renderPieChart(genderData, `chart-stat-gender-${i}`, { height: 180, margin: { top: 10, right: 10, bottom: 35, left: 10 }, innerRadiusFactor: 0.0, legendBelow: true });
                     }
                 }

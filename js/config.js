@@ -172,7 +172,7 @@ const APP_CONFIG = Object.freeze({
         REFERENCE_ALE_ALI_2019: { id: 8, text: "Ale Ali H, Kirsch R, Razaz S et al (2019) Extramural venous invasion in rectal cancer: overview of imaging, histopathology, and clinical implications. Abdom Radiol (NY) 44:1–10. https://doi.org/10.1007/s00261-018-1673-2" },
         REFERENCE_BEWICK_2004: { id: 9, text: "Bewick V, Cheek L, Ball J (2004) Statistics review 8: qualitative data—tests of association. Crit Care 8:46–53. https://doi.org/10.1186/cc2428" },
         REFERENCE_KOH_2008: { id: 10, text: "Koh DM, Chau I, Tait D, Wotherspoon A, Cunningham D, Brown G (2008) Evaluating mesorectal lymph nodes in rectal cancer before and after neoadjuvant chemoradiation using thin-section T2-weighted magnetic resonance imaging. Int J Radiat Oncol Biol Phys 71:456–461. https://doi.org/10.1016/j.ijrobp.2007.10.016" },
-        REFERENCE_AL_SUKHNI_2012: { id: 11, text: "Al-Sukhni E, Milot L, Fruitman M et al (2012) Diagnostic accuracy of MRI for assessment of T category, lymph node metastases, and circumferential resection margin involvement in patients with rectal cancer: a systematic review and meta-analysis. Ann Surg Oncol 19:2212–2223. https://doi.org/10.1245/s10434-011-2210-5" },
+        REFERENCE_AL_SUKHNI_2012: { id: 11, text: "Al-Sukhni E, Milot L, Fruitman M et al (2012) Diagnostic accuracy of MRI for assessment of T category, lymph node metastases, and circumferential resection margin involvement in patients with rectal cancer: a systematic review and meta-analysis. Ann Surg 19:2212–2223. https://doi.org/10.1245/s10434-011-2210-5" },
         REFERENCE_STELZNER_2022: { id: 12, text: "Stelzner S, Ruppert R, Kube R et al (2022) Selection of patients with rectal cancer for neoadjuvant therapy using pre-therapeutic MRI—results from OCUM trial. Eur J Radiol 147:110113. https://doi.org/10.1016/j.ejrad.2021.110113" },
         REFERENCE_LAMBREGTS_2013: { id: 13, text: "Lambregts DMJ, Heijnen LA, Maas M et al (2013) Gadofosveset-enhanced MRI for the assessment of rectal cancer lymph nodes: predictive criteria. Abdom Imaging 38:720–727. https://doi.org/10.1007/s00261-012-9957-4" },
         REFERENCE_BARBARO_2024: { id: 14, text: "Barbaro B, Carafa MRP, Minordi LM et al (2024) Magnetic resonance imaging for assessment of rectal cancer nodes after chemoradiotherapy: a single center experience. Radiother Oncol 193:110124. https://doi.org/10.1016/j.radonc.2024.110124" },
@@ -440,7 +440,7 @@ const PUBLICATION_CONFIG = Object.freeze({
             id: 'rutegard_et_al_esgar',
             name: 'ESGAR 2016 (Rutegård et al. 2025)',
             displayShortName: 'ESGAR 2016',
-            applicableCohort: 'surgeryAlone',
+            applicableCohort: 'Overall',
             logic: 'KOMBINIERT',
             criteria: Object.freeze({
                 size: { active: true, threshold: 9.0, condition: '>=' },
@@ -496,7 +496,7 @@ const PUBLICATION_CONFIG = Object.freeze({
                 patientCohort: '191 LARC patients (restaging after nCRT)',
                 investigationType: 'Retrospective, single-center study',
                 focus: 'Accuracy of MRI in identifying ypN0 status after nCRT, using short-axis diameter cut-off.',
-                keyCriteriaSummary: 'Nodes with short-axis diameter > 2.2 mm considered positive.'
+                keyCriteriaSummary: 'Optimal cut-off for short-axis diameter ≤ 2.2mm (predicting ypN0, so nodes > 2.2mm are positive).'
             })
         }
     ]),
@@ -508,10 +508,6 @@ const PUBLICATION_CONFIG = Object.freeze({
             }
         },
         ergebnisse: {
-            flowchart: {
-                id: 'fig-results-flowchart',
-                titleEn: 'Figure 1. Flow diagram of patient enrollment.'
-            },
             patientenCharakteristikaTabelle: {
                 id: 'table-results-patient-char',
                 titleEn: 'Table 2. Patient Demographics and Treatment Approaches'
@@ -530,19 +526,19 @@ const PUBLICATION_CONFIG = Object.freeze({
             },
             rocKurveOverall: {
                 id: 'fig-results-roc-overall',
-                titleEn: 'Figure 2. ROC Curve for the Avocado Sign in the Overall Cohort'
+                titleEn: 'Figure 1. ROC Curve for the Avocado Sign in the Overall Cohort'
             },
             rocKurveSurgeryAlone: {
                 id: 'fig-results-roc-surgery-alone',
-                titleEn: 'Figure 3. ROC Curve for the Avocado Sign in the Surgery alone Cohort'
+                titleEn: 'Figure 2. ROC Curve for the Avocado Sign in the Surgery alone Cohort'
             },
             rocKurveNRCT: {
                 id: 'fig-results-roc-nrcT',
-                titleEn: 'Figure 4. ROC Curve for the Avocado Sign in the Neoadjuvant therapy Cohort'
+                titleEn: 'Figure 3. ROC Curve for the Avocado Sign in the Neoadjuvant therapy Cohort'
             },
             asVsT2ComparisonChart: {
                 id: 'fig-results-as-t2-comparison',
-                titleEn: 'Figure 5. Comparison of Key Diagnostic Metrics: Avocado Sign vs. Cohort-Optimized T2 Criteria'
+                titleEn: 'Figure 4. Comparison of Key Diagnostic Metrics: Avocado Sign vs. Cohort-Optimized T2 Criteria'
             }
         }
     })

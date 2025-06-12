@@ -1,8 +1,8 @@
 const t2CriteriaManager = (() => {
     let currentCriteria = null;
     let appliedCriteria = null;
-    let currentLogic = null;
-    let appliedLogic = null;
+    let currentLogic = APP_CONFIG.DEFAULT_SETTINGS.T2_LOGIC;
+    let appliedLogic = APP_CONFIG.DEFAULT_SETTINGS.T2_LOGIC;
     let isUnsaved = false;
 
     function init() {
@@ -10,11 +10,11 @@ const t2CriteriaManager = (() => {
         const savedLogic = loadFromLocalStorage(APP_CONFIG.STORAGE_KEYS.APPLIED_LOGIC);
         const defaultCriteria = getDefaultT2Criteria();
 
-        currentLogic = (savedLogic === 'AND' || savedLogic === 'OR') ? savedLogic : defaultCriteria.logic;
-        appliedLogic = currentLogic;
-        
         appliedCriteria = deepMerge(cloneDeep(defaultCriteria), savedCriteria || {});
+        appliedLogic = (savedLogic === 'AND' || savedLogic === 'OR') ? savedLogic : defaultCriteria.logic;
+
         currentCriteria = cloneDeep(appliedCriteria);
+        currentLogic = appliedLogic;
         isUnsaved = false;
     }
 
@@ -34,7 +34,7 @@ const t2CriteriaManager = (() => {
         return appliedLogic;
     }
 
-    function isUnsaved() {
+    function getIsUnsaved() {
         return isUnsaved;
     }
 
@@ -199,7 +199,7 @@ const t2CriteriaManager = (() => {
         getAppliedCriteria,
         getCurrentLogic,
         getAppliedLogic,
-        isUnsaved,
+        isUnsaved: getIsUnsaved,
         updateCriterionValue,
         updateCriterionThreshold,
         toggleCriterionActive,
