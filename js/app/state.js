@@ -78,7 +78,7 @@ const state = (() => {
 
     function getPublicationBruteForceMetric() { return currentState.publicationBruteForceMetric; }
     function setPublicationBruteForceMetric(newMetric) {
-        const isValid = APP_CONFIG.AVAILABLE_BRUTE_FORCE_METRICS.some(m => m.value === newMetric);
+        const isValid = PUBLICATION_CONFIG.bruteForceMetricsForPublication.some(m => m.value === newMetric);
         return isValid ? _setter('publicationBruteForceMetric', APP_CONFIG.STORAGE_KEYS.PUBLICATION_BRUTE_FORCE_METRIC, newMetric) : false;
     }
 

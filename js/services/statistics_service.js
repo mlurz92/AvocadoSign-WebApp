@@ -440,14 +440,14 @@ const statisticsService = (() => {
         const matrix = calculateConfusionMatrix(data, predictionKey, referenceKey);
         const { tp, fp, fn, tn } = matrix;
         const total = tp + fp + fn + tn;
-        const nullMetric = { value: NaN, ci: null, method: null, se: NaN, n_success: 0, n_trials: 0, matrix_components: {tp, fp, fn, tn, total} };
+        const nullMetric = { value: NaN, ci: null, method: null, se: NaN };
         if (total === 0) return { matrix, sens: nullMetric, spec: nullMetric, ppv: nullMetric, npv: nullMetric, acc: nullMetric, balAcc: nullMetric, f1: nullMetric, auc: nullMetric };
 
         const sens_val = (tp + fn) > 0 ? tp / (tp + fn) : NaN;
         const spec_val = (fp + tn) > 0 ? tn / (fp + tn) : NaN;
         const ppv_val = (tp + fp) > 0 ? tp / (tp + fp) : NaN;
         const npv_val = (fn + tn) > 0 ? tn / (fn + tn) : NaN;
-        const acc_val = total > 0 ? (tp + tn) / total : NaN;
+        const acc_val = (tp + tn) / total;
         const balAcc_val = (!isNaN(sens_val) && !isNaN(spec_val)) ? (sens_val + spec_val) / 2.0 : NaN;
         const f1_val = (!isNaN(ppv_val) && !isNaN(sens_val) && (ppv_val + sens_val) > 0) ? 2 * (ppv_val * sens_val) / (ppv_val + sens_val) : NaN;
 

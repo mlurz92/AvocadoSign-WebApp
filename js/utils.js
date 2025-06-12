@@ -275,146 +275,25 @@ function clampNumber(num, min, max) {
     return Math.min(Math.max(number, minVal), maxVal);
 }
 
-function getTooltip(key, replacements = {}) {
-    const definitions = APP_CONFIG.UI_TEXTS.tooltips.tooltipDefinitions;
-    const interpretations = APP_CONFIG.UI_TEXTS.tooltips.tooltipInterpretations;
-    let template = definitions[key] || interpretations[key] || ``;
-
-    for (const placeholder in replacements) {
-        if (Object.prototype.hasOwnProperty.call(replacements, placeholder)) {
-            const regex = new RegExp(`\\[${placeholder.toUpperCase()}\\]`, 'g');
-            template = template.replace(regex, replacements[placeholder]);
-        }
-    }
-    return template;
-}
-
-function getPerformanceMetricInterpretation(metricKey, metricData) {
-    if (!metricData || isNaN(metricData.value)) return '';
-    const replacements = {
-        VALUE: formatPercent(metricData.value, 1),
-        TP: metricData.n_success,
-        TN: metricData.n_success,
-        TP_PLUS_FN: metricData.n_trials,
-        TN_PLUS_FP: metricData.n_trials,
-        TP_PLUS_FP: metricData.n_trials,
-        TN_PLUS_FN: metricData.n_trials,
-        TP_PLUS_TN: metricData.n_success,
-        TOTAL: metricData.n_trials
-    };
-    return getTooltip(metricKey, replacements);
-}
-
 function getAUCInterpretation(aucValue) {
     const value = parseFloat(aucValue);
+    if (isNaN(value) || value < 0 || value > 1) return APP_CONFIG.UI_TEXTS.statMetrics.associationStrengthTexts.undetermined;
+    if (value >= 0.9) return 'excellent';
+    if (value >= 0.8) return 'good';
+    if (value >= 0.7) return 'moderate';
+    if (value > 0.5) return 'weak';
+    return 'not informative';
+}
+
+function getPhiInterpretation(phiValue) {
+    const value = parseFloat(phiValue);
+    if (isNaN(value)) return APP_CONFIG.UI_TEXTS.statMetrics.associationStrengthTexts.undetermined;
+    const absPhi = Math.abs(value);
     const texts = APP_CONFIG.UI_TEXTS.statMetrics.associationStrengthTexts;
-    let strength = texts.undetermined;
-
-    if (!isNaN(value)) {
-        if (value >= 0.9) strength = 'excellent';
-        else if (value >= 0.8) strength = 'good';
-        else if (value >= 0.7) strength = 'moderate';
-        else if (value > 0.5) strength = 'weak';
-        else strength = 'not informative';
-    }
-    
-    return getTooltip('auc', { VALUE: formatNumber(aucValue, 2), STRENGTH: strength });
-}
-
-function getPhiInterpretation(phiData, featureName = '') {
-    const value = parseFloat(phiData?.value);
-    const texts = APP_CONFIG.UI_TEXTS.statMetrics.associationStrengthTexts;
-    let strength = texts.undetermined;
-
-    if (!isNaN(value)) {
-        const absPhi = Math.abs(value);
-        if (absPhi >= 0.5) strength = texts.strong;
-        else if (absPhi >= 0.3) strength = texts.moderate;
-        else if (absPhi >= 0.1) strength = texts.weak;
-        else strength = texts.very_weak;
-    }
-    
-    return getTooltip('phi', {
-        VALUE: formatNumber(value, 2),
-        STRENGTH: strength,
-        FEATURE_NAME: escapeHTML(featureName)
-    });
-}
-
-function getORInterpretation(orData, featureName = '') {
-    const orValue = parseFloat(orData?.value);
-    if (isNaN(orValue) || !orData.ci || orData.ci.lower === null || orData.ci.upper === null) return 'Odds Ratio: Not Available';
-
-    const isSignificant = !(orData.ci.lower < 1 && orData.ci.upper > 1);
-    const templateKey = isSignificant ? 'or_sig' : 'or_ns';
-    
-    const factorText = orValue > 1 ? 'increased' : 'decreased';
-    const absValForStrength = orValue > 1 ? orValue : 1 / orValue;
-    let strength = 'weak';
-    if (absValForStrength >= 3.0) strength = 'strong';
-    else if (absValForStrength >= 1.5) strength = 'moderate';
-
-    return getTooltip(templateKey, {
-        FACTOR_TEXT: factorText,
-        VALUE: formatNumber(orValue, 2),
-        CI_LOWER: formatNumber(orData.ci.lower, 2),
-        CI_UPPER: formatNumber(orData.ci.upper, 2),
-        STRENGTH: strength,
-        FEATURE_NAME: escapeHTML(featureName)
-    });
-}
-
-function getRDInterpretation(rdData, featureName = '') {
-    const rdValue = parseFloat(rdData?.value);
-    if (isNaN(rdValue) || !rdData.ci || rdData.ci.lower === null || rdData.ci.upper === null) return 'Risk Difference: Not available';
-
-    const isSignificant = !(rdData.ci.lower < 0 && rdData.ci.upper > 0);
-    const templateKey = isSignificant ? 'rd_sig' : 'rd_ns';
-    const directionText = rdValue > 0 ? 'increase' : 'decrease';
-
-    return getTooltip(templateKey, {
-        DIRECTION_TEXT: directionText,
-        VALUE: formatNumber(Math.abs(rdValue * 100), 1),
-        CI_LOWER: formatNumber(rdData.ci.lower * 100, 1),
-        CI_UPPER: formatNumber(rdData.ci.upper * 100, 1),
-        FEATURE_NAME: escapeHTML(featureName)
-    });
-}
-
-function getTestInterpretation(testData, testKey, test1Name = "Test 1", test2Name = "Test 2") {
-    if (!testData || isNaN(testData.pValue)) return `Interpretation for ${testKey}: Not available`;
-
-    const pValue = testData.pValue;
-    const isSignificant = pValue < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL;
-    
-    return getTooltip(testKey, {
-        P_VALUE_TEXT: getPValueText(pValue, false),
-        SIGNIFICANCE_TEXT: isSignificant ? 'statistically significant' : 'not statistically significant',
-        IS_IS_NOT: isSignificant ? 'is' : 'is not',
-        TEST1: test1Name,
-        TEST2: test2Name
-    });
-}
-
-function getAssociationInterpretation(pValData, featureName = '') {
-    if (!pValData || isNaN(pValData.pValue)) return 'Association Interpretation: Not available';
-
-    const pValue = pValData.pValue;
-    const isSignificant = pValue < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL;
-    let strength = 'no significant';
-    
-    if (isSignificant) {
-        if (pValue < 0.001) strength = 'a very strong';
-        else if (pValue < 0.01) strength = 'a strong';
-        else strength = 'a moderate';
-    }
-
-    return getTooltip('fisher', {
-        P_VALUE_TEXT: getPValueText(pValue, false),
-        SIGNIFICANCE_TEXT: isSignificant ? 'statistically significant' : 'not statistically significant',
-        STRENGTH: strength,
-        FEATURE_NAME: escapeHTML(featureName)
-    });
+    if (absPhi >= 0.5) return texts.strong;
+    if (absPhi >= 0.3) return texts.moderate;
+    if (absPhi >= 0.1) return texts.weak;
+    return texts.very_weak;
 }
 
 function escapeHTML(text) {

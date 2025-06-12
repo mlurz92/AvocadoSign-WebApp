@@ -3,14 +3,14 @@ const analysisTab = (() => {
     function createAnalysisTableCardHTML(data, sortState, appliedCriteria, appliedLogic) {
         const tableId = 'analysis-table';
         const columns = [
-            { key: 'id', label: 'ID' },
-            { key: 'name', label: 'Name' },
-            { key: 'therapy', label: 'Therapy' },
-            { key: 'status', label: 'N/AS/T2', subKeys: [{key: 'nStatus', label: 'N'}, {key: 'asStatus', label: 'AS'}, {key: 't2Status', label: 'T2'}]},
-            { key: 'countPathologyNodes', label: 'N+/N total', textAlign: 'center' },
-            { key: 'countASNodes', label: 'AS+/AS total', textAlign: 'center' },
-            { key: 'countT2Nodes', label: 'T2+/T2 total', textAlign: 'center' },
-            { key: 'details', label: '', width: '30px'}
+            { key: 'id', label: 'ID', tooltipKey: 'nr' },
+            { key: 'name', label: 'Name', tooltipKey: 'name' },
+            { key: 'therapy', label: 'Therapy', tooltipKey: 'therapy' },
+            { key: 'status', label: 'N/AS/T2', tooltipKey: 'n_as_t2', subKeys: [{key: 'nStatus', label: 'N'}, {key: 'asStatus', label: 'AS'}, {key: 't2Status', label: 'T2'}]},
+            { key: 'countPathologyNodes', label: 'N+/N total', tooltipKey: 'n_counts', textAlign: 'center' },
+            { key: 'countASNodes', label: 'AS+/AS total', tooltipKey: 'as_counts', textAlign: 'center' },
+            { key: 'countT2Nodes', label: 'T2+/T2 total', tooltipKey: 't2_counts', textAlign: 'center' },
+            { key: 'details', label: '', width: '30px', tooltipKey: 'expandRow'}
         ];
 
         let headerHTML = `<thead class="small sticky-top bg-light" id="${tableId}-header"><tr>`;
@@ -29,16 +29,17 @@ const analysisTab = (() => {
                 }
             }
             
+            const baseTooltipContent = APP_CONFIG.UI_TEXTS.tooltips.analysisTab[col.tooltipKey] || `Sort by ${col.label}`;
             const subHeaders = col.subKeys ? col.subKeys.map(sk => {
                 const isActiveSubSort = activeSubKey === sk.key;
                 const style = isActiveSubSort ? 'font-weight: bold; text-decoration: underline; color: var(--primary-color);' : '';
-                const subKeyTooltip = `Sort by Status ${sk.label}`;
-                return `<span class="sortable-sub-header" data-sub-key="${sk.key}" style="cursor: pointer; ${style}" data-tippy-content="${subKeyTooltip}">${sk.label}</span>`;
+                return `<span class="sortable-sub-header" data-sub-key="${sk.key}" style="cursor: pointer; ${style}" data-tippy-content="Sort by Status ${sk.label}">${sk.label}</span>`;
             }).join(' / ') : '';
             
+            const mainTooltip = col.subKeys ? `${baseTooltipContent}` : `Sort by ${col.label}. ${baseTooltipContent}`;
             const sortAttributes = `data-sort-key="${col.key}" ${col.subKeys || col.key === 'details' ? '' : 'style="cursor: pointer;"'}`;
             
-            headerHTML += `<th scope="col" ${sortAttributes} ${thStyle ? `style="${thStyle}"`: ''}>${col.label}${subHeaders ? ` (${subHeaders})` : ''} ${col.key !== 'details' ? sortIconHTML : ''}</th>`;
+            headerHTML += `<th scope="col" ${sortAttributes} data-tippy-content="${mainTooltip}" ${thStyle ? `style="${thStyle}"`: ''}>${col.label}${subHeaders ? ` (${subHeaders})` : ''} ${col.key !== 'details' ? sortIconHTML : ''}</th>`;
         });
         headerHTML += `</tr></thead>`;
 
@@ -52,7 +53,7 @@ const analysisTab = (() => {
         }
         tableHTML += `</tbody></table>`;
         
-        const toggleButtonTooltip = "Expand or collapse the detail view of the evaluated T2-weighted lymph nodes for all patients.";
+        const toggleButtonTooltip = APP_CONFIG.UI_TEXTS.tooltips.analysisTab.expandAll || 'Expand or collapse all details';
         return `
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -100,7 +101,7 @@ const analysisTab = (() => {
     function render(data, currentCriteria, currentLogic, sortState, currentCohort, bfWorkerAvailable, currentCohortStats, bruteForceResultForCohort) {
         if (!data || !currentCriteria || !currentLogic) throw new Error("Data or criteria for Analysis Tab not available.");
         const criteriaControlsHTML = uiComponents.createT2CriteriaControls(currentCriteria, currentLogic);
-        const analysisTableCardHTML = createAnalysisTableCardHTML(data, sortState, currentCriteria, appliedLogic);
+        const analysisTableCardHTML = createAnalysisTableCardHTML(data, sortState, currentCriteria, currentLogic);
 
         const dashboardContainerId = 'analysis-dashboard';
         const metricsOverviewContainerId = 't2-metrics-overview';
@@ -156,19 +157,19 @@ const analysisTab = (() => {
                                 <thead>
                                     <tr>
                                         <th>Metric</th>
-                                        <th data-tippy-content="${getTooltip('ci')}">Value (95% CI)</th>
-                                        <th data-tippy-content="${getTooltip('ci')}">CI Method</th>
+                                        <th>Value (95% CI)</th>
+                                        <th>CI Method</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                     <tr><td data-tippy-content="${getTooltip('sens')}">Sensitivity</td><td data-tippy-content="${getPerformanceMetricInterpretation('sens', statsT2.sens)}">${fCI(statsT2.sens, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_proportion')}">${statsT2.sens?.method || na}</td></tr>
-                                     <tr><td data-tippy-content="${getTooltip('spec')}">Specificity</td><td data-tippy-content="${getPerformanceMetricInterpretation('spec', statsT2.spec)}">${fCI(statsT2.spec, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_proportion')}">${statsT2.spec?.method || na}</td></tr>
-                                     <tr><td data-tippy-content="${getTooltip('ppv')}">PPV</td><td data-tippy-content="${getPerformanceMetricInterpretation('ppv', statsT2.ppv)}">${fCI(statsT2.ppv, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_proportion')}">${statsT2.ppv?.method || na}</td></tr>
-                                     <tr><td data-tippy-content="${getTooltip('npv')}">NPV</td><td data-tippy-content="${getPerformanceMetricInterpretation('npv', statsT2.npv)}">${fCI(statsT2.npv, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_proportion')}">${statsT2.npv?.method || na}</td></tr>
-                                     <tr><td data-tippy-content="${getTooltip('acc')}">Accuracy</td><td data-tippy-content="${getPerformanceMetricInterpretation('acc', statsT2.acc)}">${fCI(statsT2.acc, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_proportion')}">${statsT2.acc?.method || na}</td></tr>
-                                     <tr><td data-tippy-content="${getTooltip('balAcc')}">Balanced Accuracy</td><td data-tippy-content="${getAUCInterpretation(statsT2.balAcc?.value)}">${fCI(statsT2.balAcc, 1, true)}</td><td data-tippy-content="${getTooltip('ci_method_bootstrap')}">${statsT2.balAcc?.method || na}</td></tr>
-                                     <tr><td data-tippy-content="${getTooltip('f1')}">F1-Score</td><td>${fCI(statsT2.f1, 3, false)}</td><td data-tippy-content="${getTooltip('ci_method_bootstrap')}">${statsT2.f1?.method || na}</td></tr>
-                                     <tr><td data-tippy-content="${getTooltip('auc')}">AUC</td><td data-tippy-content="${getAUCInterpretation(statsT2.auc?.value)}">${fCI(statsT2.auc, 2, false)}</td><td data-tippy-content="${getTooltip('ci_method_bootstrap')}">${statsT2.auc?.method || na}</td></tr>
+                                    <tr><td>Sensitivity</td><td>${fCI(statsT2.sens, 1, true)}</td><td>${statsT2.sens?.method || na}</td></tr>
+                                    <tr><td>Specificity</td><td>${fCI(statsT2.spec, 1, true)}</td><td>${statsT2.spec?.method || na}</td></tr>
+                                    <tr><td>PPV</td><td>${fCI(statsT2.ppv, 1, true)}</td><td>${statsT2.ppv?.method || na}</td></tr>
+                                    <tr><td>NPV</td><td>${fCI(statsT2.npv, 1, true)}</td><td>${statsT2.npv?.method || na}</td></tr>
+                                    <tr><td>Accuracy</td><td>${fCI(statsT2.acc, 1, true)}</td><td>${statsT2.acc?.method || na}</td></tr>
+                                    <tr><td>Balanced Accuracy</td><td>${fCI(statsT2.balAcc, 1, true)}</td><td>${statsT2.balAcc?.method || na}</td></tr>
+                                    <tr><td>F1-Score</td><td>${fCI(statsT2.f1, 3, false)}</td><td>${statsT2.f1?.method || na}</td></tr>
+                                    <tr><td>AUC</td><td>${fCI(statsT2.auc, 2, false)}</td><td>${statsT2.auc?.method || na}</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -178,7 +179,7 @@ const analysisTab = (() => {
                         'Diagnostic Performance (Applied T2)',
                         metricsHtml,
                         false,
-                        null,
+                        't2MetricsOverview',
                         [{id: 'dl-t2-metrics-overview-png', icon: 'fa-image', format: 'png', tableId: 't2-metrics-overview-card-content table', tableName: `T2_Metrics_Overview_${getCohortDisplayName(currentCohort).replace(/\s+/g, '_')}`}],
                         't2-metrics-overview-card-content table'
                     ));
