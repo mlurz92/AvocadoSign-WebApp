@@ -278,42 +278,33 @@ function clampNumber(num, min, max) {
 function getAUCInterpretation(aucValue) {
     const value = parseFloat(aucValue);
     if (isNaN(value) || value < 0 || value > 1) return 'undetermined';
-    if (value >= 0.9) return 'excellent';
-    if (value >= 0.8) return 'good';
-    if (value >= 0.7) return 'moderate';
-    if (value > 0.5) return 'weak';
-    return 'not informative';
+    const strengths = APP_CONFIG.UI_TEXTS.tooltips.interpretation.strength;
+    if (value >= 0.9) return strengths.very_strong;
+    if (value >= 0.8) return strengths.strong;
+    if (value >= 0.7) return strengths.moderate;
+    if (value > 0.5) return strengths.weak;
+    return strengths.very_weak;
 }
 
 function getPhiInterpretation(phiValue) {
     const value = parseFloat(phiValue);
     if (isNaN(value)) return 'undetermined';
     const absPhi = Math.abs(value);
-    const texts = {
-        strong: "strong",
-        moderate: "moderate",
-        weak: "weak",
-        very_weak: "very weak"
-    };
-    if (absPhi >= 0.5) return texts.strong;
-    if (absPhi >= 0.3) return texts.moderate;
-    if (absPhi >= 0.1) return texts.weak;
-    return texts.very_weak;
+    const strengths = APP_CONFIG.UI_TEXTS.tooltips.interpretation.strength;
+    if (absPhi >= 0.5) return strengths.strong;
+    if (absPhi >= 0.3) return strengths.moderate;
+    if (absPhi >= 0.1) return strengths.weak;
+    return strengths.very_weak;
 }
 
 function getORInterpretation(orValue) {
     const value = Math.abs(parseFloat(orValue));
     if (isNaN(value)) return 'undetermined';
-    const texts = {
-        strong: "strong",
-        moderate: "moderate",
-        weak: "weak",
-        very_weak: "very weak"
-    };
-    if (value >= 10 || value <= 0.1) return texts.strong;
-    if (value >= 3 || value <= 0.33) return texts.moderate;
-    if (value >= 1.5 || value <= 0.67) return texts.weak;
-    return texts.very_weak;
+    const strengths = APP_CONFIG.UI_TEXTS.tooltips.interpretation.strength;
+    if (value >= 10 || value <= 0.1) return strengths.very_strong;
+    if (value >= 3 || value <= 0.33) return strengths.strong;
+    if (value >= 1.5 || value <= 0.67) return strengths.moderate;
+    return strengths.weak;
 }
 
 function escapeHTML(text) {
@@ -325,89 +316,117 @@ function escapeHTML(text) {
 function getDefinitionTooltip(metricKey) {
     const definition = APP_CONFIG.UI_TEXTS.tooltips.definition[metricKey];
     if (!definition) return `Definition for '${metricKey}' not found.`;
-    return `<strong>${escapeHTML(definition.title)}</strong><br>${definition.text}`;
+    return `<strong>${escapeHTML(definition.title)}</strong><hr class='my-1'>${definition.text}`;
 }
 
 function getInterpretationTooltip(metricKey, data, context = {}) {
     const templates = APP_CONFIG.UI_TEXTS.tooltips.interpretation;
-    if (!templates[metricKey]) return `Interpretation for '${metricKey}' not found.`;
-    let text = '';
+    const notAvailableText = `<strong>${metricKey.toUpperCase()} Interpretation</strong><hr class='my-1'>${templates.notAvailable}`;
 
-    if (metricKey === 'pValue') {
-        const pValue = data.pValue;
-        if (pValue === null || pValue === undefined || isNaN(pValue)) return 'p-value not available.';
-        const pValueFormatted = getPValueText(pValue);
-        const significance = pValue < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL;
-        const significanceText = significance ? templates.significance.significant : templates.significance.not_significant;
-        const strength = significance ? templates.strength.strong : templates.strength.very_weak;
-
-        let template = templates.pValue.default;
-        if (data.testName?.includes("McNemar")) template = templates.pValue.mcnemar;
-        else if (data.testName?.includes("DeLong")) template = templates.pValue.delong;
-        else if (data.testName?.includes("Fisher")) template = templates.pValue.fisher;
-
-        text = template
-            .replace('{pValue}', `<strong>${pValueFormatted}</strong>`)
-            .replace('{significanceText}', `<strong>${significanceText}</strong>`)
-            .replace('{strength}', strength)
-            .replace('{comparison}', `<strong>${escapeHTML(context.comparisonName)}</strong>`)
-            .replace('{metric}', `<strong>${escapeHTML(context.metricName)}</strong>`)
-            .replace('{method1}', `<strong>${escapeHTML(context.method1)}</strong>`)
-            .replace('{method2}', `<strong>${escapeHTML(context.method2)}</strong>`)
-            .replace('{featureName}', `<strong>${escapeHTML(data.featureName)}</strong>`);
-
-    } else if (metricKey === 'or') {
-        const or = data?.value;
-        if (or === null || or === undefined || isNaN(or)) return 'Odds Ratio not available.';
-        const direction = or > 1 ? templates.direction.increased : (or < 1 ? templates.direction.decreased : templates.direction.unchanged);
-        const strength = getORInterpretation(or);
-        const featureName = data.featureName || 'this feature';
-        
-        text = templates.or.value
-            .replace('{value}', `<strong>${formatNumber(or, 2)}</strong>`)
-            .replace('{direction}', direction)
-            .replace('{featureName}', `<strong>${escapeHTML(featureName)}</strong>`)
-            .replace('{strength}', strength);
-            
-        if(data.ci) {
-            const includesOne = data.ci.lower < 1 && data.ci.upper > 1;
-            const ciText = includesOne ? templates.ci.includesOne : templates.ci.excludesOne;
-            text += '<br>' + templates.or.ci
-                .replace('{lower}', `<strong>${formatNumber(data.ci.lower, 2)}</strong>`)
-                .replace('{upper}', `<strong>${formatNumber(data.ci.upper, 2)}</strong>`)
-                .replace('{ciInterpretationText}', ciText);
-        }
-
-    } else if (metricKey === 'rd') {
-        const rd = data?.value;
-        if (rd === null || rd === undefined || isNaN(rd)) return 'Risk Difference not available.';
-        const direction = rd > 0 ? templates.direction.increased : (rd < 0 ? templates.direction.decreased : templates.direction.unchanged);
-        const featureName = data.featureName || 'this feature';
-
-        text = templates.rd.value
-            .replace('{value}', `<strong>${formatPercent(rd, 1)}</strong>`)
-            .replace('{direction}', direction)
-            .replace('{featureName}', `<strong>${escapeHTML(featureName)}</strong>`);
-
-        if(data.ci) {
-            const includesZero = data.ci.lower < 0 && data.ci.upper > 0;
-            const ciText = includesZero ? templates.ci.includesZero : templates.ci.excludesZero;
-            text += '<br>' + templates.rd.ci
-                .replace('{lower}', `<strong>${formatPercent(data.ci.lower, 1)}</strong>`)
-                .replace('{upper}', `<strong>${formatPercent(data.ci.upper, 1)}</strong>`)
-                .replace('{ciInterpretationText}', ciText);
-        }
-    } else if (metricKey === 'phi') {
-        const phi = data?.value;
-        if (phi === null || phi === undefined || isNaN(phi)) return 'Phi Coefficient not available.';
-        const strength = getPhiInterpretation(phi);
-        const featureName = data.featureName || 'this feature';
-        text = templates.phi.value
-            .replace('{value}', `<strong>${formatNumber(phi, 2)}</strong>`)
-            .replace('{strength}', `<strong>${strength}</strong>`)
-            .replace('{featureName}', `<strong>${escapeHTML(featureName)}</strong>`);
+    if (!data || data.value === null || data.value === undefined || isNaN(data.value)) {
+        return notAvailableText;
     }
-    return text;
+    const template = templates[metricKey];
+    if (!template) return `Interpretation for '${metricKey}' not found.`;
+
+    let text;
+    let baseText;
+    const value = data.value;
+    const ci = data.ci;
+
+    switch (metricKey) {
+        case 'sens':
+        case 'spec':
+        case 'ppv':
+        case 'npv':
+        case 'acc':
+            baseText = template
+                .replace(/{value}/g, `<strong>${formatPercent(value, 1)}</strong>`)
+                .replace('{lower}', `<strong>${formatPercent(ci?.lower, 1)}</strong>`)
+                .replace('{upper}', `<strong>${formatPercent(ci?.upper, 1)}</strong>`);
+            break;
+
+        case 'balAcc':
+        case 'auc':
+            const strength = getAUCInterpretation(value);
+            baseText = template
+                .replace(/{value}/g, `<strong>${formatNumber(value, 2)}</strong>`)
+                .replace('{strength}', `<strong>${strength}</strong>`);
+            break;
+            
+        case 'f1':
+             baseText = template.replace('{value}', `<strong>${formatNumber(value, 3)}</strong>`);
+             break;
+
+        case 'pValue':
+            const pValueFormatted = getPValueText(value);
+            const significance = value < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL;
+            const significanceText = significance ? templates.significance.significant : templates.significance.not_significant;
+            const pStrength = significance ? templates.strength.strong : templates.strength.very_weak;
+            let pTemplate = template.default;
+            if (data.testName?.includes("McNemar")) pTemplate = template.mcnemar;
+            else if (data.testName?.includes("DeLong")) pTemplate = template.delong;
+            else if (data.testName?.includes("Fisher")) pTemplate = template.fisher;
+
+            baseText = pTemplate
+                .replace('{pValue}', `<strong>${pValueFormatted}</strong>`)
+                .replace('{significanceText}', `<strong>${significanceText}</strong>`)
+                .replace('{strength}', pStrength)
+                .replace('{comparison}', `<strong>${escapeHTML(context.comparisonName)}</strong>`)
+                .replace('{metric}', `<strong>${escapeHTML(context.metricName)}</strong>`)
+                .replace('{method1}', `<strong>${escapeHTML(context.method1)}</strong>`)
+                .replace('{method2}', `<strong>${escapeHTML(context.method2)}</strong>`)
+                .replace('{featureName}', `<strong>${escapeHTML(data.featureName)}</strong>`);
+            break;
+
+        case 'or':
+            const orDirection = value > 1 ? templates.direction.increased : (value < 1 ? templates.direction.decreased : templates.direction.unchanged);
+            const orStrength = getORInterpretation(value);
+            baseText = template.value
+                .replace('{value}', `<strong>${formatNumber(value, 2)}</strong>`)
+                .replace('{direction}', orDirection)
+                .replace('{featureName}', `<strong>${escapeHTML(data.featureName)}</strong>`)
+                .replace('{strength}', orStrength);
+            if (ci) {
+                const includesOne = ci.lower < 1 && ci.upper > 1;
+                const ciText = includesOne ? templates.ci.includesOne : templates.ci.excludesOne;
+                baseText += '<br>' + template.ci
+                    .replace('{lower}', `<strong>${formatNumber(ci.lower, 2)}</strong>`)
+                    .replace('{upper}', `<strong>${formatNumber(ci.upper, 2)}</strong>`)
+                    .replace('{ciInterpretationText}', ciText);
+            }
+            break;
+
+        case 'rd':
+            const rdDirection = value > 0 ? templates.direction.increased : (value < 0 ? templates.direction.decreased : templates.direction.unchanged);
+            baseText = template.value
+                .replace('{value}', `<strong>${formatPercent(value, 1)}</strong>`)
+                .replace('{direction}', rdDirection)
+                .replace('{featureName}', `<strong>${escapeHTML(data.featureName)}</strong>`);
+            if (ci) {
+                const includesZero = ci.lower < 0 && ci.upper > 0;
+                const ciText = includesZero ? templates.ci.includesZero : templates.ci.excludesZero;
+                baseText += '<br>' + template.ci
+                    .replace('{lower}', `<strong>${formatPercent(ci.lower, 1)}</strong>`)
+                    .replace('{upper}', `<strong>${formatPercent(ci.upper, 1)}</strong>`)
+                    .replace('{ciInterpretationText}', ciText);
+            }
+            break;
+
+        case 'phi':
+            const phiStrength = getPhiInterpretation(value);
+            baseText = template.value
+                .replace('{value}', `<strong>${formatNumber(value, 2)}</strong>`)
+                .replace('{strength}', `<strong>${phiStrength}</strong>`)
+                .replace('{featureName}', `<strong>${escapeHTML(data.featureName)}</strong>`);
+            break;
+            
+        default:
+            return `Interpretation for '${metricKey}' not implemented.`;
+    }
+    
+    const definition = APP_CONFIG.UI_TEXTS.tooltips.definition[metricKey];
+    return `<strong>${escapeHTML(definition?.title || metricKey.toUpperCase())} Interpretation</strong><hr class='my-1'>${baseText}`;
 }
 
 function getT2IconSVG(type, value) {
