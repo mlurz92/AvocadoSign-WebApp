@@ -311,6 +311,14 @@ const APP_CONFIG = Object.freeze({
                     not_significant: "not statistically significant"
                 }
             },
+            descriptiveStatistics: {
+                ageDistribution: { description: "Histogram showing the distribution of patient ages in the [COHORT] cohort." },
+                genderDistribution: { description: "Pie chart illustrating the distribution of male and female patients in the [COHORT] cohort." },
+                therapyDistribution: { description: "Pie chart showing the distribution of treatment approaches in the [COHORT] cohort." },
+                statusN: { description: "Distribution of final pathological N-Status in the [COHORT] cohort." },
+                statusAS: { description: "Distribution of the Avocado Sign status in the [COHORT] cohort." },
+                statusT2: { description: "Distribution of the T2-criteria status based on current settings in the [COHORT] cohort." }
+            },
             quickGuideButton: { description: "Show a quick guide and important notes about the application." },
             cohortButtons: { description: "Select the patient cohort for the analysis: <strong>Overall</strong>, <strong>Surgery alone</strong>, or <strong>Neoadjuvant therapy</strong>. This choice filters the data for all application tabs." },
             headerStats: {
