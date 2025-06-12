@@ -310,6 +310,31 @@ const APP_CONFIG = Object.freeze({
                     significant: "statistically significant",
                     not_significant: "not statistically significant"
                 }
+            },
+            dataTab: {
+                nr: "Patient's sequential ID number.",
+                name: "Patient's last name (anonymized/coded).",
+                firstName: "Patient's first name (anonymized/coded).",
+                sex: "Patient's sex (male/female/unknown).",
+                age: "Patient's age in years at the time of MRI.",
+                therapy: "Therapy administered before surgery (Neoadjuvant therapy, Surgery alone).",
+                n_as_t2: "Direct status comparison: N (Histopathology reference), AS (Avocado Sign prediction), T2 (current criteria prediction). Click N, AS, or T2 in the column header for sub-sorting.",
+                notes: "Additional clinical or radiological notes on the case, if available.",
+                expandAll: "Expand or collapse the detail view of T2-weighted lymph node features for all patients in the current table view.",
+                collapseAll: "Collapse all detail views of T2-weighted lymph node features.",
+                expandRow: "Click here or the arrow button to show/hide details on the morphological properties of this patient's T2-weighted lymph nodes. Only available if T2 node data exists."
+            },
+            analysisTab: {
+                nr: "Patient's sequential ID number.",
+                name: "Patient's last name (anonymized/coded).",
+                therapy: "Therapy administered before surgery.",
+                n_as_t2: "Direct status comparison: N (Histopathology reference), AS (Avocado Sign prediction), T2 (current criteria prediction). Click N, AS, or T2 in the column header for sub-sorting.",
+                n_counts: "Number of pathologically positive (N+) lymph nodes / Total number of histopathologically examined lymph nodes for this patient.",
+                as_counts: "Number of Avocado Sign positive (AS+) lymph nodes / Total number of lymph nodes visible on T1-CE MRI for this patient.",
+                t2_counts: "Number of T2-positive lymph nodes (based on current criteria) / Total number of lymph nodes visible on T2-MRI for this patient.",
+                expandAll: "Expand or collapse the detail view of the evaluated T2-weighted lymph nodes and the fulfilled criteria for all patients in the current table view.",
+                collapseAll: "Collapse all detail views of the evaluated T2-weighted lymph nodes and the fulfilled criteria.",
+                expandRow: "Click here or the arrow button to show/hide the detailed evaluation of this patient's individual T2-weighted lymph nodes according to the currently applied criteria. Fulfilled positive criteria are highlighted."
             }
         })
     }),
