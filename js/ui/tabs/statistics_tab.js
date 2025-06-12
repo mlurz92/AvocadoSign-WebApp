@@ -5,9 +5,8 @@ const statisticsTab = (() => {
         const d = stats.descriptive;
         const total = d.patientCount;
         const na = '--';
-        // For descriptive statistics, usually 1 decimal for continuous values, 1 for percentages is common
         const fv = (val, dig = 1, useStd = true) => formatNumber(val, dig, na, useStd);
-        const fP = (val, dig = 1) => formatPercent(val, dig, na); // Pass digits=1 for descriptive percentages
+        const fP = (val, dig = 1) => formatPercent(val, dig, na);
         const fLK = (lkData) => `${fv(lkData?.median,1)} (${fv(lkData?.min,0)}–${fv(lkData?.max,0)}) [${fv(lkData?.mean,1)} ± ${fv(lkData?.sd,1)}]`;
 
         const tooltips = {
@@ -139,11 +138,11 @@ const statisticsTab = (() => {
             const cohortInfo = (r.cohort !== getCohortDisplayName(globalCoh)) ? ` (${r.cohort} N=${r.n})` : ``;
             tableHtml += `<tr>
                 <td>${r.name}${cohortInfo}</td>
-                <td>${formatPercent(r.sens, 0, na_stat)}</td>
-                <td>${formatPercent(r.spec, 0, na_stat)}</td>
-                <td>${formatPercent(r.ppv, 0, na_stat)}</td>
-                <td>${formatPercent(r.npv, 0, na_stat)}</td>
-                <td>${formatPercent(r.acc, 0, na_stat)}</td>
+                <td>${formatPercent(r.sens, 1, na_stat)}</td>
+                <td>${formatPercent(r.spec, 1, na_stat)}</td>
+                <td>${formatPercent(r.ppv, 1, na_stat)}</td>
+                <td>${formatPercent(r.npv, 1, na_stat)}</td>
+                <td>${formatPercent(r.acc, 1, na_stat)}</td>
                 <td>${formatNumber(r.auc, 2, na_stat, true)}</td>
             </tr>`;
         });
@@ -188,12 +187,7 @@ const statisticsTab = (() => {
                 };
                 innerContainer.innerHTML += uiComponents.createStatisticsCard(`descriptive-stats-${i}`, 'Descriptive Statistics', createDescriptiveStatsContentHTML({descriptive: stats.descriptive}, i, cohortId), true, null, [{id: `dl-desc-table-${i}-png`, icon: 'fa-image', format: 'png', tableId: `table-descriptive-demographics-${i}`, tableName: `Descriptive_Demographics_${cohortId.replace(/\s+/g, '_')}`}], `table-descriptive-demographics-${i}`);
 
-                // fCI_p_stat: formatCI for proportions (sens, spec, ppv, npv, acc, balAcc) using 0 digits, and for AUC (2 digits), F1 (3 digits)
-                const fCI_p_stat = (m, k) => {
-                    if (k === 'auc') return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, 2, false, na_stat); // AUC: 2 digits
-                    if (k === 'f1') return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, 3, false, na_stat); // F1: 3 digits
-                    return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, 0, true, na_stat); // Proportions: 0 digits, isPercent=true
-                };
+                const fCI_p_stat = (m, k) => { const d = (k === 'auc') ? 2 : ((k === 'f1') ? 3 : 1); const p = !(k === 'auc'||k==='f1'); return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, d, p, '--'); };
                 const na_stat = '--';
                 const createPerfTableHTML = (perfStats) => {
                     if (!perfStats || typeof perfStats.matrix !== 'object') return '<p class="text-muted small p-2">No diagnostic performance data.</p>';
@@ -214,8 +208,7 @@ const statisticsTab = (() => {
 
                 const createCompTableHTML = (compStats) => {
                     if (!compStats) return '<p class="text-muted small p-2">No comparison data.</p>';
-                    // For p-values in tables, use the standard UI formatting (p = 0.XXX), not publication style P < .001
-                    const fPVal = (p) => (p !== null && !isNaN(p)) ? (p < 0.001 ? '0.001' : formatNumber(p, 3, '--', true)) : na_stat;
+                    const fPVal = (p) => (p !== null && !isNaN(p)) ? (p < 0.001 ? '<0.001' : formatNumber(p, 3, '--', true)) : na_stat;
                     const mcnemarTooltip = getInterpretationTooltip('pValue', compStats.mcnemar, { method1: 'AS', method2: 'T2 (Applied)', metricName: 'Accuracy'});
                     const delongTooltip = getInterpretationTooltip('pValue', compStats.delong, { method1: 'AS', method2: 'T2 (Applied)', metricName: 'AUC'});
                     
@@ -231,13 +224,9 @@ const statisticsTab = (() => {
 
                 const createAssocTableHTML = (assocStats, appliedCrit) => {
                     if (!assocStats || Object.keys(assocStats).length === 0) return '<p class="text-muted small p-2">No association data.</p>';
-                    // For p-values in tables, use the standard UI formatting (p = 0.XXX), not publication style P < .001
-                    const fPVal = (p) => (p !== null && !isNaN(p)) ? (p < 0.001 ? '0.001' : formatNumber(p, 3, na_stat, true)) : na_stat;
-                    // OR values: 2 decimal places
+                    const fPVal = (p) => (p !== null && !isNaN(p)) ? (p < 0.001 ? '<0.001' : formatNumber(p, 3, na_stat, true)) : na_stat;
                     const fORCI = (orObj) => { const val = formatNumber(orObj?.value, 2, na_stat, true); const ciL = formatNumber(orObj?.ci?.lower, 2, na_stat, true); const ciU = formatNumber(orObj?.ci?.upper, 2, na_stat, true); return (val !== na_stat && ciL !== na_stat && ciU !== na_stat) ? `${val} (${ciL}-${ciU})` : val; };
-                    // RD values: 1 decimal place as percentage
                     const fRDCI = (rdObj) => { const val = formatNumber(rdObj?.value * 100, 1, na_stat, true); const ciL = formatNumber(rdObj?.ci?.lower * 100, 1, na_stat, true); const ciU = formatNumber(rdObj?.ci?.upper * 100, 1, na_stat, true); return (val !== na_stat && ciL !== na_stat && ciU !== na_stat) ? `${val}% (${ciL}%-${ciU}%)` : (val !== na_stat ? `${val}%` : na_stat); };
-                    // Phi values: 2 decimal places
                     const fPhi = (phiObj) => formatNumber(phiObj?.value, 2, na_stat, true);
 
                     let html = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr>
@@ -258,19 +247,15 @@ const statisticsTab = (() => {
                             <td>${obj.testName || na_stat}</td></tr>`;
                     };
 
-                    // Note: The logic for whether associations are shown depends on `assocStats[fKey]` existing, not `appliedCrit[fKey]?.active`.
-                    // The `activeStatus` in the `featureName` helps indicate if the criterion was active in the *applied* criteria,
-                    // but the association itself is calculated for the feature regardless of its "active" state in applied criteria.
                     if (assocStats.as) addRow('as', 'AS Positive', assocStats.as);
                     if (assocStats.size_mwu) {
                          const mwuTooltip = getInterpretationTooltip('pValue', { ...assocStats.size_mwu, value: assocStats.size_mwu.pValue }, { comparisonName: 'median LN size between N+ and N- groups' });
                         html += `<tr><td>${assocStats.size_mwu.featureName}</td><td>${na_stat}</td><td>${na_stat}</td><td>${na_stat}</td><td data-tippy-content="${mwuTooltip}">${fPVal(assocStats.size_mwu.pValue)} ${getStatisticalSignificanceSymbol(assocStats.size_mwu.pValue)}</td><td>${assocStats.size_mwu.testName || na_stat}</td></tr>`;
                     }
 
-                    // Loop through the 5 T2 criteria keys and add rows if association data exists for them
                     ['size', 'shape', 'border', 'homogeneity', 'signal'].forEach(fKey => {
                         if (assocStats[fKey]) {
-                            const activeStatus = appliedCrit?.[fKey]?.active ? '' : ' (inactive)'; // Show if it was active in applied criteria
+                            const activeStatus = appliedCrit?.[fKey]?.active ? '' : ' (inactive)';
                             addRow(fKey, `${assocStats[fKey].featureName}${activeStatus}`, assocStats[fKey]);
                         }
                     });

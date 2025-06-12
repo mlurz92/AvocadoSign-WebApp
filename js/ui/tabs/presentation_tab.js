@@ -16,14 +16,13 @@ const presentationTab = (() => {
         const createPerfTableRow = (stats, cohortKey) => {
             const cohortDisplayName = getCohortDisplayName(cohortKey);
             const na = '--';
-            // fCI_p: formatCI for proportions (sens, spec, ppv, npv, acc) using 0 digits, and for AUC (2 digits), F1 (3 digits)
             const fCI_p = (m, k) => { 
-                if (k === 'auc') return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, 2, false, na); 
-                if (k === 'f1') return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, 3, false, na); 
-                return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, 0, true, na); 
+                const d = (k === 'auc') ? 2 : ((k === 'f1') ? 3 : 1); 
+                const p = !(k === 'auc' || k === 'f1'); 
+                return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, d, p, na); 
             };
             if (!stats || typeof stats.matrix !== 'object') {
-                const nPatients = stats?.descriptive?.patientCount || '?'; // Use descriptive patientCount if available
+                const nPatients = stats?.patientCount || '?';
                 return `<tr><td class="fw-bold">${cohortDisplayName} (N=${nPatients})</td><td colspan="6" class="text-muted text-center">Data missing</td></tr>`;
             }
             const count = stats.matrix ? (stats.matrix.tp + stats.matrix.fp + stats.matrix.fn + stats.matrix.tn) : 0;
@@ -103,7 +102,7 @@ const presentationTab = (() => {
             let comparisonTableHTML = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0" id="pres-as-vs-t2-comp-table"><thead class="small"><tr><th>Metric</th><th>AS (Value, 95% CI)</th><th>${t2ShortNameEffective} (Value, 95% CI)</th></tr></thead><tbody>`;
             metrics.forEach(key => {
                 const isRate = !(key === 'f1' || key === 'auc'); 
-                const digits = (key === 'auc') ? 2 : ((key === 'f1') ? 3 : 0); // 0 digits for percentages, 2 for AUC, 3 for F1
+                const digits = (key === 'auc') ? 2 : ((key === 'f1') ? 3 : 1);
                 const valAS = formatCI(performanceAS[key]?.value, performanceAS[key]?.ci?.lower, performanceAS[key]?.ci?.upper, digits, isRate, '--');
                 const valT2 = formatCI(performanceT2[key]?.value, performanceT2[key]?.ci?.lower, performanceT2[key]?.ci?.upper, digits, isRate, '--');
                 comparisonTableHTML += `<tr><td data-tippy-content="${getDefinitionTooltip(key)}">${metricNames[key]}</td><td data-tippy-content="${getInterpretationTooltip(key, performanceAS[key])}">${valAS}</td><td data-tippy-content="${getInterpretationTooltip(key, performanceT2[key])}">${valT2}</td></tr>`;
@@ -111,7 +110,7 @@ const presentationTab = (() => {
             comparisonTableHTML += `</tbody></table></div>`;
             const comparisonTableCardHTML = uiComponents.createStatisticsCard('pres-as-vs-t2-comp-table_card', `Performance Metrics (AS vs. ${t2ShortNameEffective})`, comparisonTableHTML, false, null, [{id: 'dl-pres-as-vs-t2-comp-table-png', icon: 'fa-image', format: 'png', tableId: 'pres-as-vs-t2-comp-table', tableName: `Pres_ASvsT2_Metrics_${comparisonCriteriaSet?.id || 'T2'}`}]);
 
-            const fPVal = (r) => (r?.pValue !== null && !isNaN(r?.pValue)) ? (formatNumber(r.pValue, 3, '--', true)) : '--'; // Use 3 decimal places for p-value in UI table
+            const fPVal = (r) => (r?.pValue !== null && !isNaN(r?.pValue)) ? (getPValueText(r.pValue, false)) : '--';
             const mcnemarTooltip = getInterpretationTooltip('pValue', comparison.mcnemar, { method1: 'AS', method2: t2ShortNameEffective, metricName: 'Accuracy'});
             const delongTooltip = getInterpretationTooltip('pValue', comparison.delong, { method1: 'AS', method2: t2ShortNameEffective, metricName: 'AUC'});
 
@@ -161,7 +160,6 @@ const presentationTab = (() => {
             const performanceT2 = presentationData.performanceT2;
             t2ShortNameEffectiveForChart = presentationData.t2ShortName || (presentationData.comparisonCriteriaSet?.displayShortName || 'T2');
 
-            // Data for bar chart (AUC and Acc are floats, others are percentages)
             chartDataForComparison = [
                 { metric: 'Sens.', AS: performanceAS.sens?.value || 0, T2: performanceT2.sens?.value || 0 },
                 { metric: 'Spec.', AS: performanceAS.spec?.value || 0, T2: performanceT2.spec?.value || 0 },
@@ -191,7 +189,6 @@ const presentationTab = (() => {
 
             if (view === 'as-pur' && presentationData?.statsCurrentCohort) {
                 const chartId = "pres-as-perf-chart";
-                // Filter data for the current presentation cohort, not the global cohort for ROC curve
                 const dataForROC = dataProcessor.filterDataByCohort(processedData, presentationData.cohort);
                 if (document.getElementById(chartId) && dataForROC.length > 0) {
                     chartRenderer.renderDiagnosticPerformanceChart(dataForROC, 'asStatus', 'nStatus', chartId, APP_CONFIG.UI_TEXTS.legendLabels.avocadoSign);
