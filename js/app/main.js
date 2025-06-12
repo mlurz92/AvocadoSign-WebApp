@@ -147,9 +147,7 @@ class App {
             rawData: this.rawData,
             allCohortStats: this.allPublicationStats,
             bruteForceResults: bruteForceResults,
-            currentLanguage: state.getCurrentPublikationLang(),
-            summaryStatement: state.getPublicationSummaryStatement(),
-            keyResults: state.getPublicationKeyResults()
+            currentLanguage: state.getCurrentPublikationLang()
         };
 
         let currentPresentationData = null;
@@ -288,6 +286,7 @@ class App {
             }
         });
         t2CriteriaManager.updateLogic(best.logic);
+        uiManager.updateT2CriteriaControlsUI(t2CriteriaManager.getCurrentCriteria(), t2CriteriaManager.getCurrentLogic());
         this.applyAndRefreshAll();
         uiManager.showToast('Best brute-force criteria applied & saved.', 'success');
     }

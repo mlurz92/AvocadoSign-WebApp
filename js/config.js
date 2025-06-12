@@ -9,7 +9,7 @@ const DEFAULT_T2_CRITERIA = Object.freeze({
 
 const APP_CONFIG = Object.freeze({
     APP_NAME: "Nodal Staging: Avocado Sign vs. T2 Criteria",
-    APP_VERSION: "3.1.0",
+    APP_VERSION: "3.0.1",
     COHORTS: Object.freeze({
         OVERALL: { id: 'Overall', therapyValue: null, displayName: 'Overall' },
         SURGERY_ALONE: { id: 'surgeryAlone', therapyValue: 'surgeryAlone', displayName: 'Surgery alone' },
@@ -27,9 +27,7 @@ const APP_CONFIG = Object.freeze({
         PRESENTATION_STUDY_ID: 'applied_criteria',
         PUBLICATION_SECTION: 'abstract_main',
         PUBLICATION_BRUTE_FORCE_METRIC: 'Balanced Accuracy',
-        PUBLICATION_LANG: 'en',
-        PUBLICATION_SUMMARY_STATEMENT: '',
-        PUBLICATION_KEY_RESULTS: ''
+        PUBLICATION_LANG: 'en'
     }),
     AVAILABLE_BRUTE_FORCE_METRICS: Object.freeze([
         { value: 'Balanced Accuracy', label: 'Balanced Accuracy' },
@@ -44,15 +42,13 @@ const APP_CONFIG = Object.freeze({
         CURRENT_COHORT: 'currentCohort_v4.3_unified',
         PUBLICATION_SECTION: 'currentPublicationSection_v4.4_detailed',
         PUBLICATION_BRUTE_FORCE_METRIC: 'currentPublicationBfMetric_v4.4_detailed',
-        PUBLICATION_SUMMARY_STATEMENT: 'publicationSummaryStatement_v4.5',
-        PUBLICATION_KEY_RESULTS: 'publicationKeyResults_v4.5',
         STATS_LAYOUT: 'currentStatsLayout_v4.2_detailed',
         STATS_COHORT1: 'currentStatsCohort1_v4.3_unified',
         STATS_COHORT2: 'currentStatsCohort2_v4.3_unified',
         PRESENTATION_VIEW: 'currentPresentationView_v4.2_detailed',
         PRESENTATION_STUDY_ID: 'currentPresentationStudyId_v4.2_detailed',
         CHART_COLOR_SCHEME: 'chartColorScheme_v4.2_detailed',
-        FIRST_APP_START: 'appFirstStart_v3.1.0',
+        FIRST_APP_START: 'appFirstStart_v3.0.1',
         PUBLICATION_LANG: 'publicationLang_v4.4_detailed'
     }),
     PATHS: Object.freeze({
@@ -211,12 +207,6 @@ const APP_CONFIG = Object.freeze({
                 ergebnisse_main: 'Results',
                 discussion_main: 'Discussion',
                 references_main: 'References'
-            },
-            manuscriptComponents: {
-                summaryStatementLabel: 'Summary Statement',
-                summaryStatementTooltip: 'A single sentence summarizing the most important finding of the study (max. 30 words). Required by Radiology journal.',
-                keyResultsLabel: 'Key Results',
-                keyResultsTooltip: 'Up to 3 main study results with summary data (max. 75 words). This will translate directly to the visual abstract. Required by Radiology journal.'
             }
         },
         chartTitles: {
