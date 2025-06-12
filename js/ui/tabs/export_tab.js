@@ -13,10 +13,16 @@ const exportTab = (() => {
         const type = tooltipConfig.type || 'UNKNOWN';
         const ext = tooltipConfig.ext || 'EXT';
 
+        // Prepare tooltip content as JSON string
+        const buttonTooltipContent = JSON.stringify({
+            type: 'generic', // Use generic type for export button descriptions
+            description: description
+        });
+
         return `
             <div class="col-md-6 mb-3">
                 <div class="d-flex align-items-center">
-                    <button id="export-${config.id}" class="btn btn-primary btn-sm me-3" data-export-type="${config.id}" data-tippy-content="${description}">
+                    <button id="export-${config.id}" class="btn btn-primary btn-sm me-3" data-export-type="${config.id}" data-tippy-content='${buttonTooltipContent}'>
                         <i class="fas ${config.icon} fa-fw me-2"></i>${config.label}
                     </button>
                     <div>
