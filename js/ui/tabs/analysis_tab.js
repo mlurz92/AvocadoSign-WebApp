@@ -29,27 +29,17 @@ const analysisTab = (() => {
                 }
             }
             
-            // Prepare tooltip content as JSON string for column headers
-            const headerTooltipContent = JSON.stringify({
-                type: 'analysisTableHeader', 
-                key: col.tooltipKey, 
-                label: col.label,
-                description: APP_CONFIG.UI_TEXTS.tooltips.analysisTab[col.tooltipKey] || `Sort by ${col.label}`
-            });
-
+            const baseTooltipContent = APP_CONFIG.UI_TEXTS.tooltips.analysisTab[col.tooltipKey] || `Sort by ${col.label}`;
             const subHeaders = col.subKeys ? col.subKeys.map(sk => {
                 const isActiveSubSort = activeSubKey === sk.key;
                 const style = isActiveSubSort ? 'font-weight: bold; text-decoration: underline; color: var(--primary-color);' : '';
-                const subHeaderTooltipContent = JSON.stringify({
-                    type: 'analysisSubHeader',
-                    key: sk.key,
-                    label: sk.label,
-                    description: `Sort by Status ${sk.label}`
-                });
-                return `<span class="sortable-sub-header" data-sub-key="${sk.key}" style="cursor: pointer; ${style}" data-tippy-content='${subHeaderTooltipContent}'>${sk.label}</span>`;
+                return `<span class="sortable-sub-header" data-sub-key="${sk.key}" style="cursor: pointer; ${style}" data-tippy-content="Sort by Status ${sk.label}">${sk.label}</span>`;
             }).join(' / ') : '';
             
-            headerHTML += `<th scope="col" data-sort-key="${col.key}" ${col.subKeys || col.key === 'details' ? '' : 'style="cursor: pointer;"'} data-tippy-content='${headerTooltipContent}' ${thStyle ? `style="${thStyle}"`: ''}>${col.label}${subHeaders ? ` (${subHeaders})` : ''} ${col.key !== 'details' ? sortIconHTML : ''}</th>`;
+            const mainTooltip = col.subKeys ? `${baseTooltipContent}` : `Sort by ${col.label}. ${baseTooltipContent}`;
+            const sortAttributes = `data-sort-key="${col.key}" ${col.subKeys || col.key === 'details' ? '' : 'style="cursor: pointer;"'}`;
+            
+            headerHTML += `<th scope="col" ${sortAttributes} data-tippy-content="${mainTooltip}" ${thStyle ? `style="${thStyle}"`: ''}>${col.label}${subHeaders ? ` (${subHeaders})` : ''} ${col.key !== 'details' ? sortIconHTML : ''}</th>`;
         });
         headerHTML += `</tr></thead>`;
 
@@ -63,17 +53,12 @@ const analysisTab = (() => {
         }
         tableHTML += `</tbody></table>`;
         
-        // Tooltip for the toggle button
-        const toggleButtonTooltipContent = JSON.stringify({
-            type: 'generic',
-            description: APP_CONFIG.UI_TEXTS.tooltips.analysisTab.expandAll || 'Expand or collapse all details'
-        });
-
+        const toggleButtonTooltip = APP_CONFIG.UI_TEXTS.tooltips.analysisTab.expandAll || 'Expand or collapse all details';
         return `
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>Patient Overview & Analysis Results (based on applied T2 criteria)</span>
-                    <button id="analysis-toggle-details" class="btn btn-sm btn-outline-secondary" data-action="expand" data-tippy-content='${toggleButtonTooltipContent}'>
+                    <button id="analysis-toggle-details" class="btn btn-sm btn-outline-secondary" data-action="expand" data-tippy-content="${toggleButtonTooltip}">
                        Expand All Details <i class="fas fa-chevron-down ms-1"></i>
                    </button>
                 </div>
@@ -166,51 +151,25 @@ const analysisTab = (() => {
                     };
                     const na = '--';
 
-                    // Function to generate data-tippy-content for each metric row
-                    const createMetricRowHTML = (metricKey, label, metricObj) => {
-                        const isPercent = !(metricKey === 'auc' || metricKey === 'f1');
-                        const digits = (metricKey === 'auc') ? 2 : ((metricKey === 'f1') ? 3 : 1);
-                        const metricValueCI = fCI(metricObj, digits, isPercent);
-
-                        const tooltipContent = JSON.stringify({
-                            type: 'metric',
-                            metricKey: metricKey,
-                            value: metricObj?.value,
-                            ci_lower: metricObj?.ci?.lower,
-                            ci_upper: metricObj?.ci?.upper,
-                            metricType: 'T2', // Indicates it's for T2 performance
-                            method: metricObj?.method
-                        });
-
-                        return `
-                            <tr>
-                                <td data-tippy-content='${tooltipContent}'>${label}</td>
-                                <td data-tippy-content='${tooltipContent}'>${metricValueCI}</td>
-                                <td data-tippy-content='${JSON.stringify({ type: 'metric', metricKey: 'ci_method', method: metricObj?.method, description: APP_CONFIG.UI_TEXTS.tooltips.diagnosticPerformanceT2.ci_method.description })}'>${metricObj?.method || na}</td>
-                            </tr>
-                        `;
-                    };
-
-
                     const metricsHtml = `
                         <div class="table-responsive">
                             <table class="table table-sm small mb-0 table-striped">
                                 <thead>
                                     <tr>
-                                        <th data-tippy-content='${JSON.stringify({type: 'generic', description: 'Diagnostic metric like Sensitivity, Specificity, Accuracy etc.'})}'>Metric</th>
-                                        <th data-tippy-content='${JSON.stringify({type: 'generic', description: 'Value of the diagnostic metric with its 95% Confidence Interval.'})}'>Value (95% CI)</th>
-                                        <th data-tippy-content='${JSON.stringify({type: 'generic', description: 'Statistical method used to calculate the 95% Confidence Interval.'})}'>CI Method</th>
+                                        <th>Metric</th>
+                                        <th>Value (95% CI)</th>
+                                        <th>CI Method</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${createMetricRowHTML('sens', 'Sensitivity', statsT2.sens)}
-                                    ${createMetricRowHTML('spec', 'Specificity', statsT2.spec)}
-                                    ${createMetricRowHTML('ppv', 'PPV', statsT2.ppv)}
-                                    ${createMetricRowHTML('npv', 'NPV', statsT2.npv)}
-                                    ${createMetricRowHTML('acc', 'Accuracy', statsT2.acc)}
-                                    ${createMetricRowHTML('balAcc', 'Balanced Accuracy', statsT2.balAcc)}
-                                    ${createMetricRowHTML('f1', 'F1-Score', statsT2.f1)}
-                                    ${createMetricRowHTML('auc', 'AUC', statsT2.auc)}
+                                    <tr><td>Sensitivity</td><td>${fCI(statsT2.sens, 1, true)}</td><td>${statsT2.sens?.method || na}</td></tr>
+                                    <tr><td>Specificity</td><td>${fCI(statsT2.spec, 1, true)}</td><td>${statsT2.spec?.method || na}</td></tr>
+                                    <tr><td>PPV</td><td>${fCI(statsT2.ppv, 1, true)}</td><td>${statsT2.ppv?.method || na}</td></tr>
+                                    <tr><td>NPV</td><td>${fCI(statsT2.npv, 1, true)}</td><td>${statsT2.npv?.method || na}</td></tr>
+                                    <tr><td>Accuracy</td><td>${fCI(statsT2.acc, 1, true)}</td><td>${statsT2.acc?.method || na}</td></tr>
+                                    <tr><td>Balanced Accuracy</td><td>${fCI(statsT2.balAcc, 1, true)}</td><td>${statsT2.balAcc?.method || na}</td></tr>
+                                    <tr><td>F1-Score</td><td>${fCI(statsT2.f1, 3, false)}</td><td>${statsT2.f1?.method || na}</td></tr>
+                                    <tr><td>AUC</td><td>${fCI(statsT2.auc, 2, false)}</td><td>${statsT2.auc?.method || na}</td></tr>
                                 </tbody>
                             </table>
                         </div>

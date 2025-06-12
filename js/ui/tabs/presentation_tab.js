@@ -26,32 +26,11 @@ const presentationTab = (() => {
                 return `<tr><td class="fw-bold">${cohortDisplayName} (N=${nPatients})</td><td colspan="6" class="text-muted text-center">Data missing</td></tr>`;
             }
             const count = stats.matrix ? (stats.matrix.tp + stats.matrix.fp + stats.matrix.fn + stats.matrix.tn) : 0;
-            
-            // Helper to create metric cells with tooltips
-            const createMetricCell = (metricKey, metricObj) => {
-                const isPercent = !(metricKey === 'auc' || metricKey === 'f1');
-                const digits = (metricKey === 'auc') ? 2 : ((metricKey === 'f1') ? 3 : 1);
-                const metricValueCI = fCI_p(metricObj, metricKey);
-                const tooltipContent = JSON.stringify({
-                    type: 'metric',
-                    metricKey: metricKey,
-                    value: metricObj?.value,
-                    ci_lower: metricObj?.ci?.lower,
-                    ci_upper: metricObj?.ci?.upper,
-                    metricType: 'AS', // Always 'AS' for this table
-                    method: metricObj?.method
-                });
-                return `<td data-tippy-content='${tooltipContent}'>${metricValueCI}</td>`;
-            };
-
             return `<tr>
                         <td class="fw-bold">${cohortDisplayName} (N=${count})</td>
-                        ${createMetricCell('sens', stats.sens)}
-                        ${createMetricCell('spec', stats.spec)}
-                        ${createMetricCell('ppv', stats.ppv)}
-                        ${createMetricCell('npv', stats.npv)}
-                        ${createMetricCell('acc', stats.acc)}
-                        ${createMetricCell('auc', stats.auc)}
+                        <td>${fCI_p(stats.sens, 'sens')}</td><td>${fCI_p(stats.spec, 'spec')}</td>
+                        <td>${fCI_p(stats.ppv, 'ppv')}</td><td>${fCI_p(stats.npv, 'npv')}</td>
+                        <td>${fCI_p(stats.acc, 'acc')}</td><td>${fCI_p(stats.auc, 'auc')}</td>
                     </tr>`;
         };
         const tableId = "pres-as-perf-table";
@@ -62,15 +41,7 @@ const presentationTab = (() => {
                 <div class="card h-100">
                     <div class="card-header d-flex justify-content-between align-items-center"><span>AS Performance vs. N for All Cohorts</span>${uiComponents.createHeaderButtonHTML([{id: `dl-${tableId}-png`, icon: 'fa-image', format: 'png', tableId: tableId, tableName: `Pres_AS_Perf_Overview`}], tableId, "AS_Performance_Overview")}</div>
                     <div class="card-body p-0"><div class="table-responsive"><table class="table table-striped table-hover table-sm small mb-0" id="${tableId}">
-                        <thead class="small"><tr>
-                            <th data-tippy-content='${JSON.stringify({type: 'generic', description: 'Patient cohort for analysis, including total number of patients.'})}'>Cohort</th>
-                            <th data-tippy-content='${JSON.stringify({type: 'metric', metricKey: 'sens', description: APP_CONFIG.UI_TEXTS.tooltips.diagnosticPerformanceAS.sens.description})}'>Sens. (95% CI)</th>
-                            <th data-tippy-content='${JSON.stringify({type: 'metric', metricKey: 'spec', description: APP_CONFIG.UI_TEXTS.tooltips.diagnosticPerformanceAS.spec.description})}'>Spec. (95% CI)</th>
-                            <th data-tippy-content='${JSON.stringify({type: 'metric', metricKey: 'ppv', description: APP_CONFIG.UI_TEXTS.tooltips.diagnosticPerformanceAS.ppv.description})}'>PPV (95% CI)</th>
-                            <th data-tippy-content='${JSON.stringify({type: 'metric', metricKey: 'npv', description: APP_CONFIG.UI_TEXTS.tooltips.diagnosticPerformanceAS.npv.description})}'>NPV (95% CI)</th>
-                            <th data-tippy-content='${JSON.stringify({type: 'metric', metricKey: 'acc', description: APP_CONFIG.UI_TEXTS.tooltips.diagnosticPerformanceAS.acc.description})}'>Acc. (95% CI)</th>
-                            <th data-tippy-content='${JSON.stringify({type: 'metric', metricKey: 'auc', description: APP_CONFIG.UI_TEXTS.tooltips.diagnosticPerformanceAS.auc.description})}'>AUC (95% CI)</th>
-                        </tr></thead>
+                        <thead class="small"><tr><th>Cohort</th><th>Sens. (95% CI)</th><th>Spec. (95% CI)</th><th>PPV (95% CI)</th><th>NPV (95% CI)</th><th>Acc. (95% CI)</th><th>AUC (95% CI)</th></tr></thead>
                         <tbody>${cohortsData.map(c => createPerfTableRow(c.stats, c.id)).join('')}</tbody>
                     </table></div></div>
                     <div class="card-footer text-end p-1">
@@ -103,7 +74,7 @@ const presentationTab = (() => {
             const studyInfo = comparisonCriteriaSet.studyInfo;
             comparisonBasisName = comparisonCriteriaSet.displayShortName || comparisonCriteriaSet.name || (isApplied ? appliedName : selectedStudyId);
             let criteriaHTML = comparisonCriteriaSet.logic === 'KOMBINIERT' ? (studyInfo?.keyCriteriaSummary || comparisonCriteriaSet.description) : studyT2CriteriaManager.formatCriteriaForDisplay(comparisonCriteriaSet.criteria, comparisonCriteriaSet.logic, false);
-            comparisonInfoHTML = `<dl class="row small mb-0"><dt class="col-sm-4" data-tippy-content='${JSON.stringify({type: 'generic', description: APP_CONFIG.UI_TEXTS.tooltips.presentation.t2BasisInfoCard.reference})}'>Reference:</dt><dd class="col-sm-8">${studyInfo?.reference || (isApplied ? 'User-defined (currently in Analysis Tab)' : 'N/A')}</dd><dt class="col-sm-4" data-tippy-content='${JSON.stringify({type: 'generic', description: APP_CONFIG.UI_TEXTS.tooltips.presentation.t2BasisInfoCard.patientCohort})}'>Basis Cohort:</dt><dd class="col-sm-8">${studyInfo?.patientCohort || `Current: ${displayCohortForComparison} (N=${patientCountForComparison || '?'})`}</dd><dt class="col-sm-4" data-tippy-content='${JSON.stringify({type: 'generic', description: APP_CONFIG.UI_TEXTS.tooltips.presentation.t2BasisInfoCard.keyCriteriaSummary})}'>Criteria:</dt><dd class="col-sm-8">${criteriaHTML}</dd></dl>`;
+            comparisonInfoHTML = `<dl class="row small mb-0"><dt class="col-sm-4">Reference:</dt><dd class="col-sm-8">${studyInfo?.reference || (isApplied ? 'User-defined (currently in Analysis Tab)' : 'N/A')}</dd><dt class="col-sm-4">Basis Cohort:</dt><dd class="col-sm-8">${studyInfo?.patientCohort || `Current: ${displayCohortForComparison} (N=${patientCountForComparison || '?'})`}</dd><dt class="col-sm-4">Criteria:</dt><dd class="col-sm-8">${criteriaHTML}</dd></dl>`;
         }
 
         const studySets = studyT2CriteriaManager.getAllStudyCriteriaSets();
@@ -116,90 +87,22 @@ const presentationTab = (() => {
         if (canDisplayResults) {
             const t2ShortNameEffective = t2ShortName || (comparisonCriteriaSet?.displayShortName || 'T2');
             const metrics = ['sens', 'spec', 'ppv', 'npv', 'acc', 'balAcc', 'f1', 'auc'];
-            const metricNames = { sens: 'Sensitivity', spec: 'Specificity', ppv: 'PPV', npv: 'NPV', acc: 'Acc.', balAcc: 'Bal. Accuracy', f1: 'F1-Score', auc: 'AUC' };
-            let comparisonTableHTML = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0" id="pres-as-vs-t2-comp-table"><thead class="small"><tr>
-                <th data-tippy-content='${JSON.stringify({type: 'generic', description: APP_CONFIG.UI_TEXTS.tooltips.presentation.asVsT2PerfTable.metric})}'>Metric</th>
-                <th data-tippy-content='${JSON.stringify({type: 'generic', description: APP_CONFIG.UI_TEXTS.tooltips.presentation.asVsT2PerfTable.asValue.replace('[COHORT_NAME_COMPARISON]', displayCohortForComparison)})}'>AS (Value, 95% CI)</th>
-                <th data-tippy-content='${JSON.stringify({type: 'generic', description: APP_CONFIG.UI_TEXTS.tooltips.presentation.asVsT2PerfTable.t2Value.replace('[T2_SHORT_NAME]', t2ShortNameEffective).replace('[COHORT_NAME_COMPARISON]', displayCohortForComparison)})}'>${t2ShortNameEffective} (Value, 95% CI)</th>
-            </tr></thead><tbody>`;
+            const metricNames = { sens: 'Sensitivity', spec: 'Specificity', ppv: 'PPV', npv: 'NPV', acc: 'Accuracy', balAcc: 'Bal. Accuracy', f1: 'F1-Score', auc: 'AUC' };
+            let comparisonTableHTML = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0" id="pres-as-vs-t2-comp-table"><thead class="small"><tr><th>Metric</th><th>AS (Value, 95% CI)</th><th>${t2ShortNameEffective} (Value, 95% CI)</th></tr></thead><tbody>`;
             metrics.forEach(key => {
                 const isRate = !(key === 'f1' || key === 'auc'); 
                 const digits = (key === 'auc') ? 2 : ((key === 'f1') ? 3 : 1);
                 const valAS = formatCI(performanceAS[key]?.value, performanceAS[key]?.ci?.lower, performanceAS[key]?.ci?.upper, digits, isRate, '--');
                 const valT2 = formatCI(performanceT2[key]?.value, performanceT2[key]?.ci?.lower, performanceT2[key]?.ci?.upper, digits, isRate, '--');
-                
-                const tooltipAS = JSON.stringify({
-                    type: 'metric',
-                    metricKey: key,
-                    value: performanceAS[key]?.value,
-                    ci_lower: performanceAS[key]?.ci?.lower,
-                    ci_upper: performanceAS[key]?.ci?.upper,
-                    metricType: 'AS',
-                    method: performanceAS[key]?.method
-                });
-                const tooltipT2 = JSON.stringify({
-                    type: 'metric',
-                    metricKey: key,
-                    value: performanceT2[key]?.value,
-                    ci_lower: performanceT2[key]?.ci?.lower,
-                    ci_upper: performanceT2[key]?.ci?.upper,
-                    metricType: 'T2',
-                    method: performanceT2[key]?.method
-                });
-
-                comparisonTableHTML += `<tr><td>${metricNames[key]}</td>
-                    <td data-tippy-content='${tooltipAS}'>${valAS}</td>
-                    <td data-tippy-content='${tooltipT2}'>${valT2}</td>
-                </tr>`;
+                comparisonTableHTML += `<tr><td>${metricNames[key]}</td><td>${valAS}</td><td>${valT2}</td></tr>`;
             });
             comparisonTableHTML += `</tbody></table></div>`;
             const comparisonTableCardHTML = uiComponents.createStatisticsCard('pres-as-vs-t2-comp-table_card', `Performance Metrics (AS vs. ${t2ShortNameEffective})`, comparisonTableHTML, false, null, [{id: 'dl-pres-as-vs-t2-comp-table-png', icon: 'fa-image', format: 'png', tableId: 'pres-as-vs-t2-comp-table', tableName: `Pres_ASvsT2_Metrics_${comparisonCriteriaSet?.id || 'T2'}`}]);
 
-            const fPVal = (r) => (r?.pValue !== null && !isNaN(r?.pValue)) ? (getPValueText(r.pValue, true)) : '--';
-            let testsTableHTML = `<table class="table table-sm table-striped small mb-0" id="pres-as-vs-t2-test-table"><thead class="small visually-hidden"><tr>
-                <th>Test</th><th>Statistic</th><th>p-Value</th><th>Method</th>
-            </tr></thead><tbody>`;
-            
-            // McNemar row
-            const mcnemarTooltipContent = JSON.stringify({
-                type: 'comparison',
-                testKey: 'mcnemar',
-                statistic: comparison?.mcnemar?.statistic,
-                pValue: comparison?.mcnemar?.pValue,
-                cohortName: displayCohortForComparison,
-                method1: 'AS',
-                method2: t2ShortNameEffective
-            });
-            const mcnemarPValueTooltip = JSON.stringify({type: 'p_value', pValue: comparison?.mcnemar?.pValue});
-            const mcnemarMethodTooltip = JSON.stringify({type: 'generic', description: `The statistical method used was: ${comparison?.mcnemar?.method || '--'}.`});
-
-            testsTableHTML += `<tr>
-                <td data-tippy-content='${mcnemarTooltipContent}'>McNemar (Acc)</td>
-                <td data-tippy-content='${mcnemarTooltipContent}'>${formatNumber(comparison?.mcnemar?.statistic, 3, '--', true)} (df=${comparison?.mcnemar?.df || '--'})</td>
-                <td data-tippy-content='${mcnemarPValueTooltip}'>${fPVal(comparison?.mcnemar)} ${getStatisticalSignificanceSymbol(comparison?.mcnemar?.pValue)}</td>
-                <td data-tippy-content='${mcnemarMethodTooltip}'>${comparison?.mcnemar?.method || '--'}</td>
-            </tr>`;
-
-            // DeLong row
-            const delongTooltipContent = JSON.stringify({
-                type: 'comparison',
-                testKey: 'delong',
-                statistic: comparison?.delong?.Z,
-                pValue: comparison?.delong?.pValue,
-                diffAUC: comparison?.delong?.diffAUC,
-                cohortName: displayCohortForComparison,
-                method1: 'AS',
-                method2: t2ShortNameEffective
-            });
-            const delongPValueTooltip = JSON.stringify({type: 'p_value', pValue: comparison?.delong?.pValue});
-            const delongMethodTooltip = JSON.stringify({type: 'generic', description: `The statistical method used was: ${comparison?.delong?.method || '--'}.`});
-
-            testsTableHTML += `<tr>
-                <td data-tippy-content='${delongTooltipContent}'>DeLong (AUC)</td>
-                <td data-tippy-content='${delongTooltipContent}'>Z=${formatNumber(comparison?.delong?.Z, 3, '--', true)}</td>
-                <td data-tippy-content='${delongPValueTooltip}'> ${fPVal(comparison?.delong)} ${getStatisticalSignificanceSymbol(comparison?.delong?.pValue)}</td>
-                <td data-tippy-content='${delongMethodTooltip}'>${comparison?.delong?.method || '--'}</td>
-            </tr>`;
+            const fPVal = (r) => (r?.pValue !== null && !isNaN(r?.pValue)) ? (getPValueText(r.pValue, 'en', true)) : '--';
+            let testsTableHTML = `<table class="table table-sm table-striped small mb-0" id="pres-as-vs-t2-test-table"><thead class="small visually-hidden"><tr><th>Test</th><th>Statistic</th><th>p-Value</th><th>Method</th></tr></thead><tbody>`;
+            testsTableHTML += `<tr><td>McNemar (Acc)</td><td>${formatNumber(comparison?.mcnemar?.statistic, 3, '--', true)} (df=${comparison?.mcnemar?.df || '--'})</td><td>${fPVal(comparison?.mcnemar)} ${getStatisticalSignificanceSymbol(comparison?.mcnemar?.pValue)}</td><td class="text-muted">${comparison?.mcnemar?.method || '--'}</td></tr>`;
+            testsTableHTML += `<tr><td>DeLong (AUC)</td><td>Z=${formatNumber(comparison?.delong?.Z, 3, '--', true)}</td><td> ${fPVal(comparison?.delong)} ${getStatisticalSignificanceSymbol(comparison?.delong?.pValue)}</td><td class="text-muted">${comparison?.delong?.method || '--'}</td></tr>`;
             testsTableHTML += `</tbody></table>`;
             const testsCardHTML = uiComponents.createStatisticsCard('pres-as-vs-t2-test-table_card', `Statistical Comparison (AS vs. ${t2ShortNameEffective})`, testsTableHTML, false, null, [{id: `dl-pres-as-vs-t2-test-table-png`, icon: 'fa-image', format: 'png', tableId: 'pres-as-vs-t2-test-table', tableName: `Pres_ASvsT2_Tests_${comparisonCriteriaSet?.id || 'T2'}`}]);
             
@@ -217,10 +120,7 @@ const presentationTab = (() => {
                         </div>
                     </div>
                     <div class="col-lg-5 col-xl-5 presentation-comparison-col-right d-flex flex-column">
-                         <div class="card mb-3 flex-shrink-0" id="pres-t2-basis-info-card" data-tippy-content='${JSON.stringify({type: 'generic', description: APP_CONFIG.UI_TEXTS.tooltips.presentation.t2BasisInfoCard.description})}'>
-                             <div class="card-header card-header-sm">T2 Comparison Basis Details</div>
-                             <div class="card-body p-2">${comparisonInfoHTML}</div>
-                         </div>
+                         <div class="card mb-3 flex-shrink-0" id="pres-t2-basis-info-card"><div class="card-header card-header-sm">T2 Comparison Basis Details</div><div class="card-body p-2">${comparisonInfoHTML}</div></div>
                          <div class="card mb-3 flex-grow-0">${comparisonTableCardHTML}</div>
                          <div class="card flex-grow-1">${testsCardHTML}<div class="card-footer text-end p-1"><button class="btn btn-sm btn-outline-secondary" id="download-tests-as-vs-t2-md"><i class="fab fa-markdown me-1"></i>Tests (MD)</button></div></div>
                     </div>
@@ -234,7 +134,7 @@ const presentationTab = (() => {
             ? `(Global cohort: <strong>${displayGlobalCohort}</strong>. T2 comparison basis evaluated on <strong>${displayCohortForComparison}</strong>, N=${patientCountForComparison || '?'}).`
             : `(N=${patientCountForComparison || '?'})`;
 
-        return `<div class="row mb-4"><div class="col-12"><h4 class="text-center mb-1">Comparison: Avocado Sign vs. T2 Criteria</h4><p class="text-center text-muted small mb-3">Current comparison cohort: <strong>${displayCohortForComparison}</strong> ${cohortNotice}</p><div class="row justify-content-center"><div class="col-md-9 col-lg-7"><div class="input-group input-group-sm"><label class="input-group-text" for="pres-study-select" data-tippy-content='${JSON.stringify({type: 'generic', description: APP_CONFIG.UI_TEXTS.tooltips.presentation.studySelect})}'>T2 Comparison Basis:</label><select class="form-select" id="pres-study-select"><option value="" ${!selectedStudyId ? 'selected' : ''} disabled>-- Please select --</option>${appliedOptionHTML}<option value="" disabled>--- Published Criteria ---</option>${studyOptionsHTML}</select></div></div></div></div></div><div id="presentation-as-vs-t2-results">${resultsHTML}</div>`;
+        return `<div class="row mb-4"><div class="col-12"><h4 class="text-center mb-1">Comparison: Avocado Sign vs. T2 Criteria</h4><p class="text-center text-muted small mb-3">Current comparison cohort: <strong>${displayCohortForComparison}</strong> ${cohortNotice}</p><div class="row justify-content-center"><div class="col-md-9 col-lg-7"><div class="input-group input-group-sm"><label class="input-group-text" for="pres-study-select">T2 Comparison Basis:</label><select class="form-select" id="pres-study-select"><option value="" ${!selectedStudyId ? 'selected' : ''} disabled>-- Please select --</option>${appliedOptionHTML}<option value="" disabled>--- Published Criteria ---</option>${studyOptionsHTML}</select></div></div></div></div></div><div id="presentation-as-vs-t2-results">${resultsHTML}</div>`;
     }
 
     function render(view, presentationData, selectedStudyIdFromState, currentGlobalCohort, processedData, criteria, logic) {
@@ -257,7 +157,7 @@ const presentationTab = (() => {
         let viewSelectorHTML = `
             <div class="row mb-4">
                 <div class="col-12 d-flex justify-content-center">
-                    <div class="btn-group btn-group-sm" role="group" aria-label="Presentation View Selection" data-tippy-content='${JSON.stringify({type: 'generic', description: APP_CONFIG.UI_TEXTS.tooltips.presentation.viewSelect})}'>
+                    <div class="btn-group btn-group-sm" role="group" aria-label="Presentation View Selection">
                         <input type="radio" class="btn-check" name="presentationView" id="view-as-perf" autocomplete="off" value="as-pur" ${view === 'as-pur' ? 'checked' : ''}>
                         <label class="btn btn-outline-primary pres-view-btn" for="view-as-perf"><i class="fas fa-star me-1"></i> AS Performance</label>
                         <input type="radio" class="btn-check" name="presentationView" id="view-as-vs-t2" value="as-vs-t2" autocomplete="off" ${view === 'as-vs-t2' ? 'checked' : ''}>

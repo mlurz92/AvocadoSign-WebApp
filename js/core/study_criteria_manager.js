@@ -36,6 +36,16 @@ const studyT2CriteriaManager = (() => {
             return `${prefix}${value}`;
         };
 
+        const priorityOrder = ['size', 'border', 'homogeneity', 'shape', 'signal'];
+        const sortedActiveKeys = [...activeKeys].sort((a, b) => {
+            const indexA = priorityOrder.indexOf(a);
+            const indexB = priorityOrder.indexOf(b);
+            if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+        });
+
         const effectiveLogic = logic || criteria.logic || 'OR';
         if (effectiveLogic === 'KOMBINIERT') {
              const studySet = PUBLICATION_CONFIG.literatureCriteriaSets.find(s => s.logic === 'KOMBINIERT' && s.id === 'rutegard_et_al_esgar');

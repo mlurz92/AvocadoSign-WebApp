@@ -4,7 +4,7 @@ const DEFAULT_T2_CRITERIA = Object.freeze({
     shape: { active: false, value: 'round' },
     border: { active: false, value: 'irregular' },
     homogeneity: { active: false, value: 'heterogeneous' },
-    signal: { active: false, value: 'lowSignal' }
+    signal: { active: false, value: 'highSignal' }
 });
 
 const APP_CONFIG = Object.freeze({
@@ -281,7 +281,7 @@ const APP_CONFIG = Object.freeze({
                 statistics: "Provides detailed statistical analyses (performance metrics, comparisons, associations) for the globally selected cohort or a comparison of two specifically chosen cohorts. All confidence intervals (CI) are 95% CIs.",
                 presentation: "Presents analysis results in a format optimized for presentations, focusing on the comparison of the Avocado Sign with T2-based approaches (applied or literature).",
                 publication: "Generates text suggestions and materials for scientific publications.",
-                export: "Offers extensive options for downloading raw data, results, tables, and charts in various file formats."
+                export: "Offers extensive options for downloading raw data, analysis results, tables, and charts in various file formats."
             },
             dataTab: {
                 nr: "Patient's sequential ID number.",
@@ -361,127 +361,11 @@ const APP_CONFIG = Object.freeze({
                 chartAge: { name: "Age Distribution Chart", description: "Histogram showing the distribution of patient ages in the [COHORT] cohort." },
                 chartGender: { name: "Sex Distribution Chart", description: "Pie chart illustrating the distribution of male and female patients in the [COHORT] cohort." }
             },
-            diagnosticPerformanceAS: { 
-                cardTitle: "Diagnostic performance of the Avocado Sign (AS) vs. Histopathology (N) for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs.",
-                sens: { description: "<strong>Sensitivity:</strong> The proportion of actual positive cases (N+) that are correctly identified as positive by the Avocado Sign (AS+). A high sensitivity means few false negatives, which is crucial for ruling out disease.", value_interpretation: (value) => `This value indicates that ${formatPercent(value, 1)} of all patients who truly have lymph node metastases (N+) were correctly identified by the Avocado Sign.` },
-                spec: { description: "<strong>Specificity:</strong> The proportion of actual negative cases (N-) that are correctly identified as negative by the Avocado Sign (AS-). A high specificity means few false positives, important for confirming absence of disease.", value_interpretation: (value) => `This value indicates that ${formatPercent(value, 1)} of all patients who do not have lymph node metastases (N-) were correctly identified by the Avocado Sign.` },
-                ppv: { description: "<strong>Positive Predictive Value (PPV):</strong> The probability that a patient with a positive Avocado Sign (AS+) truly has lymph node metastases (N+). This tells clinicians how likely a positive test result reflects actual disease.", value_interpretation: (value) => `This value means that if a patient tests positive with the Avocado Sign, there is a ${formatPercent(value, 1)} probability that they truly have lymph node metastases.` },
-                npv: { description: "<strong>Negative Predictive Value (NPV):</strong> The probability that a patient with a negative Avocado Sign (AS-) truly does not have lymph node metastases (N-). This helps clinicians assess how reliable a negative test result is for ruling out disease.", value_interpretation: (value) => `This value means that if a patient tests negative with the Avocado Sign, there is a ${formatPercent(value, 1)} probability that they truly do not have lymph node metastases.` },
-                acc: { description: "<strong>Accuracy:</strong> The overall proportion of cases (both N+ and N-) that are correctly classified by the Avocado Sign. It is a general measure of test performance but can be misleading in imbalanced datasets.", value_interpretation: (value) => `This value shows that the Avocado Sign correctly classified ${formatPercent(value, 1)} of all patients (both N+ and N-).` },
-                balAcc: { description: "<strong>Balanced Accuracy:</strong> The average of sensitivity and specificity. This metric is particularly useful when dealing with imbalanced datasets, as it provides a more balanced assessment of performance than simple accuracy.", value_interpretation: (value) => `A balanced accuracy of ${formatPercent(value, 1)} reflects a balanced performance between correctly identifying positive and negative cases, especially useful in datasets with unequal numbers of N+ and N- patients.` },
-                f1: { description: "<strong>F1-Score:</strong> The harmonic mean of Positive Predictive Value (PPV) and Sensitivity. It is a robust measure that considers both precision and recall, providing a single score that balances false positives and false negatives. A value closer to 1 (or 100%) indicates a better overall performance.", value_interpretation: (value) => `The F1-Score of ${formatNumber(value, 3)} indicates the overall balance between the precision (PPV) and recall (Sensitivity) of the Avocado Sign. A higher value suggests better performance.` },
-                auc: { description: "<strong>Area Under the Receiver Operating Characteristic Curve (AUC):</strong> Measures the ability of the Avocado Sign to distinguish between N+ and N- patients. An AUC of 0.5 suggests no discrimination, while 1.0 indicates perfect discrimination.", value_interpretation: (value) => `An AUC of ${formatNumber(value, 2)} indicates ${getAUCInterpretation(value)} discriminatory power of the Avocado Sign in differentiating between N+ and N- patients.` },
-                ci_method: { description: "<strong>Confidence Interval (CI) Method:</strong> The statistical method used to calculate the 95% Confidence Interval for this metric. CIs provide a range within which the true population parameter is likely to fall.", value_interpretation: (method, metric) => `The 95% Confidence Interval for ${metric} was calculated using the <strong>${method}</strong> method. This interval provides a range within which the true value of the metric is estimated to lie with 95% confidence.` }
-            },
-            diagnosticPerformanceT2: { 
-                cardTitle: "Diagnostic performance of the currently applied T2 criteria vs. Histopathology (N) for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs.",
-                sens: { description: "<strong>Sensitivity:</strong> The proportion of actual positive cases (N+) that are correctly identified as positive by the T2 criteria (T2+).", value_interpretation: (value) => `This value indicates that ${formatPercent(value, 1)} of all patients who truly have lymph node metastases (N+) were correctly identified by the applied T2 criteria.` },
-                spec: { description: "<strong>Specificity:</strong> The proportion of actual negative cases (N-) that are correctly identified as negative by the T2 criteria (T2-).", value_interpretation: (value) => `This value indicates that ${formatPercent(value, 1)} of all patients who do not have lymph node metastases (N-) were correctly identified by the applied T2 criteria.` },
-                ppv: { description: "<strong>Positive Predictive Value (PPV):</strong> The probability that a patient with a positive T2 criteria result (T2+) truly has lymph node metastases (N+).", value_interpretation: (value) => `This value means that if a patient tests positive with the applied T2 criteria, there is a ${formatPercent(value, 1)} probability that they truly have lymph node metastases.` },
-                npv: { description: "<strong>Negative Predictive Value (NPV):</strong> The probability that a patient with a negative T2 criteria result (T2-) truly does not have lymph node metastases (N-).", value_interpretation: (value) => `This value means that if a patient tests negative with the applied T2 criteria, there is a ${formatPercent(value, 1)} probability that they truly do not have lymph node metastases.` },
-                acc: { description: "<strong>Accuracy:</strong> The overall proportion of cases (both N+ and N-) that are correctly classified by the T2 criteria.", value_interpretation: (value) => `This value shows that the applied T2 criteria correctly classified ${formatPercent(value, 1)} of all patients (both N+ and N-).` },
-                balAcc: { description: "<strong>Balanced Accuracy:</strong> The average of sensitivity and specificity for T2 criteria.", value_interpretation: (value) => `A balanced accuracy of ${formatPercent(value, 1)} reflects a balanced performance between correctly identifying positive and negative cases by the applied T2 criteria.` },
-                f1: { description: "<strong>F1-Score:</strong> The harmonic mean of PPV and Sensitivity for T2 criteria.", value_interpretation: (value) => `The F1-Score of ${formatNumber(value, 3)} indicates the overall balance between the precision (PPV) and recall (Sensitivity) of the applied T2 criteria.` },
-                auc: { description: "<strong>Area Under the ROC Curve (AUC):</strong> Measures the ability of the T2 criteria to distinguish between N+ and N- patients.", value_interpretation: (value) => `An AUC of ${formatNumber(value, 2)} indicates ${getAUCInterpretation(value)} discriminatory power of the applied T2 criteria in differentiating between N+ and N- patients.` },
-                ci_method: { description: "<strong>Confidence Interval (CI) Method:</strong> The statistical method used to calculate the 95% Confidence Interval for this metric.", value_interpretation: (method, metric) => `The 95% Confidence Interval for ${metric} was calculated using the <strong>${method}</strong> method.` }
-            },
-            statisticalComparisonASvsT2: { 
-                cardTitle: "Statistical comparison of the diagnostic performance of AS vs. currently applied T2 criteria (paired tests) in cohort <strong>[COHORT]</strong>.",
-                mcnemar: { description: "<strong>McNemar's Test:</strong> A non-parametric test used to compare the accuracy of two diagnostic methods (e.g., AS vs. T2) on paired data, focusing on discordant pairs (cases where one method is correct and the other is not).", value_interpretation: (statistic, pValue) => {
-                    let interpretation = `McNemar's test compares the agreement between AS and T2 criteria on correctly or incorrectly classifying patients. The statistic value of ${formatNumber(statistic, 3)} indicates the magnitude of difference in discordant pairs. `;
-                    if (pValue < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL) {
-                        interpretation += `With a p-value of ${getPValueText(pValue, true)}, there is a <strong>statistically significant difference</strong> in accuracy between the Avocado Sign and the applied T2 criteria.`;
-                    } else {
-                        interpretation += `With a p-value of ${getPValueText(pValue, true)}, there is <strong>no statistically significant difference</strong> in accuracy between the Avocado Sign and the applied T2 criteria.`;
-                    }
-                    return interpretation;
-                }},
-                delong: { description: "<strong>DeLong's Test:</strong> A non-parametric test used to compare the Area Under the Curve (AUC) of two or more Receiver Operating Characteristic (ROC) curves from paired data. It assesses if one diagnostic method is significantly better than another in its overall discriminatory ability.", value_interpretation: (z_statistic, pValue, diffAUC) => {
-                    let interpretation = `DeLong's test compares the overall discriminatory power (AUC) of the Avocado Sign and T2 criteria. The Z-statistic of ${formatNumber(z_statistic, 3)} and an AUC difference of ${formatNumber(diffAUC, 3)} indicates the magnitude and direction of the difference. `;
-                    if (pValue < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL) {
-                        interpretation += `With a p-value of ${getPValueText(pValue, true)}, there is a <strong>statistically significant difference</strong> in AUC between the Avocado Sign and the applied T2 criteria.`;
-                    } else {
-                        interpretation += `With a p-value of ${getPValueText(pValue, true)}, there is <strong>no statistically significant difference</strong> in AUC between the Avocado Sign and the applied T2 criteria.`;
-                    }
-                    return interpretation;
-                }},
-                pValue: { description: "<strong>p-value:</strong> The probability of observing a test statistic as extreme as, or more extreme than, the one observed, assuming the null hypothesis (no difference between methods) is true. A p-value less than 0.05 typically indicates statistical significance.", value_interpretation: (pValue) => {
-                    let interpretation = `The p-value of ${getPValueText(pValue, true)} indicates the probability of seeing the observed difference in test statistics if there were no true difference between the methods. `;
-                    if (pValue < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL) {
-                        interpretation += `Since P < 0.05, the result is considered <strong>statistically significant</strong>, suggesting a true difference between the compared methods.`;
-                    } else {
-                        interpretation += `Since P ≥ 0.05, the result is <strong>not statistically significant</strong>, meaning there is insufficient evidence to conclude a true difference between the methods.`;
-                    }
-                    return interpretation;
-                }}
-            },
-            associationSingleCriteria: { 
-                cardTitle: "Association between AS status or individual T2 features and N-status (+/-) in cohort <strong>[COHORT]</strong>. OR: Odds Ratio, RD: Risk Difference, φ: Phi Coefficient. All CIs are 95% CIs.",
-                or: { description: "<strong>Odds Ratio (OR):</strong> A measure of association between an exposure (e.g., presence of a feature) and an outcome (e.g., N+ status). An OR > 1 indicates a positive association, OR < 1 a negative association, and OR = 1 no association.", value_interpretation: (value, ci_lower, ci_upper, featureName) => {
-                    let interpretation = `An Odds Ratio (OR) of ${formatNumber(value, 2)} means that patients with ${featureName} have ${formatNumber(value, 2)} times the odds of being N+ compared to those without the feature. `;
-                    if (ci_lower > 1) {
-                        interpretation += `Since the 95% CI (${formatNumber(ci_lower, 2)} - ${formatNumber(ci_upper, 2)}) is entirely above 1, this indicates a <strong>statistically significant increased odds</strong> of N+ status associated with ${featureName}.`;
-                    } else if (ci_upper < 1) {
-                        interpretation += `Since the 95% CI (${formatNumber(ci_lower, 2)} - ${formatNumber(ci_upper, 2)}) is entirely below 1, this indicates a <strong>statistically significant decreased odds</strong> of N+ status associated with ${featureName}.`;
-                    } else {
-                        interpretation += `Since the 95% CI (${formatNumber(ci_lower, 2)} - ${formatNumber(ci_upper, 2)}) includes 1, there is <strong>no statistically significant association</strong> between ${featureName} and N+ status.`;
-                    }
-                    return interpretation;
-                }},
-                rd: { description: "<strong>Risk Difference (RD):</strong> The absolute difference in the probability of an outcome (e.g., N+ status) between two groups (e.g., those with and without a feature). It is a measure of absolute effect size.", value_interpretation: (value, ci_lower, ci_upper, featureName) => {
-                    let interpretation = `A Risk Difference (RD) of ${formatPercent(value, 1)} means that the probability of being N+ is ${formatPercent(Math.abs(value), 1)} ${value > 0 ? 'higher' : 'lower'} for patients with ${featureName} compared to those without it. `;
-                    if (ci_lower > 0) {
-                        interpretation += `Since the 95% CI (${formatPercent(ci_lower, 1)} - ${formatPercent(ci_upper, 1)}) is entirely above 0, this indicates a <strong>statistically significant increased risk</strong> of N+ status associated with ${featureName}.`;
-                    } else if (ci_upper < 0) {
-                        interpretation += `Since the 95% CI (${formatPercent(ci_lower, 1)} - ${formatPercent(ci_upper, 1)}) is entirely below 0, this indicates a <strong>statistically significant decreased risk</strong> of N+ status associated with ${featureName}.`;
-                    } else {
-                        interpretation += `Since the 95% CI (${formatPercent(ci_lower, 1)} - ${formatPercent(ci_upper, 1)}) includes 0, there is <strong>no statistically significant difference in risk</strong> between ${featureName} and N+ status.`;
-                    }
-                    return interpretation;
-                }},
-                phi: { description: "<strong>Phi Coefficient (φ):</strong> A measure of association for two binary variables. It ranges from -1 (perfect negative association) to +1 (perfect positive association), with 0 indicating no association. It is equivalent to Pearson's r for binary data.", value_interpretation: (value) => {
-                    let interpretation = `A Phi coefficient of ${formatNumber(value, 2)} indicates a ${getPhiInterpretation(value)} association between the feature and N-status. `;
-                    if (value > 0) {
-                        interpretation += `Positive values suggest that the presence of the feature is associated with N+ status.`;
-                    } else if (value < 0) {
-                        interpretation += `Negative values suggest that the presence of the feature is associated with N- status.`;
-                    } else {
-                        interpretation += `A value of 0 indicates no association.`;
-                    }
-                    return interpretation;
-                }},
-                pValue: { description: "<strong>p-value:</strong> For association tests, the probability that the observed association occurred by chance, assuming no true association exists. A p-value < 0.05 typically indicates a statistically significant association.", value_interpretation: (pValue, featureName) => {
-                    let interpretation = `The p-value of ${getPValueText(pValue, true)} for ${featureName} indicates the probability of observing such an association by random chance. `;
-                    if (pValue < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL) {
-                        interpretation += `Since P < 0.05, the association between ${featureName} and N-status is considered <strong>statistically significant</strong>.`;
-                    } else {
-                        interpretation += `Since P ≥ 0.05, there is <strong>no statistically significant association</strong> between ${featureName} and N-status.`;
-                    }
-                    return interpretation;
-                }},
-                test: { description: "<strong>Statistical Test:</strong> The specific statistical test used to assess the association between the feature and N-status. For binary data, Fisher's Exact Test is often used, especially with small cell counts. For continuous data, non-parametric tests like Mann-Whitney U may be applied.", value_interpretation: (testName) => `This association was evaluated using the <strong>${testName}</strong>.`}
-            },
-            cohortComparison: { 
-                cardTitle: "Statistical comparison of Accuracy and AUC (for AS and T2) between <strong>[COHORT1]</strong> and <strong>[COHORT2]</strong> (unpaired tests).",
-                zTestAUC: { description: "<strong>Z-Test (AUC - Independent Samples):</strong> A statistical test used to compare the Area Under the Curve (AUC) between two independent cohorts or groups. It assesses if one cohort's diagnostic performance (as measured by AUC) is significantly different from another's.", value_interpretation: (z_statistic, pValue, cohort1, cohort2) => {
-                    let interpretation = `The Z-statistic of ${formatNumber(z_statistic, 3)} from the Z-Test (AUC) compares the AUCs of AS or T2 criteria between ${cohort1} and ${cohort2}. `;
-                    if (pValue < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL) {
-                        interpretation += `With a p-value of ${getPValueText(pValue, true)}, there is a <strong>statistically significant difference</strong> in AUC between the two cohorts.`;
-                    } else {
-                        interpretation += `With a p-value of ${getPValueText(pValue, true)}, there is <strong>no statistically significant difference</strong> in AUC between the two cohorts.`;
-                    }
-                    return interpretation;
-                }},
-                pValue: { description: "<strong>p-value:</strong> The probability of observing a test statistic as extreme as, or more extreme than, the one observed, assuming the null hypothesis (no difference between cohorts) is true. A p-value less than 0.05 typically indicates statistical significance.", value_interpretation: (pValue) => {
-                    let interpretation = `The p-value of ${getPValueText(pValue, true)} indicates the probability of seeing the observed difference in AUCs if there were no true difference between the cohorts. `;
-                    if (pValue < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL) {
-                        interpretation += `Since P < 0.05, the result is considered <strong>statistically significant</strong>, suggesting a true difference between the compared cohorts.`;
-                    } else {
-                        interpretation += `Since P ≥ 0.05, the result is <strong>not statistically significant</strong>, meaning there is insufficient evidence to conclude a true difference.`;
-                    }
-                    return interpretation;
-                }}
-            },
+            diagnosticPerformanceAS: { cardTitle: "Diagnostic performance of the Avocado Sign (AS) vs. Histopathology (N) for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs." },
+            diagnosticPerformanceT2: { cardTitle: "Diagnostic performance of the currently applied T2 criteria vs. Histopathology (N) for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs." },
+            statisticalComparisonASvsT2: { cardTitle: "Statistical comparison of the diagnostic performance of AS vs. currently applied T2 criteria (paired tests) in cohort <strong>[COHORT]</strong>." },
+            associationSingleCriteria: { cardTitle: "Association between AS status or individual T2 features and N-status (+/-) in cohort <strong>[COHORT]</strong>. OR: Odds Ratio, RD: Risk Difference, φ: Phi Coefficient. All CIs are 95% CIs." },
+            cohortComparison: { cardTitle: "Statistical comparison of Accuracy and AUC (for AS and T2) between <strong>[COHORT1]</strong> and <strong>[COHORT2]</strong> (unpaired tests)." },
             criteriaComparisonTable: {
                 cardTitle: "Tabular performance comparison: Avocado Sign, applied T2 criteria, and literature sets for the globally selected cohort <strong>[GLOBAL_COHORT_NAME]</strong>. Literature-based sets are evaluated on their specific target cohort if different (indicated in parentheses). All values are without CIs.",
                 tableHeaderSet: "Method / Criteria Set (Eval. on Cohort N)",
@@ -490,21 +374,7 @@ const APP_CONFIG = Object.freeze({
                 tableHeaderPPV: "PPV",
                 tableHeaderNPV: "NPV",
                 tableHeaderAcc: "Acc.",
-                tableHeaderAUC: "AUC/Bal. Acc.",
-                metric_value_interpretation: (metricName, value, isPercent) => {
-                    const formattedValue = isPercent ? formatPercent(value, 1) : formatNumber(value, 2);
-                    let interpretation = `The ${metricName} for this criteria set is ${formattedValue}. `;
-                    if (metricName === "AUC/Bal. Acc.") {
-                        interpretation += `This indicates ${getAUCInterpretation(value)} discriminatory power.`;
-                    } else if (metricName === "Sens.") {
-                        interpretation += `This means ${formattedValue} of all true positive cases are correctly identified.`;
-                    } else if (metricName === "Spec.") {
-                        interpretation += `This means ${formattedValue} of all true negative cases are correctly identified.`;
-                    } else if (metricName === "Acc.") {
-                        interpretation += `This is the overall proportion of correctly classified cases.`;
-                    }
-                    return interpretation;
-                }
+                tableHeaderAUC: "AUC/Bal. Acc."
             },
             presentation: {
                 viewSelect: { description: "Select the view: <strong>Avocado Sign (Performance)</strong> for an overview of AS performance, or <strong>AS vs. T2 (Comparison)</strong> for a direct comparison of AS with a selectable T2 criteria basis." },

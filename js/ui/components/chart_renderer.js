@@ -86,7 +86,7 @@ const chartRenderer = (() => {
         chartArea.selectAll(".bar").data(bins).join("rect").attr("class", "bar").attr("x", d => x(d.x0) + 1).attr("y", y(0)).attr("width", d => Math.max(0, x(d.x1) - x(d.x0) - 1)).attr("height", 0).style("fill", barColor).style("opacity", 0.8).attr("rx", 1).attr("ry", 1)
             .on("mouseover", (event, d) => {
                 tooltip.transition().duration(50).style("opacity", .95);
-                tooltip.html(`<strong>Age Range:</strong> ${formatNumber(d.x0, 0)}–${formatNumber(d.x1, 0)} years<br><strong>Patients:</strong> ${d.length}`).style("left", (event.pageX + 10) + "px").style("top", (event.pageY - 15) + "px");
+                tooltip.html(`Age: ${formatNumber(d.x0, 0)}-${formatNumber(d.x1, 0)}<br>Count: ${d.length}`).style("left", (event.pageX + 10) + "px").style("top", (event.pageY - 15) + "px");
                 d3.select(event.currentTarget).style("opacity", 1).style("stroke", "#333").style("stroke-width", 0.5);
             })
             .on("mouseout", (event) => {
@@ -136,7 +136,10 @@ const chartRenderer = (() => {
                 tooltip.transition().duration(200).style("opacity", 0);
                 d3.select(this).transition().duration(100).style("opacity", 0.85).attr("transform", "scale(1)");
             })
-            .transition().duration(APP_CONFIG.CHART_SETTINGS.ANIMATION_DURATION_MS).ease(d3.easeCubicOut).attr("d", d => arcGenerator(d)); // Removed duplicate attr("y", ...)
+            .transition().duration(APP_CONFIG.CHART_SETTINGS.ANIMATION_DURATION_MS).ease(d3.easeCubicOut).attrTween("d", d => {
+                const i = d3.interpolate({startAngle: d.startAngle, endAngle: d.startAngle}, d);
+                return t => arcGenerator(i(t));
+            });
         
         if (setupOptions.legendBelow && legendSpaceY > 0) {
             const legendGroup = svg.append("g").attr("class", "legend pie-legend").attr("transform", `translate(${margin.left}, ${margin.top + innerHeight + 15})`).attr("font-size", APP_CONFIG.CHART_SETTINGS.LEGEND_FONT_SIZE).attr("text-anchor", "start");
@@ -146,7 +149,7 @@ const chartRenderer = (() => {
                 const item = d3.select(this);
                 item.append("rect").attr("x", 0).attr("y", 0).attr("width", 10).attr("height", 10).attr("fill", color(d.label));
                 item.append("text").attr("x", 14).attr("y", 5).attr("dy", "0.35em").text(`${d.label} (${formatNumber(d.value, 0)})`);
-                const itemWidth = this.getBBox().width + 25; // Add some padding between items
+                const itemWidth = this.getBBox().width + 15;
                 if (i > 0 && currentX + itemWidth > innerWidth) { currentX = 0; currentY += 18; }
                 item.attr("transform", `translate(${currentX}, ${currentY})`);
                 currentX += itemWidth;
@@ -181,31 +184,13 @@ const chartRenderer = (() => {
         }
         
         const metricGroup = chartArea.selectAll(".metric-group").data(chartData).join("g").attr("class", "metric-group").attr("transform", d => `translate(${x0(d.metric)},0)`);
-        metricGroup.selectAll("rect").data(d => subgroups.map(key => ({
-                key: key, 
-                value: d[key], 
-                metric: d.metric,
-                // Pass placeholder CI values for tooltip interpretation, actual CIs are in tables
-                ci_lower: (d.metric === 'AUC' || d.metric === 'F1-Score') ? 0.0 : 0.0, 
-                ci_upper: (d.metric === 'AUC' || d.metric === 'F1-Score') ? 1.0 : 1.0,
-                method: 'NA' // Method not available for chart data directly
-            }))).join("rect").attr("class", d => `bar bar-${d.key.toLowerCase()}`).attr("x", d => x1(d.key)).attr("y", y(0)).attr("width", x1.bandwidth()).attr("height", 0).attr("fill", d => color(d.key)).style("opacity", 0.9).attr("rx", 1).attr("ry", 1)
+        metricGroup.selectAll("rect").data(d => subgroups.map(key => ({key: key, value: d[key], metric: d.metric}))).join("rect").attr("class", d => `bar bar-${d.key.toLowerCase()}`).attr("x", d => x1(d.key)).attr("y", y(0)).attr("width", x1.bandwidth()).attr("height", 0).attr("fill", d => color(d.key)).style("opacity", 0.9).attr("rx", 1).attr("ry", 1)
             .on("mouseover", function(event, d) {
                 tooltip.transition().duration(50).style("opacity", .95);
-                
-                // Use getTooltipContent for dynamic interpretation
-                const tooltipHtmlContent = getTooltipContent('metric', {
-                    metricKey: d.metric === 'AUC' ? 'auc' : d.metric === 'F1-Score' ? 'f1' : d.metric.toLowerCase().replace('.', ''), // Convert 'Sens.' to 'sens' etc.
-                    value: d.value,
-                    ci_lower: d.ci_lower,
-                    ci_upper: d.ci_upper,
-                    metricType: d.key, // 'AS' or 'T2'
-                    method: d.method // 'NA' in this case, interpretation handles it
-                });
-
-                tooltip.html(tooltipHtmlContent)
-                    .style("left", (event.pageX + 10) + "px")
-                    .style("top", (event.pageY - 15) + "px");
+                const displayName = subgroupDisplayNames[d.key] || d.key;
+                const digits = (d.metric === 'AUC' || d.metric === 'F1') ? 3 : 1;
+                const formattedValue = (d.metric === 'AUC' || d.metric === 'F1') ? formatNumber(d.value, digits) : formatPercent(d.value, digits);
+                tooltip.html(`<strong>${d.metric} (${displayName}):</strong> ${formattedValue}`).style("left", (event.pageX + 10) + "px").style("top", (event.pageY - 15) + "px");
                 d3.select(this).style("opacity", 1).style("stroke", "#333").style("stroke-width", 1);
             })
             .on("mouseout", function() {
@@ -291,18 +276,7 @@ const chartRenderer = (() => {
             .attr("fill", APP_CONFIG.CHART_SETTINGS.AS_COLOR)
             .on("mouseover", (event) => {
                 tooltip.transition().duration(50).style("opacity", .95);
-                
-                // Use getTooltipContent for dynamic interpretation
-                const tooltipHtmlContent = getTooltipContent('metric', {
-                    metricKey: 'auc', 
-                    value: auc,
-                    ci_lower: performance.auc?.ci?.lower, 
-                    ci_upper: performance.auc?.ci?.upper,
-                    metricType: methodName, 
-                    method: performance.auc?.method
-                });
-
-                tooltip.html(tooltipHtmlContent)
+                tooltip.html(`<strong>${methodName}</strong><br>Sensitivity: ${formatPercent(sensitivity, 1)}<br>1-Specificity: ${formatPercent(oneMinusSpecificity, 1)}<br>AUC: ${formatNumber(auc, 2)}`)
                     .style("left", (event.pageX + 10) + "px")
                     .style("top", (event.pageY - 15) + "px");
             })

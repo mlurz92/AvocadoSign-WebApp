@@ -282,13 +282,13 @@ const statisticsService = (() => {
         const U = Math.min(U1, U2);
 
         const meanU = (n1 * n2) / 2.0;
-        
         const N = n1 + n2;
+
         const tieCounts = {};
         ranks.filter(r => !isNaN(r)).forEach(r => { tieCounts[r] = (tieCounts[r] || 0) + 1; });
-        const tieCorrectionTerm = Object.values(tieCounts).reduce((sum, t) => sum + (t * t * t - t), 0);
-        
-        const varU = (n1 * n2 / (12 * N * (N - 1))) * ((N * N * N - N) - tieCorrectionTerm);
+        const tieCorrection = Object.values(tieCounts).reduce((sum, t) => sum + (t * t * t - t), 0);
+
+        const varU = (n1 * n2 / (12 * N * (N - 1))) * ((N * N * N - N) - tieCorrection);
 
         if (varU <= 0) return { pValue: 1.0, U: U, Z: 0, testName: "Mann-Whitney U (Zero Variance)" };
 
