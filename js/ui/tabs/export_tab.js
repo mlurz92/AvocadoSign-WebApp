@@ -16,7 +16,7 @@ const exportTab = (() => {
         return `
             <div class="col-md-6 mb-3">
                 <div class="d-flex align-items-center">
-                    <button id="export-${config.id}" class="btn btn-primary btn-sm me-3" data-export-type="${config.id}" data-tippy-content="${description}">
+                    <button id="export-${config.id}" class="btn btn-primary btn-sm me-3" data-export-type="${config.id}" data-tippy-key="exportTab.${tooltipConfigKey}">
                         <i class="fas ${config.icon} fa-fw me-2"></i>${config.label}
                     </button>
                     <div>
