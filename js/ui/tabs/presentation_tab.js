@@ -10,30 +10,31 @@ const presentationTab = (() => {
         ];
 
         const currentCohortName = getCohortDisplayName(cohort);
-        const displayPatientCount = patientCount > 0 ? patientCount : (statsCurrentCohort?.matrix?.tp + statsCurrentCohort?.matrix?.fp + statsCurrentCohort?.matrix?.fn + statsCurrentCohort?.matrix?.tn) || 0;
-        const hasDataForCurrent = !!(statsCurrentCohort && statsCurrentCohort.matrix && displayPatientCount > 0);
+        const displayPatientCount = patientCount > 0 ? patientCount : (statsCurrentCohort?.descriptive?.patientCount) || 0;
+        const hasDataForCurrent = !!(statsCurrentCohort && statsCurrentCohort.descriptive && displayPatientCount > 0);
 
         const createPerfTableRow = (stats, cohortKey) => {
             const cohortDisplayName = getCohortDisplayName(cohortKey);
+            const perfStats = stats?.performanceAS;
             const na = '--';
             const fCI_p = (m, k) => { 
                 const d = (k === 'auc') ? 2 : ((k === 'f1') ? 3 : 1); 
                 const p = !(k === 'auc' || k === 'f1'); 
                 return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, d, p, na); 
             };
-            if (!stats || typeof stats.matrix !== 'object') {
-                const nPatients = stats?.patientCount || '?';
+            if (!perfStats || typeof perfStats.matrix !== 'object') {
+                const nPatients = stats?.descriptive?.patientCount ?? '?';
                 return `<tr><td class="fw-bold">${cohortDisplayName} (N=${nPatients})</td><td colspan="6" class="text-muted text-center">Data missing</td></tr>`;
             }
-            const count = stats.matrix ? (stats.matrix.tp + stats.matrix.fp + stats.matrix.fn + stats.matrix.tn) : 0;
+            const count = perfStats.matrix ? (perfStats.matrix.tp + perfStats.matrix.fp + perfStats.matrix.fn + perfStats.matrix.tn) : 0;
             return `<tr>
                         <td class="fw-bold">${cohortDisplayName} (N=${count})</td>
-                        <td data-tippy-content="${getInterpretationTooltip('sens', stats.sens)}">${fCI_p(stats.sens, 'sens')}</td>
-                        <td data-tippy-content="${getInterpretationTooltip('spec', stats.spec)}">${fCI_p(stats.spec, 'spec')}</td>
-                        <td data-tippy-content="${getInterpretationTooltip('ppv', stats.ppv)}">${fCI_p(stats.ppv, 'ppv')}</td>
-                        <td data-tippy-content="${getInterpretationTooltip('npv', stats.npv)}">${fCI_p(stats.npv, 'npv')}</td>
-                        <td data-tippy-content="${getInterpretationTooltip('acc', stats.acc)}">${fCI_p(stats.acc, 'acc')}</td>
-                        <td data-tippy-content="${getInterpretationTooltip('auc', stats.auc)}">${fCI_p(stats.auc, 'auc')}</td>
+                        <td data-tippy-content="${getInterpretationTooltip('sens', perfStats.sens)}">${fCI_p(perfStats.sens, 'sens')}</td>
+                        <td data-tippy-content="${getInterpretationTooltip('spec', perfStats.spec)}">${fCI_p(perfStats.spec, 'spec')}</td>
+                        <td data-tippy-content="${getInterpretationTooltip('ppv', perfStats.ppv)}">${fCI_p(perfStats.ppv, 'ppv')}</td>
+                        <td data-tippy-content="${getInterpretationTooltip('npv', perfStats.npv)}">${fCI_p(perfStats.npv, 'npv')}</td>
+                        <td data-tippy-content="${getInterpretationTooltip('acc', perfStats.acc)}">${fCI_p(perfStats.acc, 'acc')}</td>
+                        <td data-tippy-content="${getInterpretationTooltip('auc', perfStats.auc)}">${fCI_p(perfStats.auc, 'auc')}</td>
                     </tr>`;
         };
         const tableId = "pres-as-perf-table";
