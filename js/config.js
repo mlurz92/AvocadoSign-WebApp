@@ -261,6 +261,15 @@ const APP_CONFIG = Object.freeze({
                 pValue: { title: 'p-Value', text: 'The probability of obtaining test results at least as extreme as the results actually observed, under the assumption that the null hypothesis is correct. A smaller p-value (typically < 0.05) indicates strong evidence against the null hypothesis.' }
             },
             interpretation: {
+                notAvailable: 'Data for this metric is not available or could not be calculated for the current selection.',
+                sens: 'A Sensitivity of <strong>{value}</strong> indicates that the test correctly identified <strong>{value}</strong> of all true positive cases (N+).<br>The 95% CI from <strong>{lower}</strong> to <strong>{upper}</strong> suggests the true sensitivity is likely within this range.',
+                spec: 'A Specificity of <strong>{value}</strong> indicates that the test correctly identified <strong>{value}</strong> of all true negative cases (N-).<br>The 95% CI from <strong>{lower}</strong> to <strong>{upper}</strong> suggests the true specificity is likely within this range.',
+                ppv: 'A Positive Predictive Value of <strong>{value}</strong> means that if a patient tests positive, there is a <strong>{value}</strong> probability they are truly N+.<br>The 95% CI is from <strong>{lower}</strong> to <strong>{upper}</strong>.',
+                npv: 'A Negative Predictive Value of <strong>{value}</strong> means that if a patient tests negative, there is a <strong>{value}</strong> probability they are truly N-.<br>The 95% CI is from <strong>{lower}</strong> to <strong>{upper}</strong>.',
+                acc: 'An Accuracy of <strong>{value}</strong> means the test provided the correct classification for <strong>{value}</strong> of all patients.<br>The 95% CI is from <strong>{lower}</strong> to <strong>{upper}</strong>.',
+                balAcc: 'A Balanced Accuracy of <strong>{value}</strong> represents the averaged proportion of correctly classified positive and negative cases. An AUC of <strong>{value}</strong> indicates a <strong>{strength}</strong> discriminatory ability for this binary test.',
+                f1: 'An F1-Score of <strong>{value}</strong> indicates the harmonic mean of PPV and sensitivity. A score of 1.0 is perfect.',
+                auc: 'An AUC of <strong>{value}</strong> indicates a <strong>{strength}</strong> overall ability of the test to discriminate between N+ and N- patients.',
                 pValue: {
                     default: "A p-value of {pValue} indicates that {significanceText}. This means there is a {strength} statistical evidence of a difference between {comparison} for the metric '{metric}'.",
                     mcnemar: "A p-value of {pValue} for McNemar's test suggests that the difference in accuracy between {method1} and {method2} is {significanceText}. This indicates a {strength} evidence of a difference in their classification agreement with the reference standard.",
