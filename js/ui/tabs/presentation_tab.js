@@ -41,7 +41,15 @@ const presentationTab = (() => {
                 <div class="card h-100">
                     <div class="card-header d-flex justify-content-between align-items-center"><span>AS Performance vs. N for All Cohorts</span>${uiComponents.createHeaderButtonHTML([{id: `dl-${tableId}-png`, icon: 'fa-image', format: 'png', tableId: tableId, tableName: `Pres_AS_Perf_Overview`}], tableId, "AS_Performance_Overview")}</div>
                     <div class="card-body p-0"><div class="table-responsive"><table class="table table-striped table-hover table-sm small mb-0" id="${tableId}">
-                        <thead class="small"><tr><th>Cohort</th><th>Sens. (95% CI)</th><th>Spec. (95% CI)</th><th>PPV (95% CI)</th><th>NPV (95% CI)</th><th>Acc. (95% CI)</th><th>AUC (95% CI)</th></tr></thead>
+                        <thead class="small"><tr>
+                            <th data-tippy-content="Patient cohort and its size (N).">Cohort</th>
+                            <th data-tippy-content="${getDefinitionTooltip('sens')}">Sens. (95% CI)</th>
+                            <th data-tippy-content="${getDefinitionTooltip('spec')}">Spec. (95% CI)</th>
+                            <th data-tippy-content="${getDefinitionTooltip('ppv')}">PPV (95% CI)</th>
+                            <th data-tippy-content="${getDefinitionTooltip('npv')}">NPV (95% CI)</th>
+                            <th data-tippy-content="${getDefinitionTooltip('acc')}">Acc. (95% CI)</th>
+                            <th data-tippy-content="${getDefinitionTooltip('auc')}">AUC (95% CI)</th>
+                        </tr></thead>
                         <tbody>${cohortsData.map(c => createPerfTableRow(c.stats, c.id)).join('')}</tbody>
                     </table></div></div>
                     <div class="card-footer text-end p-1">
@@ -94,15 +102,18 @@ const presentationTab = (() => {
                 const digits = (key === 'auc') ? 2 : ((key === 'f1') ? 3 : 1);
                 const valAS = formatCI(performanceAS[key]?.value, performanceAS[key]?.ci?.lower, performanceAS[key]?.ci?.upper, digits, isRate, '--');
                 const valT2 = formatCI(performanceT2[key]?.value, performanceT2[key]?.ci?.lower, performanceT2[key]?.ci?.upper, digits, isRate, '--');
-                comparisonTableHTML += `<tr><td>${metricNames[key]}</td><td>${valAS}</td><td>${valT2}</td></tr>`;
+                comparisonTableHTML += `<tr><td data-tippy-content="${getDefinitionTooltip(key)}">${metricNames[key]}</td><td>${valAS}</td><td>${valT2}</td></tr>`;
             });
             comparisonTableHTML += `</tbody></table></div>`;
             const comparisonTableCardHTML = uiComponents.createStatisticsCard('pres-as-vs-t2-comp-table_card', `Performance Metrics (AS vs. ${t2ShortNameEffective})`, comparisonTableHTML, false, null, [{id: 'dl-pres-as-vs-t2-comp-table-png', icon: 'fa-image', format: 'png', tableId: 'pres-as-vs-t2-comp-table', tableName: `Pres_ASvsT2_Metrics_${comparisonCriteriaSet?.id || 'T2'}`}]);
 
-            const fPVal = (r) => (r?.pValue !== null && !isNaN(r?.pValue)) ? (getPValueText(r.pValue, 'en', true)) : '--';
+            const fPVal = (r) => (r?.pValue !== null && !isNaN(r?.pValue)) ? (getPValueText(r.pValue, false)) : '--';
+            const mcnemarTooltip = getInterpretationTooltip('pValue', comparison.mcnemar, { method1: 'AS', method2: t2ShortNameEffective, metricName: 'Accuracy'});
+            const delongTooltip = getInterpretationTooltip('pValue', comparison.delong, { method1: 'AS', method2: t2ShortNameEffective, metricName: 'AUC'});
+            
             let testsTableHTML = `<table class="table table-sm table-striped small mb-0" id="pres-as-vs-t2-test-table"><thead class="small visually-hidden"><tr><th>Test</th><th>Statistic</th><th>p-Value</th><th>Method</th></tr></thead><tbody>`;
-            testsTableHTML += `<tr><td>McNemar (Acc)</td><td>${formatNumber(comparison?.mcnemar?.statistic, 3, '--', true)} (df=${comparison?.mcnemar?.df || '--'})</td><td>${fPVal(comparison?.mcnemar)} ${getStatisticalSignificanceSymbol(comparison?.mcnemar?.pValue)}</td><td class="text-muted">${comparison?.mcnemar?.method || '--'}</td></tr>`;
-            testsTableHTML += `<tr><td>DeLong (AUC)</td><td>Z=${formatNumber(comparison?.delong?.Z, 3, '--', true)}</td><td> ${fPVal(comparison?.delong)} ${getStatisticalSignificanceSymbol(comparison?.delong?.pValue)}</td><td class="text-muted">${comparison?.delong?.method || '--'}</td></tr>`;
+            testsTableHTML += `<tr><td data-tippy-content="${getDefinitionTooltip('mcnemar')}">McNemar (Acc)</td><td>${formatNumber(comparison?.mcnemar?.statistic, 3, '--', true)} (df=${comparison?.mcnemar?.df || '--'})</td><td data-tippy-content="${mcnemarTooltip}">${fPVal(comparison?.mcnemar)} ${getStatisticalSignificanceSymbol(comparison?.mcnemar?.pValue)}</td><td class="text-muted">${comparison?.mcnemar?.method || '--'}</td></tr>`;
+            testsTableHTML += `<tr><td data-tippy-content="${getDefinitionTooltip('delong')}">DeLong (AUC)</td><td>Z=${formatNumber(comparison?.delong?.Z, 3, '--', true)}</td><td data-tippy-content="${delongTooltip}"> ${fPVal(comparison?.delong)} ${getStatisticalSignificanceSymbol(comparison?.delong?.pValue)}</td><td class="text-muted">${comparison?.delong?.method || '--'}</td></tr>`;
             testsTableHTML += `</tbody></table>`;
             const testsCardHTML = uiComponents.createStatisticsCard('pres-as-vs-t2-test-table_card', `Statistical Comparison (AS vs. ${t2ShortNameEffective})`, testsTableHTML, false, null, [{id: `dl-pres-as-vs-t2-test-table-png`, icon: 'fa-image', format: 'png', tableId: 'pres-as-vs-t2-test-table', tableName: `Pres_ASvsT2_Tests_${comparisonCriteriaSet?.id || 'T2'}`}]);
             
@@ -177,7 +188,7 @@ const presentationTab = (() => {
                 const chartId = "pres-as-perf-chart";
                 const dataForROC = dataProcessor.filterDataByCohort(processedData, presentationData.cohort);
                 if (document.getElementById(chartId) && dataForROC.length > 0) {
-                    chartRenderer.renderDiagnosticPerformanceChart(dataForROC, 'asStatus', 'nStatus', chartId, UI_TEXTS.legendLabels.avocadoSign);
+                    chartRenderer.renderDiagnosticPerformanceChart(dataForROC, 'asStatus', 'nStatus', chartId, APP_CONFIG.UI_TEXTS.legendLabels.avocadoSign);
                 } else if (document.getElementById(chartId)) {
                     uiManager.updateElementHTML(chartId, `<p class="text-center text-muted p-3">No data for chart (${getCohortDisplayName(presentationData.cohort)}).</p>`);
                 }
