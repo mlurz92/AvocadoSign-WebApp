@@ -136,7 +136,7 @@ const chartRenderer = (() => {
                 tooltip.transition().duration(200).style("opacity", 0);
                 d3.select(this).transition().duration(100).style("opacity", 0.85).attr("transform", "scale(1)");
             })
-            .transition().duration(APP_CONFIG.CHART_SETTINGS.ANIMATION_DURATION_MS).ease(d3.easeCubicOut).attr("y", d => y(0)).attr("y", d => y(d.length)).attr("d", d => arcGenerator(d));
+            .transition().duration(APP_CONFIG.CHART_SETTINGS.ANIMATION_DURATION_MS).ease(d3.easeCubicOut).attr("d", d => arcGenerator(d)); // Removed duplicate attr("y", ...)
         
         if (setupOptions.legendBelow && legendSpaceY > 0) {
             const legendGroup = svg.append("g").attr("class", "legend pie-legend").attr("transform", `translate(${margin.left}, ${margin.top + innerHeight + 15})`).attr("font-size", APP_CONFIG.CHART_SETTINGS.LEGEND_FONT_SIZE).attr("text-anchor", "start");
