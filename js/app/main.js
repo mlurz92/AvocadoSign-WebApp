@@ -154,10 +154,10 @@ class App {
         if (tabId === 'presentation') {
             const currentPresentationView = state.getPresentationView();
             const selectedStudyId = state.getPresentationStudyId();
-            const cohortForPresentation = state.getCurrentCohort(); 
-            const filteredDataForPresentation = dataProcessor.filterDataByCohort(this.processedData, cohortForPresentation);
+            const globalCohort = state.getCurrentCohort(); 
+            const filteredDataForGlobalCohort = dataProcessor.filterDataByCohort(this.processedData, globalCohort);
             
-            const statsCurrentCohort = this.allPublicationStats[cohortForPresentation];
+            const statsCurrentCohort = this.allPublicationStats[globalCohort];
             const statsOverall = this.allPublicationStats[APP_CONFIG.COHORTS.OVERALL.id];
             const statsSurgeryAlone = this.allPublicationStats[APP_CONFIG.COHORTS.SURGERY_ALONE.id];
             const statsNeoadjuvantTherapy = this.allPublicationStats[APP_CONFIG.COHORTS.NEOADJUVANT.id];
@@ -166,6 +166,8 @@ class App {
             let comparisonCriteriaSet = null;
             let t2ShortName = null;
             let comparisonASvsT2 = null;
+            let cohortForComparison = globalCohort;
+            let patientCountForComparison = filteredDataForGlobalCohort.length;
 
             if (selectedStudyId === APP_CONFIG.SPECIAL_IDS.APPLIED_CRITERIA_STUDY_ID) {
                 performanceT2 = statsCurrentCohort?.performanceT2Applied;
@@ -177,7 +179,7 @@ class App {
                     logic: logic,
                     studyInfo: {
                         reference: 'User-defined criteria',
-                        patientCohort: `Current: ${getCohortDisplayName(cohortForPresentation)} (N=${filteredDataForPresentation.length})`,
+                        patientCohort: `Current: ${getCohortDisplayName(globalCohort)} (N=${filteredDataForGlobalCohort.length})`,
                         investigationType: 'Interactive analysis',
                         focus: 'Custom T2 criteria',
                         keyCriteriaSummary: studyT2CriteriaManager.formatCriteriaForDisplay(criteria, logic, false)
@@ -188,20 +190,21 @@ class App {
             } else if (selectedStudyId) {
                 const studySet = studyT2CriteriaManager.getStudyCriteriaSetById(selectedStudyId);
                 if (studySet) {
-                    const cohortForStudySet = studySet.applicableCohort || APP_CONFIG.COHORTS.OVERALL.id;
-                    const statsForStudyCohort = this.allPublicationStats[cohortForStudySet];
+                    cohortForComparison = studySet.applicableCohort || APP_CONFIG.COHORTS.OVERALL.id;
+                    const statsForStudyCohort = this.allPublicationStats[cohortForComparison];
                     
                     performanceT2 = statsForStudyCohort?.performanceT2Literature?.[selectedStudyId];
                     comparisonCriteriaSet = studySet;
                     t2ShortName = studySet.displayShortName || studySet.name;
                     comparisonASvsT2 = statsForStudyCohort?.[`comparisonASvsT2_literature_${selectedStudyId}`];
+                    patientCountForComparison = dataProcessor.filterDataByCohort(this.processedData, cohortForComparison).length;
                 }
             }
 
             currentPresentationData = {
                 view: currentPresentationView,
-                cohort: cohortForPresentation,
-                patientCount: filteredDataForPresentation.length,
+                cohort: globalCohort,
+                patientCount: filteredDataForGlobalCohort.length,
                 statsCurrentCohort: statsCurrentCohort,
                 statsGesamt: statsOverall,
                 statsSurgeryAlone: statsSurgeryAlone,
@@ -210,8 +213,8 @@ class App {
                 performanceT2: performanceT2,
                 comparison: comparisonASvsT2,
                 comparisonCriteriaSet: comparisonCriteriaSet,
-                cohortForComparison: selectedStudyId ? (comparisonCriteriaSet?.applicableCohort || cohortForPresentation) : cohortForPresentation,
-                patientCountForComparison: selectedStudyId ? (dataProcessor.filterDataByCohort(this.processedData, comparisonCriteriaSet?.applicableCohort || cohortForPresentation).length) : filteredDataForPresentation.length,
+                cohortForComparison: cohortForComparison,
+                patientCountForComparison: patientCountForComparison,
                 t2ShortName: t2ShortName
             };
             this.presentationDataForExport = currentPresentationData;
