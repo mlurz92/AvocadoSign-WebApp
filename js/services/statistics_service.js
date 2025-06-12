@@ -97,6 +97,11 @@ const statisticsService = (() => {
         return result;
     }
 
+    function logFactorial(n) {
+        if (n < 0 || !Number.isInteger(n)) return NaN;
+        return logGamma(n + 1);
+    }
+
     function regularizedGammaIncomplete(a, x) {
         if (a <= 0 || x < 0) return NaN;
         if (x === 0) return 0.0;
@@ -144,6 +149,39 @@ const statisticsService = (() => {
         };
     }
 
+    function calculateORCI(a, b, c, d, alpha = APP_CONFIG.STATISTICAL_CONSTANTS.BOOTSTRAP_CI_ALPHA) {
+        const defaultReturn = { value: NaN, ci: null, method: 'Woolf Logit (Adjusted)' };
+        if (a < 0 || b < 0 || c < 0 || d < 0) return defaultReturn;
+        const or_raw = (b === 0 || c === 0) ? NaN : (a * d) / (b * c);
+
+        const a_adj = a + 0.5, b_adj = b + 0.5, c_adj = c + 0.5, d_adj = d + 0.5;
+        const or_adj = (a_adj * d_adj) / (b_adj * c_adj);
+
+        if (or_adj <= 0 || !isFinite(or_adj)) {
+             return { ...defaultReturn, value: or_raw };
+        }
+        const logOR = Math.log(or_adj);
+        const seLogOR = Math.sqrt(1 / a_adj + 1 / b_adj + 1 / c_adj + 1 / d_adj);
+        const z = Math.abs(inverseNormalCDF(alpha / 2.0));
+        if (!isFinite(z) || isNaN(seLogOR) || seLogOR <= 0) {
+            return { ...defaultReturn, value: or_raw };
+        }
+        return { value: or_raw, ci: { lower: Math.exp(logOR - z * seLogOR), upper: Math.exp(logOR + z * seLogOR) }, method: 'Woolf Logit (Haldane-Anscombe correction)' };
+    }
+
+    function calculateRDCI(a, b, c, d, alpha = APP_CONFIG.STATISTICAL_CONSTANTS.BOOTSTRAP_CI_ALPHA) {
+        const defaultReturn = { value: NaN, ci: null, method: 'Wald' };
+        if (a < 0 || b < 0 || c < 0 || d < 0) return defaultReturn;
+        const n1 = a + b, n2 = c + d;
+        if (n1 === 0 || n2 === 0) return defaultReturn;
+        const p1 = a / n1, p2 = c / n2;
+        const rd = p1 - p2;
+        const seRD = Math.sqrt((p1 * (1 - p1)) / n1 + (p2 * (1 - p2)) / n2);
+        const z = Math.abs(inverseNormalCDF(alpha / 2.0));
+        if (!isFinite(z) || isNaN(seRD) || seRD <= 0) return { ...defaultReturn, value: rd };
+        return { value: rd, ci: { lower: Math.max(-1.0, rd - z * seRD), upper: Math.min(1.0, rd + z * seRD) }, method: 'Wald' };
+    }
+
     function bootstrapCI(data, statisticFn, nBoot = APP_CONFIG.STATISTICAL_CONSTANTS.BOOTSTRAP_CI_REPLICATIONS, alpha = APP_CONFIG.STATISTICAL_CONSTANTS.BOOTSTRAP_CI_ALPHA) {
         const defaultReturn = { lower: NaN, upper: NaN, method: APP_CONFIG.STATISTICAL_CONSTANTS.DEFAULT_CI_METHOD_EFFECTSIZE, se: NaN };
         if (!Array.isArray(data) || data.length < 2) return defaultReturn;
@@ -175,6 +213,89 @@ const statisticsService = (() => {
         const statistic = Math.pow(Math.abs(b - c) - (useCorrection ? 1 : 0), 2) / n;
         const pValue = 1.0 - chiSquareCDF(statistic, 1);
         return { pValue, statistic, df: 1, method: `McNemar's Test${useCorrection ? ' (Yates-corrected)' : ''}` };
+    }
+
+    function logProbHypergeometric(k, N, K, n) {
+        if (k < 0 || n < 0 || K < 0 || N < 0 || k > n || k > K || (n - k) > (N - K) || n > N) return -Infinity;
+        return logFactorial(K) - logFactorial(k) - logFactorial(K - k)
+             + logFactorial(N - K) - logFactorial(n - k) - logFactorial(N - K - (n - k))
+             - (logFactorial(N) - logFactorial(n) - logFactorial(N - n));
+    }
+
+    function calculateFisherExactTest(a, b, c, d) {
+        if (a < 0 || b < 0 || c < 0 || d < 0) return { pValue: NaN, method: "Fisher's Exact Test (Invalid Input)" };
+        const N = a + b + c + d;
+        if (N === 0) return { pValue: 1.0, method: "Fisher's Exact Test (No Data)" };
+
+        const pObservedLog = logProbHypergeometric(a, N, a + c, a + b);
+        if (!isFinite(pObservedLog)) return { pValue: NaN, method: "Fisher's Exact Test (Numerical Error)" };
+
+        let pValue = 0.0;
+        const minVal = Math.max(0, (a + b) + (a + c) - N);
+        const maxVal = Math.min(a + b, a + c);
+
+        for (let i = minVal; i <= maxVal; i++) {
+            const current_a = i;
+            const current_b = (a + b) - current_a;
+            const current_c = (a + c) - current_a;
+            const current_d = (b + d) - current_c;
+
+            if (current_a >= 0 && current_b >= 0 && current_c >= 0 && current_d >= 0) {
+                const pCurrentLog = logProbHypergeometric(current_a, N, a + c, a + b);
+                if (isFinite(pCurrentLog) && pCurrentLog <= pObservedLog + 1e-9) {
+                    pValue += Math.exp(pCurrentLog);
+                }
+            }
+        }
+        return { pValue: Math.min(1.0, pValue), method: "Fisher's Exact Test" };
+    }
+
+    function rankData(arr) {
+        const sorted = arr.map((value, index) => ({ value: parseFloat(value), originalIndex: index }))
+            .filter(item => !isNaN(item.value) && isFinite(item.value)).sort((a, b) => a.value - b.value);
+        const ranks = new Array(arr.length).fill(NaN);
+        if (sorted.length === 0) return ranks;
+        for (let i = 0; i < sorted.length; ) {
+            let j = i;
+            while (j < sorted.length - 1 && sorted[j].value === sorted[j + 1].value) j++;
+            const avgRank = (i + j + 2) / 2.0;
+            for (let k = i; k <= j; k++) ranks[sorted[k].originalIndex] = avgRank;
+            i = j + 1;
+        }
+        return ranks;
+    }
+
+    function calculateMannWhitneyUTest(sample1, sample2) {
+        const defaultReturn = { pValue: NaN, U: NaN, Z: NaN, testName: "Mann-Whitney U (Invalid Input)" };
+        const s1 = sample1.map(x => parseFloat(x)).filter(x => !isNaN(x) && isFinite(x));
+        const s2 = sample2.map(x => parseFloat(x)).filter(x => !isNaN(x) && isFinite(x));
+        const n1 = s1.length, n2 = s2.length;
+        if (n1 === 0 || n2 === 0) return { ...defaultReturn, testName: "Mann-Whitney U (No data in one/both samples)" };
+
+        const combined = [...s1, ...s2];
+        const ranks = rankData(combined);
+
+        const R1 = ranks.slice(0, n1).filter(r => !isNaN(r)).reduce((sum, r) => sum + r, 0);
+
+        const U1 = n1 * n2 + (n1 * (n1 + 1)) / 2.0 - R1;
+        const U2 = n1 * n2 - U1;
+        const U = Math.min(U1, U2);
+
+        const meanU = (n1 * n2) / 2.0;
+        const N = n1 + n2;
+
+        const tieCounts = {};
+        ranks.filter(r => !isNaN(r)).forEach(r => { tieCounts[r] = (tieCounts[r] || 0) + 1; });
+        const tieCorrection = Object.values(tieCounts).reduce((sum, t) => sum + (t * t * t - t), 0);
+
+        const varU = (n1 * n2 / (12 * N * (N - 1))) * ((N * N * N - N) - tieCorrection);
+
+        if (varU <= 0) return { pValue: 1.0, U: U, Z: 0, testName: "Mann-Whitney U (Zero Variance)" };
+
+        const z = (U - meanU - 0.5) / Math.sqrt(varU);
+
+        const pValue = 2.0 * normalCDF(-Math.abs(z));
+        return { pValue, U, Z: z, testName: "Mann-Whitney U (Normal Approx. with Tie Correction)" };
     }
 
     function calculateDeLongTest(data, key1, key2, referenceKey) {
@@ -296,6 +417,12 @@ const statisticsService = (() => {
             }
         });
         return { tp, fp, fn, tn };
+    }
+
+    function calculatePhi(a, b, c, d) {
+        if (a < 0 || b < 0 || c < 0 || d < 0) return NaN;
+        const denominator = Math.sqrt((a + b) * (c + d) * (a + c) * (b + d));
+        return denominator === 0 ? NaN : (a * d - b * c) / denominator;
     }
 
     function calculateDiagnosticPerformance(data, predictionKey, referenceKey) {
@@ -431,6 +558,75 @@ const statisticsService = (() => {
         };
     }
 
+    function calculateAssociations(data, t2Criteria) {
+        if (!Array.isArray(data) || data.length === 0 || !t2Criteria) return {};
+        const results = {};
+        const referenceKey = 'nStatus';
+
+        const matrixAS = calculateConfusionMatrix(data, 'asStatus', referenceKey);
+        if ((matrixAS.tp + matrixAS.fp + matrixAS.fn + matrixAS.tn) > 0) {
+            const fisherAS = calculateFisherExactTest(matrixAS.tp, matrixAS.fp, matrixAS.fn, matrixAS.tn);
+            results.as = {
+                matrix: matrixAS, testName: fisherAS.method, pValue: fisherAS.pValue,
+                or: calculateORCI(matrixAS.tp, matrixAS.fp, matrixAS.fn, matrixAS.tn),
+                rd: calculateRDCI(matrixAS.tp, matrixAS.fp, matrixAS.fn, matrixAS.tn),
+                phi: { value: calculatePhi(matrixAS.tp, matrixAS.fp, matrixAS.fn, matrixAS.tn) },
+                featureName: 'AS Positive'
+            };
+        }
+
+        const sizesNplus = data.filter(p => p.nStatus === '+').flatMap(p => p.t2Nodes.map(lk => lk.size).filter(s => s !== null && !isNaN(s) && isFinite(s)));
+        const sizesNminus = data.filter(p => p.nStatus === '-').flatMap(p => p.t2Nodes.map(lk => lk.size).filter(s => s !== null && !isNaN(s) && isFinite(s)));
+        if (sizesNplus.length > 0 && sizesNminus.length > 0) {
+            const mwuResult = calculateMannWhitneyUTest(sizesNplus, sizesNminus);
+            results.size_mwu = { pValue: mwuResult.pValue, Z: mwuResult.Z, testName: mwuResult.testName, featureName: 'LN Size (Median Comp.)' };
+        }
+
+        ['size', 'shape', 'border', 'homogeneity', 'signal'].forEach(key => {
+            const criterion = t2Criteria[key];
+            if (!criterion) return;
+
+            let a = 0, b = 0, c = 0, d = 0;
+
+            data.forEach(p => {
+                if (!p.nStatus || !Array.isArray(p.t2Nodes)) return;
+                const actualPositive = p.nStatus === '+';
+
+                const hasFeature = p.t2Nodes.some(lk => {
+                    if (!lk) return false;
+                    switch (key) {
+                        case 'size':
+                            return typeof lk.size === 'number' && !isNaN(lk.size) && lk.size >= criterion.threshold;
+                        case 'shape':
+                            return lk.shape === criterion.value;
+                        case 'border':
+                            return lk.border === criterion.value;
+                        case 'homogeneity':
+                            return lk.homogeneity === criterion.value;
+                        case 'signal':
+                            return lk.signal !== null && lk.signal === criterion.value;
+                        default: return false;
+                    }
+                });
+
+                if (hasFeature && actualPositive) a++;
+                else if (hasFeature && !actualPositive) b++;
+                else if (!hasFeature && actualPositive) c++;
+                else if (!hasFeature && !actualPositive) d++;
+            });
+
+            if ((a + b + c + d) > 0) {
+                const fisher = calculateFisherExactTest(a, b, c, d);
+                results[key] = {
+                    matrix: { tp: a, fp: b, fn: c, tn: d }, testName: fisher.method, pValue: fisher.pValue,
+                    or: calculateORCI(a, b, c, d), rd: calculateRDCI(a, b, c, d), phi: { value: calculatePhi(a, b, c, d) },
+                    featureName: `T2 ${key}=${key === 'size' ? '>=' + formatNumber(criterion.threshold, 1, '', true) : criterion.value}`
+                };
+            }
+        });
+        return results;
+    }
+
     function calculateAllPublicationStats(data, appliedT2Criteria, appliedT2Logic, bruteForceResultsPerCohort) {
         if (!data || !Array.isArray(data)) return null;
         const results = {};
@@ -447,7 +643,7 @@ const statisticsService = (() => {
                 performanceAS: calculateDiagnosticPerformance(evaluatedDataApplied, 'asStatus', 'nStatus'),
                 performanceT2Applied: calculateDiagnosticPerformance(evaluatedDataApplied, 't2Status', 'nStatus'),
                 comparisonASvsT2Applied: compareDiagnosticMethods(evaluatedDataApplied, 'asStatus', 't2Status', 'nStatus'),
-                associationsApplied: null,
+                associationsApplied: calculateAssociations(evaluatedDataApplied, appliedT2Criteria),
                 performanceT2Literature: {},
                 performanceT2Bruteforce: null,
                 comparisonASvsT2Bruteforce: null,
@@ -484,6 +680,7 @@ const statisticsService = (() => {
     return Object.freeze({
         calculateDiagnosticPerformance,
         compareDiagnosticMethods,
+        calculateAssociations,
         calculateDescriptiveStats,
         calculateAllPublicationStats,
         calculateMcNemarTest,
