@@ -44,13 +44,41 @@ const uiManager = (() => {
     function initializeTooltips(scope = document.body) {
         if (!window.tippy || typeof scope?.querySelectorAll !== 'function') return;
 
-        const newInstances = tippy(scope.querySelectorAll('[data-tippy-content]'), {
+        // Destroy existing tippy instances to prevent duplicates
+        tippyInstances.forEach(instance => instance.destroy());
+        tippyInstances = [];
+
+        const elementsWithTooltips = scope.querySelectorAll('[data-tippy-content]');
+
+        const newInstances = tippy(elementsWithTooltips, {
             allowHTML: true, theme: 'glass', placement: 'top', animation: 'fade',
             interactive: false, appendTo: () => document.body,
             delay: (APP_CONFIG && APP_CONFIG.UI_SETTINGS) ? APP_CONFIG.UI_SETTINGS.TOOLTIP_DELAY : [200, 100],
             maxWidth: 400, duration: [150, 150], zIndex: 3050,
-            onCreate(instance) { if (!instance.props.content || String(instance.props.content).trim() === '') { instance.disable(); } },
-            onShow(instance) { const content = instance.reference.getAttribute('data-tippy-content'); return !!content && String(content).trim() !== ''; }
+            onCreate(instance) { 
+                if (!instance.props.content || String(instance.props.content).trim() === '') { 
+                    instance.disable(); 
+                } 
+            },
+            onShow(instance) { 
+                const originalContent = instance.reference.getAttribute('data-tippy-content');
+                let tooltipHtml = originalContent;
+
+                try {
+                    const parsedContent = JSON.parse(originalContent);
+                    if (parsedContent && typeof parsedContent === 'object' && parsedContent.type) {
+                        tooltipHtml = getTooltipContent(parsedContent.type, parsedContent);
+                    }
+                } catch (e) {
+                    // Not a JSON string, use as is.
+                }
+
+                if (tooltipHtml && String(tooltipHtml).trim() !== '') {
+                    instance.setContent(tooltipHtml);
+                    return true; // Show tooltip
+                }
+                return false; // Don't show tooltip if content is empty
+            }
         });
         if (Array.isArray(newInstances)) tippyInstances = tippyInstances.concat(newInstances);
         else if (newInstances) tippyInstances.push(newInstances);
@@ -67,7 +95,7 @@ const uiManager = (() => {
         const element = document.getElementById(elementId);
         if (element) {
             element.innerHTML = html ?? '';
-            initializeTooltips(element);
+            initializeTooltips(element); // Re-initialize tooltips for new content
         }
     }
 
@@ -193,7 +221,7 @@ const uiManager = (() => {
                 </ul>
                 <h3>4.6 Export Tab</h3>
                 <ul>
-                    <li><strong>Purpose:</strong> Exports raw data, analysis results, tables, figures, and publication texts.</li>
+                    <li><strong>Purpose:</strong> A centralized module for exporting all forms of data and results from the application.</li>
                     <li><strong>Features:</strong> "Single Exports" and "Export Packages (.zip)" categories. Available exports: Raw data (CSV), data lists (MD), analysis tables (MD), comprehensive statistics (CSV), brute-force report (TXT), all charts/tables (PNG, SVG in ZIP), comprehensive HTML analysis report, bundled Markdown publication sections. All exports are context-aware (current cohort, applied T2 criteria).</li>
                 </ul>
                 <h2>5. Technical Appendix</h2>
@@ -229,9 +257,17 @@ const uiManager = (() => {
         if (!stats) return;
         updateElementText('header-cohort', stats.cohort);
         updateElementText('header-patient-count', stats.patientCount);
+        
+        // Update data-tippy-content for header stats
+        document.querySelector('#header-status-n')?.setAttribute('data-tippy-content', JSON.stringify({ type: 'header_metric', key: 'statusN', cohort: stats.cohort }));
+        document.querySelector('#header-status-as')?.setAttribute('data-tippy-content', JSON.stringify({ type: 'header_metric', key: 'statusAS', cohort: stats.cohort }));
+        document.querySelector('#header-status-t2')?.setAttribute('data-tippy-content', JSON.stringify({ type: 'header_metric', key: 'statusT2', cohort: stats.cohort }));
+
         updateElementText('header-status-n', stats.statusN);
         updateElementText('header-status-as', stats.statusAS);
         updateElementText('header-status-t2', stats.statusT2);
+        
+        initializeTooltips(document.querySelector('header')); // Re-initialize tooltips for header elements
     }
 
     function updateCohortButtonsUI(currentCohort) {
@@ -357,7 +393,7 @@ const uiManager = (() => {
                     </div>
                     <span class="small text-muted text-nowrap">Tested: ${formatNumber(payload.tested, 0)} / ${totalDisplay}</span>
                 </div>
-                <p class="small text-muted mt-2 mb-0">${currentBestText}</p>
+                <p class="small text-muted mt-2 mb-0" data-tippy-content='${JSON.stringify({ type: 'bruteForceProgress', total: payload.total, tested: payload.tested, currentBest: payload.currentBest, metric: payload.metric })}'>${currentBestText}</p>
             `;
         } else {
             const bfResult = bruteForceManager.getResultsForCohort(currentCohort);
@@ -366,11 +402,15 @@ const uiManager = (() => {
                 const criteriaDisplay = studyT2CriteriaManager.formatCriteriaForDisplay(best.criteria, best.logic);
                 let cohortStats = `(N=${bfResult.nTotal}, N+: ${bfResult.nPlus}, N-: ${bfResult.nMinus})`;
 
-                const resultTooltipTemplate = APP_CONFIG.UI_TEXTS.tooltips.bruteForceResult.description;
-                const resultTooltip = resultTooltipTemplate
-                    .replace('[N_TOTAL]', bfResult.nTotal)
-                    .replace('[N_PLUS]', bfResult.nPlus)
-                    .replace('[N_MINUS]', bfResult.nMinus);
+                // Use getTooltipContent for result tooltip
+                const resultTooltipData = { 
+                    type: 'bruteForceResult', 
+                    nTotal: bfResult.nTotal, 
+                    nPlus: bfResult.nPlus, 
+                    nMinus: bfResult.nMinus, 
+                    cohort: cohortDisplayName 
+                };
+                const resultTooltip = getTooltipContent('bruteForceResult', resultTooltipData);
 
                 contentHTML = `
                     <p class="small text-muted" data-tippy-content="${resultTooltip}">
