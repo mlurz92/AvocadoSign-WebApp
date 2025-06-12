@@ -298,7 +298,7 @@ function getPhiInterpretation(phiValue) {
 }
 
 function getORInterpretation(orValue) {
-    const value = Math.abs(parseFloat(orValue));
+    const value = parseFloat(orValue);
     if (isNaN(value)) return 'undetermined';
     const strengths = APP_CONFIG.UI_TEXTS.tooltips.interpretation.strength;
     if (value >= 10 || value <= 0.1) return strengths.very_strong;
@@ -321,15 +321,15 @@ function getDefinitionTooltip(metricKey) {
 
 function getInterpretationTooltip(metricKey, data, context = {}) {
     const templates = APP_CONFIG.UI_TEXTS.tooltips.interpretation;
-    const notAvailableText = `<strong>${metricKey.toUpperCase()} Interpretation</strong><hr class='my-1'>${templates.notAvailable}`;
+    const definition = APP_CONFIG.UI_TEXTS.tooltips.definition[metricKey];
+    const notAvailableText = `<strong>${escapeHTML(definition?.title || metricKey.toUpperCase())} Interpretation</strong><hr class='my-1'>${templates.notAvailable}`;
 
     if (!data || data.value === null || data.value === undefined || isNaN(data.value)) {
         return notAvailableText;
     }
     const template = templates[metricKey];
-    if (!template) return `Interpretation for '${metricKey}' not found.`;
+    if (!template) return `Interpretation for '${metricKey}' not implemented.`;
 
-    let text;
     let baseText;
     const value = data.value;
     const ci = data.ci;
@@ -366,17 +366,17 @@ function getInterpretationTooltip(metricKey, data, context = {}) {
             let pTemplate = template.default;
             if (data.testName?.includes("McNemar")) pTemplate = template.mcnemar;
             else if (data.testName?.includes("DeLong")) pTemplate = template.delong;
-            else if (data.testName?.includes("Fisher")) pTemplate = template.fisher;
+            else if (data.testName?.includes("Fisher") || data.testName?.includes("Mann-Whitney")) pTemplate = template.fisher;
 
             baseText = pTemplate
-                .replace('{pValue}', `<strong>${pValueFormatted}</strong>`)
+                .replace(/{pValue}/g, `<strong>${pValueFormatted}</strong>`)
                 .replace('{significanceText}', `<strong>${significanceText}</strong>`)
                 .replace('{strength}', pStrength)
-                .replace('{comparison}', `<strong>${escapeHTML(context.comparisonName)}</strong>`)
-                .replace('{metric}', `<strong>${escapeHTML(context.metricName)}</strong>`)
-                .replace('{method1}', `<strong>${escapeHTML(context.method1)}</strong>`)
-                .replace('{method2}', `<strong>${escapeHTML(context.method2)}</strong>`)
-                .replace('{featureName}', `<strong>${escapeHTML(data.featureName)}</strong>`);
+                .replace(/{comparison}/g, `<strong>${escapeHTML(context.comparisonName)}</strong>`)
+                .replace(/{metric}/g, `<strong>${escapeHTML(context.metricName)}</strong>`)
+                .replace(/{method1}/g, `<strong>${escapeHTML(context.method1)}</strong>`)
+                .replace(/{method2}/g, `<strong>${escapeHTML(context.method2)}</strong>`)
+                .replace(/{featureName}/g, `<strong>${escapeHTML(data.featureName)}</strong>`);
             break;
 
         case 'or':
@@ -425,7 +425,6 @@ function getInterpretationTooltip(metricKey, data, context = {}) {
             return `Interpretation for '${metricKey}' not implemented.`;
     }
     
-    const definition = APP_CONFIG.UI_TEXTS.tooltips.definition[metricKey];
     return `<strong>${escapeHTML(definition?.title || metricKey.toUpperCase())} Interpretation</strong><hr class='my-1'>${baseText}`;
 }
 
