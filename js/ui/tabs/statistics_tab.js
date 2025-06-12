@@ -215,7 +215,7 @@ const statisticsTab = (() => {
                     return `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr>
                         <th data-tippy-content="Statistical test used to compare the two methods.">Test</th>
                         <th data-tippy-content="The calculated value of the test statistic.">Statistic</th>
-                        <th data-tippy-content="The calculated p-value for the test.">p-Value</th>
+                        <th data-tippy-content="${getDefinitionTooltip('pValue')}">p-Value</th>
                         <th data-tippy-content="Name of the statistical test and any corrections applied.">Method</th></tr></thead><tbody>
                         <tr><td data-tippy-content="${getDefinitionTooltip('mcnemar')}">McNemar (Acc)</td><td>${formatNumber(compStats.mcnemar?.statistic, 3, na_stat, true)} (df=${compStats.mcnemar?.df || na_stat})</td><td data-tippy-content="${mcnemarTooltip}">${fPVal(compStats.mcnemar?.pValue)} ${getStatisticalSignificanceSymbol(compStats.mcnemar?.pValue)}</td><td>${compStats.mcnemar?.method || na_stat}</td></tr>
                         <tr><td data-tippy-content="${getDefinitionTooltip('delong')}">DeLong (AUC)</td><td>Z=${formatNumber(compStats.delong?.Z, 3, na_stat, true)}</td><td data-tippy-content="${delongTooltip}">${fPVal(compStats.delong?.pValue)} ${getStatisticalSignificanceSymbol(compStats.delong?.pValue)}</td><td>${compStats.delong?.method || na_stat}</td></tr>
@@ -238,17 +238,18 @@ const statisticsTab = (() => {
                         <th data-tippy-content="The statistical test used to calculate the p-value.">Test</th></tr></thead><tbody>`;
 
                     const addRow = (key, name, obj) => {
+                        const pValueTooltip = getInterpretationTooltip('pValue', { ...obj, value: obj.pValue }, { comparisonName: `association of '${escapeHTML(name)}' with N-Status` });
                         html += `<tr><td>${escapeHTML(name)}</td>
-                            <td data-tippy-content="${getInterpretationTooltip('or', obj)}">${fORCI(obj.or)}</td>
-                            <td data-tippy-content="${getInterpretationTooltip('rd', obj)}">${fRDCI(obj.rd)}</td>
-                            <td data-tippy-content="${getInterpretationTooltip('phi', obj)}">${fPhi(obj.phi)}</td>
-                            <td data-tippy-content="${getInterpretationTooltip('pValue', obj)}">${fPVal(obj.pValue)} ${getStatisticalSignificanceSymbol(obj.pValue)}</td>
+                            <td data-tippy-content="${getInterpretationTooltip('or', obj.or)}">${fORCI(obj.or)}</td>
+                            <td data-tippy-content="${getInterpretationTooltip('rd', obj.rd)}">${fRDCI(obj.rd)}</td>
+                            <td data-tippy-content="${getInterpretationTooltip('phi', obj.phi)}">${fPhi(obj.phi)}</td>
+                            <td data-tippy-content="${pValueTooltip}">${fPVal(obj.pValue)} ${getStatisticalSignificanceSymbol(obj.pValue)}</td>
                             <td>${obj.testName || na_stat}</td></tr>`;
                     };
 
                     if (assocStats.as) addRow('as', 'AS Positive', assocStats.as);
                     if (assocStats.size_mwu) {
-                         const mwuTooltip = getInterpretationTooltip('pValue', assocStats.size_mwu, { comparisonName: 'median LN size between N+ and N- groups' });
+                         const mwuTooltip = getInterpretationTooltip('pValue', { ...assocStats.size_mwu, value: assocStats.size_mwu.pValue }, { comparisonName: 'median LN size between N+ and N- groups' });
                         html += `<tr><td>${assocStats.size_mwu.featureName}</td><td>${na_stat}</td><td>${na_stat}</td><td>${na_stat}</td><td data-tippy-content="${mwuTooltip}">${fPVal(assocStats.size_mwu.pValue)} ${getStatisticalSignificanceSymbol(assocStats.size_mwu.pValue)}</td><td>${assocStats.size_mwu.testName || na_stat}</td></tr>`;
                     }
 
