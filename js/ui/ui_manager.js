@@ -73,7 +73,7 @@ const uiManager = (() => {
 
     function toggleElementClass(elementId, className, add) {
         const element = document.getElementById(elementId);
-        if (element && className) {
+        if (element) {
             element.classList.toggle(className, add);
         }
     }
