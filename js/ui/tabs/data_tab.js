@@ -31,20 +31,18 @@ const dataTab = (() => {
                 }
             }
             
-            const baseTooltipContent = APP_CONFIG.UI_TEXTS.tooltips.dataTab[col.tooltipKey] || `Sort by ${col.label}`;
             const subHeaders = col.subKeys ? col.subKeys.map(sk => {
                 const isActiveSubSort = activeSubKey === sk.key;
                 const style = isActiveSubSort ? 'font-weight: bold; text-decoration: underline; color: var(--primary-color);' : '';
-                return `<span class="sortable-sub-header" data-sub-key="${sk.key}" style="cursor: pointer; ${style}" data-tippy-content="Sort by Status ${sk.label}">${sk.label}</span>`;
+                return `<span class="sortable-sub-header" data-sub-key="${sk.key}" style="cursor: pointer; ${style}" data-tippy-key="dataTab.n_as_t2_subsort" data-tippy-content="Sort by Status ${sk.label}">${sk.label}</span>`;
             }).join(' / ') : '';
             
-            const mainTooltip = col.subKeys ? `${baseTooltipContent} Click on N, AS, or T2 for sub-sorting.` : `Sort by ${col.label}. ${baseTooltipContent}`;
             const sortAttributes = `data-sort-key="${col.key}" ${col.subKeys || col.key === 'details' ? '' : 'style="cursor: pointer;"'}`;
             
             if (col.subKeys) {
-                 headerHTML += `<th scope="col" ${sortAttributes} data-tippy-content="${mainTooltip}" ${thStyle}>${col.label} (${subHeaders}) ${isMainKeyActiveSort ? sortIconHTML : '<i class="fas fa-sort text-muted opacity-50 ms-1"></i>'}</th>`;
+                 headerHTML += `<th scope="col" ${sortAttributes} data-tippy-key="dataTab.${col.tooltipKey}" ${thStyle}>${col.label} (${subHeaders}) ${isMainKeyActiveSort ? sortIconHTML : '<i class="fas fa-sort text-muted opacity-50 ms-1"></i>'}</th>`;
             } else {
-                 headerHTML += `<th scope="col" ${sortAttributes} data-tippy-content="${mainTooltip}" ${thStyle}>${col.label} ${col.key === 'details' ? '' : sortIconHTML}</th>`;
+                 headerHTML += `<th scope="col" ${sortAttributes} data-tippy-key="dataTab.${col.tooltipKey}" ${thStyle}>${col.label} ${col.key === 'details' ? '' : sortIconHTML}</th>`;
             }
         });
         headerHTML += `</tr></thead>`;
@@ -70,10 +68,9 @@ const dataTab = (() => {
 
     function render(data, sortState) {
         if (!data) throw new Error("Data for data tab not available.");
-        const expandAllTooltip = APP_CONFIG.UI_TEXTS.tooltips.dataTab.expandAll || 'Expand All Details';
         const toggleButtonHTML = `
             <div class="d-flex justify-content-end mb-3" id="data-toggle-button-container">
-                <button id="data-toggle-details" class="btn btn-sm btn-outline-secondary" data-action="expand" data-tippy-content="${expandAllTooltip}">
+                <button id="data-toggle-details" class="btn btn-sm btn-outline-secondary" data-action="expand" data-tippy-key="dataTab.expandAll">
                    Expand All Details <i class="fas fa-chevron-down ms-1"></i>
                </button>
             </div>`;
