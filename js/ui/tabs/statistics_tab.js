@@ -8,24 +8,22 @@ const statisticsTab = (() => {
         const fv = (val, dig = 1, useStd = true) => formatNumber(val, dig, na, useStd);
         const fP = (val, dig = 1) => formatPercent(val, dig, na);
         const fLK = (lkData) => `${fv(lkData?.median,1)} (${fv(lkData?.min,0)}–${fv(lkData?.max,0)}) [${fv(lkData?.mean,1)} ± ${fv(lkData?.sd,1)}]`;
-        
-        const getTooltipTemplate = (key) => APP_CONFIG.UI_TEXTS.tooltips.descriptiveStatistics[key]?.description || key;
 
         const tooltips = {
-            age: getTooltipTemplate('age'),
-            sex: getTooltipTemplate('sex'),
-            therapy: getTooltipTemplate('therapy'),
-            nStatus: getTooltipTemplate('nStatus'),
-            asStatus: getTooltipTemplate('asStatus'),
-            t2Status: getTooltipTemplate('t2Status'),
-            lnCounts_n_total: getTooltipTemplate('lnCounts_n_total'),
-            lnCounts_n_plus: getTooltipTemplate('lnCounts_n_plus').replace('{n}', d.nStatus?.plus ?? 0),
-            lnCounts_as_total: getTooltipTemplate('lnCounts_as_total'),
-            lnCounts_as_plus: getTooltipTemplate('lnCounts_as_plus').replace('{n}', d.asStatus?.plus ?? 0),
-            lnCounts_t2_total: getTooltipTemplate('lnCounts_t2_total'),
-            lnCounts_t2_plus: getTooltipTemplate('lnCounts_t2_plus').replace('{n}', d.t2Status?.plus ?? 0),
-            chartAge: getTooltipTemplate('chartAge').replace('[COHORT]', `<strong>${getCohortDisplayName(cohortId)}</strong>`),
-            chartGender: getTooltipTemplate('chartGender').replace('[COHORT]', `<strong>${getCohortDisplayName(cohortId)}</strong>`)
+            age: "Patient age in years (Median, Min-Max, Mean ± Standard Deviation).",
+            sex: "Distribution of male and female patients.",
+            therapy: "Distribution of treatment approaches before surgery.",
+            nStatus: "Distribution of final histopathological N-Status (N+/N-).",
+            asStatus: "Distribution of Avocado Sign status (AS+/AS-).",
+            t2Status: "Distribution of T2-weighted criteria status (T2+/T2-) based on applied settings.",
+            lnCounts_n_total: "Number of histopathologically examined lymph nodes per patient.",
+            lnCounts_n_plus: `Number of pathologically positive lymph nodes per patient, evaluated only in N+ patients (n=${d.nStatus?.plus ?? 0}).`,
+            lnCounts_as_total: "Total number of lymph nodes visible on T1-CE MRI per patient.",
+            lnCounts_as_plus: `Number of Avocado Sign positive lymph nodes per patient, evaluated only in AS+ patients (n=${d.asStatus?.plus ?? 0}).`,
+            lnCounts_t2_total: "Total number of lymph nodes visible on T2-MRI per patient.",
+            lnCounts_t2_plus: `Number of T2-positive lymph nodes (based on applied criteria) per patient, evaluated only in T2+ patients (n=${d.t2Status?.plus ?? 0}).`,
+            chartAge: `Histogram showing the distribution of patient ages in the <strong>${getCohortDisplayName(cohortId)}</strong> cohort.`,
+            chartGender: `Pie chart illustrating the distribution of male and female patients in the <strong>${getCohortDisplayName(cohortId)}</strong> cohort.`
         };
 
         return `
@@ -127,13 +125,13 @@ const statisticsTab = (() => {
         if (allTableResults.length === 0) return '<p class="text-muted small p-3">No criteria comparison data.</p>';
 
         let tableHtml = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr>
-            <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSet}</th>
-            <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSens}</th>
-            <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderSpec}</th>
-            <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderPPV}</th>
-            <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderNPV}</th>
-            <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAcc}</th>
-            <th>${APP_CONFIG.UI_TEXTS.tooltips.criteriaComparisonTable.tableHeaderAUC}</th>
+            <th data-tippy-content="Method or criteria set being evaluated.">Set</th>
+            <th data-tippy-content="${getDefinitionTooltip('sens')}">Sens.</th>
+            <th data-tippy-content="${getDefinitionTooltip('spec')}">Spec.</th>
+            <th data-tippy-content="${getDefinitionTooltip('ppv')}">PPV</th>
+            <th data-tippy-content="${getDefinitionTooltip('npv')}">NPV</th>
+            <th data-tippy-content="${getDefinitionTooltip('acc')}">Acc.</th>
+            <th data-tippy-content="${getDefinitionTooltip('auc')}">AUC</th>
         </tr></thead><tbody>`;
 
         allTableResults.forEach(r => {
@@ -193,43 +191,65 @@ const statisticsTab = (() => {
                 const na_stat = '--';
                 const createPerfTableHTML = (perfStats) => {
                     if (!perfStats || typeof perfStats.matrix !== 'object') return '<p class="text-muted small p-2">No diagnostic performance data.</p>';
-                    return `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr><th>Metric</th><th>Value (95% CI)</th><th>CI Method</th></tr></thead><tbody>
-                        <tr><td>Sensitivity</td><td>${fCI_p_stat(perfStats.sens, 'sens')}</td><td>${perfStats.sens?.method || na_stat}</td></tr>
-                        <tr><td>Specificity</td><td>${fCI_p_stat(perfStats.spec, 'spec')}</td><td>${perfStats.spec?.method || na_stat}</td></tr>
-                        <tr><td>PPV</td><td>${fCI_p_stat(perfStats.ppv, 'ppv')}</td><td>${perfStats.ppv?.method || na_stat}</td></tr>
-                        <tr><td>NPV</td><td>${fCI_p_stat(perfStats.npv, 'npv')}</td><td>${perfStats.npv?.method || na_stat}</td></tr>
-                        <tr><td>Accuracy</td><td>${fCI_p_stat(perfStats.acc, 'acc')}</td><td>${perfStats.acc?.method || na_stat}</td></tr>
-                        <tr><td>Balanced Accuracy</td><td>${fCI_p_stat(perfStats.balAcc, 'balAcc')}</td><td>${perfStats.balAcc?.method || na_stat}</td></tr>
-                        <tr><td>F1-Score</td><td>${fCI_p_stat(perfStats.f1, 'f1')}</td><td>${perfStats.f1?.method || na_stat}</td></tr>
-                        <tr><td>AUC</td><td>${fCI_p_stat(perfStats.auc, 'auc')}</td><td>${perfStats.auc?.method || na_stat}</td></tr>
+                    return `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr>
+                        <th data-tippy-content="The diagnostic metric being evaluated.">Metric</th>
+                        <th data-tippy-content="The calculated value for the metric, with its 95% Confidence Interval in parentheses.">Value (95% CI)</th>
+                        <th data-tippy-content="The statistical method used to calculate the confidence interval.">CI Method</th></tr></thead><tbody>
+                        <tr><td data-tippy-content="${getDefinitionTooltip('sens')}">Sensitivity</td><td>${fCI_p_stat(perfStats.sens, 'sens')}</td><td>${perfStats.sens?.method || na_stat}</td></tr>
+                        <tr><td data-tippy-content="${getDefinitionTooltip('spec')}">Specificity</td><td>${fCI_p_stat(perfStats.spec, 'spec')}</td><td>${perfStats.spec?.method || na_stat}</td></tr>
+                        <tr><td data-tippy-content="${getDefinitionTooltip('ppv')}">PPV</td><td>${fCI_p_stat(perfStats.ppv, 'ppv')}</td><td>${perfStats.ppv?.method || na_stat}</td></tr>
+                        <tr><td data-tippy-content="${getDefinitionTooltip('npv')}">NPV</td><td>${fCI_p_stat(perfStats.npv, 'npv')}</td><td>${perfStats.npv?.method || na_stat}</td></tr>
+                        <tr><td data-tippy-content="${getDefinitionTooltip('acc')}">Accuracy</td><td>${fCI_p_stat(perfStats.acc, 'acc')}</td><td>${perfStats.acc?.method || na_stat}</td></tr>
+                        <tr><td data-tippy-content="${getDefinitionTooltip('balAcc')}">Balanced Accuracy</td><td>${fCI_p_stat(perfStats.balAcc, 'balAcc')}</td><td>${perfStats.balAcc?.method || na_stat}</td></tr>
+                        <tr><td data-tippy-content="${getDefinitionTooltip('f1')}">F1-Score</td><td>${fCI_p_stat(perfStats.f1, 'f1')}</td><td>${perfStats.f1?.method || na_stat}</td></tr>
+                        <tr><td data-tippy-content="${getDefinitionTooltip('auc')}">AUC</td><td>${fCI_p_stat(perfStats.auc, 'auc')}</td><td>${perfStats.auc?.method || na_stat}</td></tr>
                     </tbody></table></div>`;
                 };
 
                 const createCompTableHTML = (compStats) => {
                     if (!compStats) return '<p class="text-muted small p-2">No comparison data.</p>';
                     const fPVal = (p) => (p !== null && !isNaN(p)) ? (p < 0.001 ? '<0.001' : formatNumber(p, 3, '--', true)) : na_stat;
-                    return `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr><th>Test</th><th>Statistic</th><th>p-Value</th><th>Method</th></tr></thead><tbody>
-                        <tr><td>McNemar (Acc)</td><td>${formatNumber(compStats.mcnemar?.statistic, 3, na_stat, true)} (df=${compStats.mcnemar?.df || na_stat})</td><td>${fPVal(compStats.mcnemar?.pValue)} ${getStatisticalSignificanceSymbol(compStats.mcnemar?.pValue)}</td><td>${compStats.mcnemar?.method || na_stat}</td></tr>
-                        <tr><td>DeLong (AUC)</td><td>Z=${formatNumber(compStats.delong?.Z, 3, na_stat, true)}</td><td>${fPVal(compStats.delong?.pValue)} ${getStatisticalSignificanceSymbol(compStats.delong?.pValue)}</td><td>${compStats.delong?.method || na_stat}</td></tr>
+                    const mcnemarTooltip = getInterpretationTooltip('pValue', compStats.mcnemar, { method1: 'AS', method2: 'T2 (Applied)', metricName: 'Accuracy'});
+                    const delongTooltip = getInterpretationTooltip('pValue', compStats.delong, { method1: 'AS', method2: 'T2 (Applied)', metricName: 'AUC'});
+                    
+                    return `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr>
+                        <th data-tippy-content="Statistical test used to compare the two methods.">Test</th>
+                        <th data-tippy-content="The calculated value of the test statistic.">Statistic</th>
+                        <th data-tippy-content="The calculated p-value for the test.">p-Value</th>
+                        <th data-tippy-content="Name of the statistical test and any corrections applied.">Method</th></tr></thead><tbody>
+                        <tr><td data-tippy-content="${getDefinitionTooltip('mcnemar')}">McNemar (Acc)</td><td>${formatNumber(compStats.mcnemar?.statistic, 3, na_stat, true)} (df=${compStats.mcnemar?.df || na_stat})</td><td data-tippy-content="${mcnemarTooltip}">${fPVal(compStats.mcnemar?.pValue)} ${getStatisticalSignificanceSymbol(compStats.mcnemar?.pValue)}</td><td>${compStats.mcnemar?.method || na_stat}</td></tr>
+                        <tr><td data-tippy-content="${getDefinitionTooltip('delong')}">DeLong (AUC)</td><td>Z=${formatNumber(compStats.delong?.Z, 3, na_stat, true)}</td><td data-tippy-content="${delongTooltip}">${fPVal(compStats.delong?.pValue)} ${getStatisticalSignificanceSymbol(compStats.delong?.pValue)}</td><td>${compStats.delong?.method || na_stat}</td></tr>
                     </tbody></table></div>`;
                 };
 
                 const createAssocTableHTML = (assocStats, appliedCrit) => {
                     if (!assocStats || Object.keys(assocStats).length === 0) return '<p class="text-muted small p-2">No association data.</p>';
                     const fPVal = (p) => (p !== null && !isNaN(p)) ? (p < 0.001 ? '<0.001' : formatNumber(p, 3, na_stat, true)) : na_stat;
-                    const fORCI = (orObj) => { const val = formatNumber(orObj?.value, 2, na_stat, true); const ciL = formatNumber(orObj?.ci?.lower, 2, na_stat, true); const ciU = formatNumber(orObj?.ci?.upper, 2, na_stat, true); return `${val} (${ciL}-${ciU})`; };
-                    const fRDCI = (rdObj) => { const val = formatNumber(rdObj?.value * 100, 1, na_stat, true); const ciL = formatNumber(rdObj?.ci?.lower * 100, 1, na_stat, true); const ciU = formatNumber(rdObj?.ci?.upper * 100, 1, na_stat, true); return `${val}% (${ciL}%-${ciU}%)`; };
+                    const fORCI = (orObj) => { const val = formatNumber(orObj?.value, 2, na_stat, true); const ciL = formatNumber(orObj?.ci?.lower, 2, na_stat, true); const ciU = formatNumber(orObj?.ci?.upper, 2, na_stat, true); return (val !== na_stat && ciL !== na_stat && ciU !== na_stat) ? `${val} (${ciL}-${ciU})` : val; };
+                    const fRDCI = (rdObj) => { const val = formatNumber(rdObj?.value * 100, 1, na_stat, true); const ciL = formatNumber(rdObj?.ci?.lower * 100, 1, na_stat, true); const ciU = formatNumber(rdObj?.ci?.upper * 100, 1, na_stat, true); return (val !== na_stat && ciL !== na_stat && ciU !== na_stat) ? `${val}% (${ciL}%-${ciU}%)` : val; };
                     const fPhi = (phiObj) => formatNumber(phiObj?.value, 2, na_stat, true);
 
-                    let html = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr><th>Feature</th><th>OR (95% CI)</th><th>RD (95% CI)</th><th>Phi</th><th>p-Value</th><th>Test</th></tr></thead><tbody>`;
+                    let html = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0"><thead><tr>
+                        <th data-tippy-content="The specific imaging feature being tested for association with N-Status.">Feature</th>
+                        <th data-tippy-content="${getDefinitionTooltip('or')}">OR (95% CI)</th>
+                        <th data-tippy-content="${getDefinitionTooltip('rd')}">RD (95% CI)</th>
+                        <th data-tippy-content="${getDefinitionTooltip('phi')}">Phi</th>
+                        <th data-tippy-content="${getDefinitionTooltip('pValue')}">p-Value</th>
+                        <th data-tippy-content="The statistical test used to calculate the p-value.">Test</th></tr></thead><tbody>`;
 
                     const addRow = (key, name, obj) => {
-                        html += `<tr><td>${name}</td><td>${fORCI(obj.or)}</td><td>${fRDCI(obj.rd)}</td><td>${fPhi(obj.phi)}</td><td>${fPVal(obj.pValue)} ${getStatisticalSignificanceSymbol(obj.pValue)}</td><td>${obj.testName || na_stat}</td></tr>`;
+                        html += `<tr><td>${escapeHTML(name)}</td>
+                            <td data-tippy-content="${getInterpretationTooltip('or', obj)}">${fORCI(obj.or)}</td>
+                            <td data-tippy-content="${getInterpretationTooltip('rd', obj)}">${fRDCI(obj.rd)}</td>
+                            <td data-tippy-content="${getInterpretationTooltip('phi', obj)}">${fPhi(obj.phi)}</td>
+                            <td data-tippy-content="${getInterpretationTooltip('pValue', obj)}">${fPVal(obj.pValue)} ${getStatisticalSignificanceSymbol(obj.pValue)}</td>
+                            <td>${obj.testName || na_stat}</td></tr>`;
                     };
 
                     if (assocStats.as) addRow('as', 'AS Positive', assocStats.as);
                     if (assocStats.size_mwu) {
-                        html += `<tr><td>${assocStats.size_mwu.featureName}</td><td>${na_stat}</td><td>${na_stat}</td><td>${na_stat}</td><td>${fPVal(assocStats.size_mwu.pValue)} ${getStatisticalSignificanceSymbol(assocStats.size_mwu.pValue)}</td><td>${assocStats.size_mwu.testName || na_stat}</td></tr>`;
+                         const mwuTooltip = getInterpretationTooltip('pValue', assocStats.size_mwu, { comparisonName: 'median LN size between N+ and N- groups' });
+                        html += `<tr><td>${assocStats.size_mwu.featureName}</td><td>${na_stat}</td><td>${na_stat}</td><td>${na_stat}</td><td data-tippy-content="${mwuTooltip}">${fPVal(assocStats.size_mwu.pValue)} ${getStatisticalSignificanceSymbol(assocStats.size_mwu.pValue)}</td><td>${assocStats.size_mwu.testName || na_stat}</td></tr>`;
                     }
 
                     ['size', 'shape', 'border', 'homogeneity', 'signal'].forEach(fKey => {
