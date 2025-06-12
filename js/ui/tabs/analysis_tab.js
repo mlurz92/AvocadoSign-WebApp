@@ -156,20 +156,20 @@ const analysisTab = (() => {
                             <table class="table table-sm small mb-0 table-striped">
                                 <thead>
                                     <tr>
-                                        <th>Metric</th>
-                                        <th>Value (95% CI)</th>
-                                        <th>CI Method</th>
+                                        <th data-tippy-content="The diagnostic metric being evaluated.">Metric</th>
+                                        <th data-tippy-content="The calculated value for the metric, with its 95% Confidence Interval in parentheses.">Value (95% CI)</th>
+                                        <th data-tippy-content="The statistical method used to calculate the confidence interval.">CI Method</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>Sensitivity</td><td>${fCI(statsT2.sens, 1, true)}</td><td>${statsT2.sens?.method || na}</td></tr>
-                                    <tr><td>Specificity</td><td>${fCI(statsT2.spec, 1, true)}</td><td>${statsT2.spec?.method || na}</td></tr>
-                                    <tr><td>PPV</td><td>${fCI(statsT2.ppv, 1, true)}</td><td>${statsT2.ppv?.method || na}</td></tr>
-                                    <tr><td>NPV</td><td>${fCI(statsT2.npv, 1, true)}</td><td>${statsT2.npv?.method || na}</td></tr>
-                                    <tr><td>Accuracy</td><td>${fCI(statsT2.acc, 1, true)}</td><td>${statsT2.acc?.method || na}</td></tr>
-                                    <tr><td>Balanced Accuracy</td><td>${fCI(statsT2.balAcc, 1, true)}</td><td>${statsT2.balAcc?.method || na}</td></tr>
-                                    <tr><td>F1-Score</td><td>${fCI(statsT2.f1, 3, false)}</td><td>${statsT2.f1?.method || na}</td></tr>
-                                    <tr><td>AUC</td><td>${fCI(statsT2.auc, 2, false)}</td><td>${statsT2.auc?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${getDefinitionTooltip('sens')}">Sensitivity</td><td>${fCI(statsT2.sens, 1, true)}</td><td>${statsT2.sens?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${getDefinitionTooltip('spec')}">Specificity</td><td>${fCI(statsT2.spec, 1, true)}</td><td>${statsT2.spec?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${getDefinitionTooltip('ppv')}">PPV</td><td>${fCI(statsT2.ppv, 1, true)}</td><td>${statsT2.ppv?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${getDefinitionTooltip('npv')}">NPV</td><td>${fCI(statsT2.npv, 1, true)}</td><td>${statsT2.npv?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${getDefinitionTooltip('acc')}">Accuracy</td><td>${fCI(statsT2.acc, 1, true)}</td><td>${statsT2.acc?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${getDefinitionTooltip('balAcc')}">Balanced Accuracy</td><td>${fCI(statsT2.balAcc, 1, true)}</td><td>${statsT2.balAcc?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${getDefinitionTooltip('f1')}">F1-Score</td><td>${fCI(statsT2.f1, 3, false)}</td><td>${statsT2.f1?.method || na}</td></tr>
+                                    <tr><td data-tippy-content="${getDefinitionTooltip('auc')}">AUC</td><td>${fCI(statsT2.auc, 2, false)}</td><td>${statsT2.auc?.method || na}</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -179,7 +179,7 @@ const analysisTab = (() => {
                         'Diagnostic Performance (Applied T2)',
                         metricsHtml,
                         false,
-                        't2MetricsOverview',
+                        null,
                         [{id: 'dl-t2-metrics-overview-png', icon: 'fa-image', format: 'png', tableId: 't2-metrics-overview-card-content table', tableName: `T2_Metrics_Overview_${getCohortDisplayName(currentCohort).replace(/\s+/g, '_')}`}],
                         't2-metrics-overview-card-content table'
                     ));
