@@ -81,7 +81,7 @@ const APP_CONFIG = Object.freeze({
         ICON_SIZE: 20,
         ICON_STROKE_WIDTH: 1.5,
         ICON_COLOR: 'var(--text-dark)',
-        TOOLTIP_DELAY: Object.freeze([200, 100]),
+        TOOLTIP_DELAY: Object.freeze([300, 100]),
         TOAST_DURATION_MS: 4500,
         TRANSITION_DURATION_MS: 350,
         STICKY_HEADER_OFFSET: '111px'
@@ -265,158 +265,27 @@ const APP_CONFIG = Object.freeze({
                 undetermined: "undetermined"
             }
         },
-        tooltips: Object.freeze({
-            quickGuideButton: { description: "Show a quick guide and important notes about the application." },
-            cohortButtons: { description: "Select the patient cohort for the analysis: <strong>Overall</strong>, <strong>Surgery alone</strong>, or <strong>Neoadjuvant therapy</strong>. This choice filters the data for all application tabs." },
-            headerStats: {
-                cohort: "Currently selected patient cohort for analysis.",
-                patientCount: "Total number of patients in the selected cohort.",
-                statusN: "Percentage of N+ patients (Pathology).",
-                statusAS: "Percentage of AS+ patients (Prediction).",
-                statusT2: "Percentage of T2+ patients (Applied Criteria)."
+        TOOLTIP_DEFINITIONS: Object.freeze({
+            performance: {
+                sens: { title: 'Sensitivity (True Positive Rate)', interpretation: (v, ci) => `Out of all true N+ patients, ${formatPercent(v, 1)} were correctly identified as positive by this test. The 95% CI suggests the true sensitivity is likely between ${formatPercent(ci.lower, 1)} and ${formatPercent(ci.upper, 1)}.` },
+                spec: { title: 'Specificity (True Negative Rate)', interpretation: (v, ci) => `Out of all true N- patients, ${formatPercent(v, 1)} were correctly identified as negative. The 95% CI suggests the true specificity is likely between ${formatPercent(ci.lower, 1)} and ${formatPercent(ci.upper, 1)}.` },
+                ppv: { title: 'Positive Predictive Value (PPV)', interpretation: (v, ci) => `If a patient tests positive, there is a ${formatPercent(v, 1)} probability that they are truly N+. The 95% CI for this probability is ${formatPercent(ci.lower, 1)} to ${formatPercent(ci.upper, 1)}.` },
+                npv: { title: 'Negative Predictive Value (NPV)', interpretation: (v, ci) => `If a patient tests negative, there is a ${formatPercent(v, 1)} probability that they are truly N-. The 95% CI for this probability is ${formatPercent(ci.lower, 1)} to ${formatPercent(ci.upper, 1)}.` },
+                acc: { title: 'Accuracy', interpretation: (v, ci) => `Overall, the test correctly classified ${formatPercent(v, 1)} of all patients. The 95% CI is ${formatPercent(ci.lower, 1)} to ${formatPercent(ci.upper, 1)}.` },
+                balAcc: { title: 'Balanced Accuracy', interpretation: (v, ci) => `The average of sensitivity and specificity is ${formatPercent(v, 1)}. This metric is useful for imbalanced datasets. The 95% CI is ${formatPercent(ci.lower, 1)} to ${formatPercent(ci.upper, 1)}.` },
+                f1: { title: 'F1-Score', interpretation: (v, ci) => `The F1-Score, the harmonic mean of PPV and sensitivity, is ${formatNumber(v, 3, 'N/A', true)}. A score of 1 is optimal. The 95% CI is ${formatNumber(ci.lower, 3, 'N/A', true)} to ${formatNumber(ci.upper, 3, 'N/A', true)}.` },
+                auc: { title: 'Area Under the Curve (AUC)', interpretation: (v, ci) => `The AUC of ${formatNumber(v, 2, 'N/A', true)} indicates the model's ability to distinguish between N+ and N- patients is ${getAUCInterpretation(v)}. An AUC of 1.0 is perfect, 0.5 is random. The 95% CI is ${formatNumber(ci.lower, 2, 'N/A', true)} to ${formatNumber(ci.upper, 2, 'N/A', true)}.` }
             },
-            mainTabs: {
-                data: "Display the list of all patient data in the selected cohort with basic information and status (N/AS/T2). Allows sorting and expanding details on T2 lymph node features.",
-                analysis: "Central tab for defining T2 criteria, viewing a descriptive dashboard, running brute-force optimization, and detailed analysis results per patient based on the applied criteria.",
-                statistics: "Provides detailed statistical analyses (performance metrics, comparisons, associations) for the globally selected cohort or a comparison of two specifically chosen cohorts. All confidence intervals (CI) are 95% CIs.",
-                presentation: "Presents analysis results in a format optimized for presentations, focusing on the comparison of the Avocado Sign with T2-based approaches (applied or literature).",
-                publication: "Generates text suggestions and materials for scientific publications.",
-                export: "Offers extensive options for downloading raw data, analysis results, tables, and charts in various file formats."
+            comparison: {
+                mcnemar: { title: 'McNemar\'s Test (Accuracy)', interpretation: (stat, p) => `This test compares the accuracy of two paired diagnostic tests. A p-value of ${getPValueText(p, true)} indicates that the difference in accuracy between the two tests is ${getStatisticalSignificanceSymbol(p) === 'ns' ? 'not ' : ''}statistically significant.` },
+                delong: { title: 'DeLong\'s Test (AUC)', interpretation: (stat, p) => `This test compares two correlated AUCs. A p-value of ${getPValueText(p, true)} suggests the difference in AUC between the tests is ${getStatisticalSignificanceSymbol(p) === 'ns' ? 'not ' : ''}statistically significant.` }
             },
-            dataTab: {
-                nr: "Patient's sequential ID number.",
-                name: "Patient's last name (anonymized/coded).",
-                firstName: "Patient's first name (anonymized/coded).",
-                sex: "Patient's sex (male/female/unknown).",
-                age: "Patient's age in years at the time of MRI.",
-                therapy: "Therapy administered before surgery (Neoadjuvant therapy, Surgery alone).",
-                n_as_t2: "Direct status comparison: N (Histopathology reference), AS (Avocado Sign prediction), T2 (current criteria prediction). Click N, AS, or T2 in the column header for sub-sorting.",
-                notes: "Additional clinical or radiological notes on the case, if available.",
-                expandAll: "Expand or collapse the detail view of T2-weighted lymph node features for all patients in the current table view.",
-                collapseAll: "Collapse all detail views of T2-weighted lymph node features.",
-                expandRow: "Click here or the arrow button to show/hide details on the morphological properties of this patient's T2-weighted lymph nodes. Only available if T2 node data exists."
-            },
-            analysisTab: {
-                nr: "Patient's sequential ID number.",
-                name: "Patient's last name (anonymized/coded).",
-                therapy: "Therapy administered before surgery.",
-                n_as_t2: "Direct status comparison: N (Histopathology reference), AS (Avocado Sign prediction), T2 (current criteria prediction). Click N, AS, or T2 in the column header for sub-sorting.",
-                n_counts: "Number of pathologically positive (N+) lymph nodes / Total number of histopathologically examined lymph nodes for this patient.",
-                as_counts: "Number of Avocado Sign positive (AS+) lymph nodes / Total number of lymph nodes visible on T1-CE MRI for this patient.",
-                t2_counts: "Number of T2-positive lymph nodes (based on current criteria) / Total number of lymph nodes visible on T2-MRI for this patient.",
-                expandAll: "Expand or collapse the detail view of the evaluated T2-weighted lymph nodes and the fulfilled criteria for all patients in the current table view.",
-                collapseAll: "Collapse all detail views of the evaluated T2-weighted lymph nodes and the fulfilled criteria.",
-                expandRow: "Click here or the arrow button to show/hide the detailed evaluation of this patient's individual T2-weighted lymph nodes according to the currently applied criteria. Fulfilled positive criteria are highlighted."
-            },
-            t2Logic: { description: "Logical operator for active T2 criteria: <strong>AND</strong> (A lymph node is positive only if ALL active criteria are met). <strong>OR</strong> (A lymph node is positive if AT LEAST ONE active criterion is met). The choice affects the T2 status calculation." },
-            t2Size: { description: "Size criterion (short axis): Lymph nodes with a diameter <strong>greater than or equal to (≥)</strong> the set threshold are considered suspicious. Adjustable range: [MIN] - [MAX] mm (step: [STEP] mm). Enable/disable with checkbox." },
-            t2Shape: { description: "Shape criterion: Select which shape ('round' or 'oval') is considered suspicious. Enable/disable with checkbox." },
-            t2Border: { description: "Border criterion: Select which border ('sharp' or 'irregular') is considered suspicious. Enable/disable with checkbox." },
-            t2Homogeneity: { description: "Homogeneity criterion: Select whether 'homogeneous' or 'heterogeneous' internal signal on T2w is considered suspicious. Enable/disable with checkbox." },
-            t2Signal: { description: "Signal criterion: Select which T2 signal intensity ('low', 'intermediate', or 'high') relative to surrounding muscle is considered suspicious. Nodes with non-assessable signal (value 'null') never fulfill this criterion. Enable/disable with checkbox." },
-            t2Actions: {
-                reset: "Resets the logic and all criteria to their default settings. The changes are not yet applied.",
-                apply: "Apply the currently set T2 criteria and logic to the entire dataset. This updates the T2 columns in the tables, all statistical analyses, and charts. The setting is also saved for future sessions."
-            },
-            t2CriteriaCard: { unsavedIndicator: "<strong>Attention:</strong> There are unsaved changes to the T2 criteria or logic. Click 'Apply & Save' to update the results and save the settings." },
-            t2MetricsOverview: {
-                cardTitle: "Quick overview of diagnostic performance (T2 vs. N) for the currently applied and saved T2 criteria for the selected cohort: <strong>[COHORT]</strong>. All confidence intervals (CI) are 95% CIs.",
-                sens: "Sensitivity (T2 vs. N): Proportion of N+ cases correctly identified as positive by the T2 criteria.",
-                spec: "Specificity (T2 vs. N): Proportion of N- cases correctly identified as negative by the T2 criteria.",
-                ppv: "Positive Predictive Value (PPV, T2 vs. N): Probability that a T2+ case is actually N+.",
-                npv: "Negative Predictive Value (NPV, T2 vs. N): Probability that a T2- case is actually N-.",
-                acc: "Accuracy (T2 vs. N): Overall proportion of correctly classified cases.",
-                balAcc: "Balanced Accuracy (T2 vs. N): Average of sensitivity and specificity. Useful for imbalanced class sizes.",
-                f1: "F1-Score (T2 vs. N): Harmonic mean of PPV and sensitivity. A value of 1 is optimal.",
-                auc: "AUC (T2 vs. N): Area Under the ROC Curve; for binary tests like this, equivalent to Balanced Accuracy."
-            },
-            bruteForceMetric: { description: "Select the target metric for the brute-force optimization.<br><strong>Accuracy:</strong> Proportion of correct classifications.<br><strong>Balanced Accuracy:</strong> (Sens+Spec)/2; good for imbalanced classes.<br><strong>F1-Score:</strong> Harmonic mean of PPV & Sensitivity.<br><strong>PPV:</strong> Precision for positive predictions.<br><strong>NPV:</strong> Precision for negative predictions." },
-            bruteForceStart: { description: "Starts the brute-force search for the T2 criteria combination that maximizes the selected target metric in the current cohort. This may take some time and runs in the background." },
-            bruteForceInfo: { description: "Shows the status of the optimization worker and the currently analyzed patient cohort: <strong>[COHORT_NAME]</strong>." },
-            bruteForceProgress: { description: "Progress of the ongoing optimization: Tested combinations / Total count ([TOTAL]). Displays the current best metric and the corresponding criteria." },
-            bruteForceResult: {
-                description: "Best result of the completed brute-force optimization for the selected cohort ([N_TOTAL] patients, including [N_PLUS] N+ and [N_MINUS] N-) and the target metric.",
-                cohortStats: "Statistics of the cohort used for this optimization: N (total count), N+ (count N-positive), N- (count N-negative)."
-            },
-            bruteForceDetailsButton: { description: "Opens a window with the top 10 results and more details about the completed optimization." },
-            bruteForceModal: { exportButton: "Exports the detailed report of the brute-force optimization (Top 10 results, cohort statistics, configuration) as a formatted text file (.txt)." },
-            statisticsLayout: { description: "Select the display mode: <strong>Single View</strong> for the globally selected cohort or <strong>Comparison Active</strong> to select and compare two specific cohorts." },
-            statisticsCohort1: { description: "Select the first cohort for statistical analysis or comparison (only active in 'Comparison Active' layout)." },
-            statisticsCohort2: { description: "Select the second cohort for comparison (only active in 'Comparison Active' layout)." },
-            statisticsToggleComparison: { description: "Toggle between the detailed single view for the globally selected cohort and the comparison view of two specifically chosen cohorts." },
-            descriptiveStatistics: {
-                cardTitle: "Demographics, clinical data, and baseline lymph node counts for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs.",
-                age: { name: "Age", description: "Patient age in years." },
-                sex: { name: "Sex", description: "Patient's sex (male/female/unknown)." },
-                therapy: { name: "Therapy", description: "Therapy administered before surgery (neoadjuvantTherapy, surgeryAlone)." },
-                nStatus: { name: "N-Status", description: "Histopathological lymph node status (N+ / N-)." },
-                asStatus: { name: "AS-Status", description: "Avocado Sign status (AS+ / AS-)." },
-                t2Status: { name: "T2-Status", description: "T2-weighted MRI lymph node status (T2+ / T2-) based on applied criteria." },
-                lnCounts_n_total: { name: "LN N total", description: "Total number of histopathologically examined lymph nodes per patient." },
-                lnCounts_n_plus: { name: "LN N+", description: "Number of pathologically positive lymph nodes per patient, only in N+ patients (n=[n])." },
-                lnCounts_as_total: { name: "LN AS total", description: "Total number of lymph nodes visible on T1-CE MRI per patient." },
-                lnCounts_as_plus: { name: "LN AS+", description: "Number of Avocado Sign positive lymph nodes per patient, only in AS+ patients (n=[n])." },
-                lnCounts_t2_total: { name: "LN T2 total", description: "Total number of lymph nodes visible on T2-MRI per patient." },
-                lnCounts_t2_plus: { name: "LN T2+", description: "Number of T2-positive lymph nodes per patient (based on applied criteria), only in T2+ patients (n=[n])." },
-                chartAge: { name: "Age Distribution Chart", description: "Histogram showing the distribution of patient ages in the [COHORT] cohort." },
-                chartGender: { name: "Sex Distribution Chart", description: "Pie chart illustrating the distribution of male and female patients in the [COHORT] cohort." }
-            },
-            diagnosticPerformanceAS: { cardTitle: "Diagnostic performance of the Avocado Sign (AS) vs. Histopathology (N) for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs." },
-            diagnosticPerformanceT2: { cardTitle: "Diagnostic performance of the currently applied T2 criteria vs. Histopathology (N) for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs." },
-            statisticalComparisonASvsT2: { cardTitle: "Statistical comparison of the diagnostic performance of AS vs. currently applied T2 criteria (paired tests) in cohort <strong>[COHORT]</strong>." },
-            associationSingleCriteria: { cardTitle: "Association between AS status or individual T2 features and N-status (+/-) in cohort <strong>[COHORT]</strong>. OR: Odds Ratio, RD: Risk Difference, φ: Phi Coefficient. All CIs are 95% CIs." },
-            cohortComparison: { cardTitle: "Statistical comparison of Accuracy and AUC (for AS and T2) between <strong>[COHORT1]</strong> and <strong>[COHORT2]</strong> (unpaired tests)." },
-            criteriaComparisonTable: {
-                cardTitle: "Tabular performance comparison: Avocado Sign, applied T2 criteria, and literature sets for the globally selected cohort <strong>[GLOBAL_COHORT_NAME]</strong>. Literature-based sets are evaluated on their specific target cohort if different (indicated in parentheses). All values are without CIs.",
-                tableHeaderSet: "Method / Criteria Set (Eval. on Cohort N)",
-                tableHeaderSens: "Sens.",
-                tableHeaderSpec: "Spec.",
-                tableHeaderPPV: "PPV",
-                tableHeaderNPV: "NPV",
-                tableHeaderAcc: "Acc.",
-                tableHeaderAUC: "AUC/Bal. Acc."
-            },
-            presentation: {
-                viewSelect: { description: "Select the view: <strong>Avocado Sign (Performance)</strong> for an overview of AS performance, or <strong>AS vs. T2 (Comparison)</strong> for a direct comparison of AS with a selectable T2 criteria basis." },
-                studySelect: { description: "Select a T2 criteria basis for comparison with the Avocado Sign. Options: currently applied criteria in the app or predefined sets from published studies. The selection updates the comparisons below. The global cohort may adapt to the study's target cohort." },
-                t2BasisInfoCard: {
-                    title: "Information on T2 Comparison Basis",
-                    description: "Shows details about the selected T2 criteria for comparison with AS and the current comparison cohort.",
-                    reference: "Study reference or source of the criteria.",
-                    patientCohort: "Original study cohort or current comparison cohort (with patient count).",
-                    investigationType: "Type of examination in the original study (e.g., primary staging, restaging).",
-                    focus: "Main focus of the original study regarding these criteria.",
-                    keyCriteriaSummary: "Summary of the applied T2 criteria and their logic."
-                },
-                asPurPerfTable: {
-                    cohort: "Patient cohort and its size (N).",
-                    sens: "Sensitivity of the Avocado Sign (vs. N) in this cohort.",
-                },
-                asVsT2PerfTable: {
-                    metric: "Diagnostic metric.",
-                    asValue: "Value for Avocado Sign (AS) (vs. N) in cohort <strong>[COHORT_NAME_COMPARISON]</strong>, incl. 95% CI.",
-                    t2Value: "Value for the T2 basis <strong>[T2_SHORT_NAME]</strong> (vs. N) in cohort <strong>[COHORT_NAME_COMPARISON]</strong>, incl. 95% CI."
-                },
-                asVsT2TestTable: {
-                    test: "Statistical test comparing AS vs. <strong>[T2_SHORT_NAME]</strong>.",
-                    statistic: "Value of the test statistic.",
-                    pValue: "p-value of the test. p < 0.05 indicates a statistically significant difference between AS and <strong>[T2_SHORT_NAME]</strong> regarding the tested metric (Accuracy or AUC) in cohort <strong>[COHORT_NAME_COMPARISON]</strong>.",
-                    method: "Name of the statistical test used."
-                }
-            },
-            exportTab: {
-                description: "Allows exporting analysis results, tables, and charts based on the currently selected global cohort ([COHORT]) and the currently applied T2 criteria.",
-                statscsv: { description: "Detailed table of all calculated statistical metrics (descriptive, AS & T2 performance, comparisons, associations) from the Statistics tab as a CSV file.", type: 'STATS_CSV', ext: "csv" },
-                bruteforcetxt: { description: "Detailed report of the last brute-force optimization for the current cohort (Top 10 results, configuration) as a text file (.txt), if performed.", type: 'BRUTEFORCE_TXT', ext: "txt" },
-                datamd: { description: "Current data list (Data tab) as a Markdown table (.md).", type: 'DATA_MD', ext: "md" },
-                analysismd: { description: "Current analysis table (Analysis tab, incl. T2 results) as a Markdown (.md) file.", type: 'ANALYSIS_MD', ext: "md" },
-                filtereddatacsv: { description: "Raw data of the currently selected cohort (incl. T2 evaluation) as a CSV file (.csv).", type: 'FILTERED_DATA_CSV', ext: "csv" },
-                comprehensivereport_html: { description: "Comprehensive analysis report as an HTML file (statistics, configurations, charts), printable.", type: 'COMPREHENSIVE_REPORT_HTML', ext: "html" },
-                allzip: { description: "All available single files (Statistics CSV, BruteForce TXT, all MDs, Raw Data CSV, HTML Report) in one ZIP archive.", type: 'ALL_ZIP', ext: "zip"},
-                csvzip: { description: "All available CSV files (Statistics, Raw Data) in one ZIP archive.", type: 'CSV_ZIP', ext: "zip"},
-                mdzip: { description: "All available Markdown files (Descriptive, Data, Analysis, Publication Texts) in one ZIP archive.", type: 'MD_ZIP', ext: "zip"},
-                pngzip: { description: "All currently visible charts (Statistics, Analysis, Presentation) and selected tables as individual PNG files (ZIP archive).", type: 'PNG_ZIP', ext: "zip" },
-                svgzip: { description: "All currently visible charts (Statistics, Analysis, Presentation) as individual SVG files (ZIP archive).", type: 'SVG_ZIP', ext: "zip"}
+            association: {
+                or: { title: 'Odds Ratio (OR)', interpretation: (v, ci) => `The odds of being N+ are ${formatNumber(v, 2, 'N/A', true)} times higher for patients with this feature compared to those without. The 95% CI of ${formatNumber(ci.lower, 2, 'N/A', true)} to ${formatNumber(ci.upper, 2, 'N/A', true)} ${ci.lower > 1 ? 'does not include 1, indicating a statistically significant positive association.' : (ci.upper < 1 ? 'does not include 1, indicating a statistically significant negative association.' : 'includes 1, so the association is not statistically significant.')}` },
+                rd: { title: 'Risk Difference (RD)', interpretation: (v, ci) => `The absolute risk of being N+ is ${formatNumber(Math.abs(v) * 100, 1)} percentage points ${v > 0 ? 'higher' : 'lower'} for patients with this feature. The 95% CI is from ${formatNumber(ci.lower * 100, 1)}% to ${formatNumber(ci.upper * 100, 1)}%.` },
+                phi: { title: 'Phi Coefficient (φ)', interpretation: (v) => `A Phi coefficient of ${formatNumber(v, 2, 'N/A', true)} indicates a ${getPhiInterpretation(v)} association between this feature and the N-status.` },
+                mwu: { title: 'Mann-Whitney U Test', interpretation: (p) => `Compares the distribution of lymph node sizes between N+ and N- groups. A p-value of ${getPValueText(p, true)} suggests the size difference is ${getStatisticalSignificanceSymbol(p) === 'ns' ? 'not ' : ''}statistically significant.` },
+                fisher: { title: 'Fisher\'s Exact Test (p-value)', interpretation: (p) => `This test assesses the association between this categorical feature and N-status. A p-value of ${getPValueText(p, true)} indicates the association is ${getStatisticalSignificanceSymbol(p) === 'ns' ? 'not ' : ''}statistically significant.` }
             }
         })
     }),
