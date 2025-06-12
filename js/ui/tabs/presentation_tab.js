@@ -151,7 +151,7 @@ const presentationTab = (() => {
         return `<div class="row mb-4"><div class="col-12"><h4 class="text-center mb-1">Comparison: Avocado Sign vs. T2 Criteria</h4><p class="text-center text-muted small mb-3">Current comparison cohort: <strong>${displayCohortForComparison}</strong> ${cohortNotice}</p><div class="row justify-content-center"><div class="col-md-9 col-lg-7"><div class="input-group input-group-sm"><label class="input-group-text" for="pres-study-select">T2 Comparison Basis:</label><select class="form-select" id="pres-study-select"><option value="" ${!selectedStudyId ? 'selected' : ''} disabled>-- Please select --</option>${appliedOptionHTML}<option value="" disabled>--- Published Criteria ---</option>${studyOptionsHTML}</select></div></div></div></div></div><div id="presentation-as-vs-t2-results">${resultsHTML}</div>`;
     }
 
-    function render(view, presentationData, selectedStudyIdFromState, currentGlobalCohort, processedData, criteria, logic) {
+    function render(view, presentationData, selectedStudyIdFromState, currentGlobalCohort, processedData) {
         let chartDataForComparison = [];
         let t2ShortNameEffectiveForChart = "T2";
 
