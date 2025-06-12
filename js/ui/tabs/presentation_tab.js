@@ -16,11 +16,8 @@ const presentationTab = (() => {
         const createPerfTableRow = (stats, cohortKey) => {
             const cohortDisplayName = getCohortDisplayName(cohortKey);
             const na = '--';
-            const fCI_p = (m, k) => { 
-                const d = (k === 'auc') ? 2 : ((k === 'f1') ? 3 : 1); 
-                const p = !(k === 'auc' || k === 'f1'); 
-                return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, d, p, na); 
-            };
+            const fVal = (m) => JSON.stringify({ value: m?.value, ci: m?.ci });
+
             if (!stats || typeof stats.matrix !== 'object') {
                 const nPatients = stats?.patientCount || '?';
                 return `<tr><td class="fw-bold">${cohortDisplayName} (N=${nPatients})</td><td colspan="6" class="text-muted text-center">Data missing</td></tr>`;
@@ -28,9 +25,12 @@ const presentationTab = (() => {
             const count = stats.matrix ? (stats.matrix.tp + stats.matrix.fp + stats.matrix.fn + stats.matrix.tn) : 0;
             return `<tr>
                         <td class="fw-bold">${cohortDisplayName} (N=${count})</td>
-                        <td>${fCI_p(stats.sens, 'sens')}</td><td>${fCI_p(stats.spec, 'spec')}</td>
-                        <td>${fCI_p(stats.ppv, 'ppv')}</td><td>${fCI_p(stats.npv, 'npv')}</td>
-                        <td>${fCI_p(stats.acc, 'acc')}</td><td>${fCI_p(stats.auc, 'auc')}</td>
+                        <td data-tooltip-key="performance.sens" data-tooltip-value='${fVal(stats.sens)}'>${formatCI(stats.sens?.value, stats.sens?.ci?.lower, stats.sens?.ci?.upper, 1, true, na)}</td>
+                        <td data-tooltip-key="performance.spec" data-tooltip-value='${fVal(stats.spec)}'>${formatCI(stats.spec?.value, stats.spec?.ci?.lower, stats.spec?.ci?.upper, 1, true, na)}</td>
+                        <td data-tooltip-key="performance.ppv" data-tooltip-value='${fVal(stats.ppv)}'>${formatCI(stats.ppv?.value, stats.ppv?.ci?.lower, stats.ppv?.ci?.upper, 1, true, na)}</td>
+                        <td data-tooltip-key="performance.npv" data-tooltip-value='${fVal(stats.npv)}'>${formatCI(stats.npv?.value, stats.npv?.ci?.lower, stats.npv?.ci?.upper, 1, true, na)}</td>
+                        <td data-tooltip-key="performance.acc" data-tooltip-value='${fVal(stats.acc)}'>${formatCI(stats.acc?.value, stats.acc?.ci?.lower, stats.acc?.ci?.upper, 1, true, na)}</td>
+                        <td data-tooltip-key="performance.auc" data-tooltip-value='${fVal(stats.auc)}'>${formatCI(stats.auc?.value, stats.auc?.ci?.lower, stats.auc?.ci?.upper, 2, false, na)}</td>
                     </tr>`;
         };
         const tableId = "pres-as-perf-table";
@@ -41,7 +41,15 @@ const presentationTab = (() => {
                 <div class="card h-100">
                     <div class="card-header d-flex justify-content-between align-items-center"><span>AS Performance vs. N for All Cohorts</span>${uiComponents.createHeaderButtonHTML([{id: `dl-${tableId}-png`, icon: 'fa-image', format: 'png', tableId: tableId, tableName: `Pres_AS_Perf_Overview`}], tableId, "AS_Performance_Overview")}</div>
                     <div class="card-body p-0"><div class="table-responsive"><table class="table table-striped table-hover table-sm small mb-0" id="${tableId}">
-                        <thead class="small"><tr><th>Cohort</th><th>Sens. (95% CI)</th><th>Spec. (95% CI)</th><th>PPV (95% CI)</th><th>NPV (95% CI)</th><th>Acc. (95% CI)</th><th>AUC (95% CI)</th></tr></thead>
+                        <thead class="small"><tr>
+                            <th>Cohort</th>
+                            <th data-tooltip-key="performance.sens">Sens. (95% CI)</th>
+                            <th data-tooltip-key="performance.spec">Spec. (95% CI)</th>
+                            <th data-tooltip-key="performance.ppv">PPV (95% CI)</th>
+                            <th data-tooltip-key="performance.npv">NPV (95% CI)</th>
+                            <th data-tooltip-key="performance.acc">Acc. (95% CI)</th>
+                            <th data-tooltip-key="performance.auc">AUC (95% CI)</th>
+                        </tr></thead>
                         <tbody>${cohortsData.map(c => createPerfTableRow(c.stats, c.id)).join('')}</tbody>
                     </table></div></div>
                     <div class="card-footer text-end p-1">
@@ -88,21 +96,33 @@ const presentationTab = (() => {
             const t2ShortNameEffective = t2ShortName || (comparisonCriteriaSet?.displayShortName || 'T2');
             const metrics = ['sens', 'spec', 'ppv', 'npv', 'acc', 'balAcc', 'f1', 'auc'];
             const metricNames = { sens: 'Sensitivity', spec: 'Specificity', ppv: 'PPV', npv: 'NPV', acc: 'Accuracy', balAcc: 'Bal. Accuracy', f1: 'F1-Score', auc: 'AUC' };
-            let comparisonTableHTML = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0" id="pres-as-vs-t2-comp-table"><thead class="small"><tr><th>Metric</th><th>AS (Value, 95% CI)</th><th>${t2ShortNameEffective} (Value, 95% CI)</th></tr></thead><tbody>`;
+            const fVal = (m) => JSON.stringify({ value: m?.value, ci: m?.ci });
+
+            let comparisonTableHTML = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0" id="pres-as-vs-t2-comp-table"><thead class="small"><tr>
+                <th data-tooltip-key="performance.metric">Metric</th>
+                <th>AS (Value, 95% CI)</th>
+                <th>${t2ShortNameEffective} (Value, 95% CI)</th>
+                </tr></thead><tbody>`;
             metrics.forEach(key => {
                 const isRate = !(key === 'f1' || key === 'auc'); 
                 const digits = (key === 'auc') ? 2 : ((key === 'f1') ? 3 : 1);
                 const valAS = formatCI(performanceAS[key]?.value, performanceAS[key]?.ci?.lower, performanceAS[key]?.ci?.upper, digits, isRate, '--');
                 const valT2 = formatCI(performanceT2[key]?.value, performanceT2[key]?.ci?.lower, performanceT2[key]?.ci?.upper, digits, isRate, '--');
-                comparisonTableHTML += `<tr><td>${metricNames[key]}</td><td>${valAS}</td><td>${valT2}</td></tr>`;
+                comparisonTableHTML += `<tr>
+                    <td data-tooltip-key="performance.${key}">${metricNames[key]}</td>
+                    <td data-tooltip-key="performance.${key}" data-tooltip-value='${fVal(performanceAS[key])}'>${valAS}</td>
+                    <td data-tooltip-key="performance.${key}" data-tooltip-value='${fVal(performanceT2[key])}'>${valT2}</td></tr>`;
             });
             comparisonTableHTML += `</tbody></table></div>`;
             const comparisonTableCardHTML = uiComponents.createStatisticsCard('pres-as-vs-t2-comp-table_card', `Performance Metrics (AS vs. ${t2ShortNameEffective})`, comparisonTableHTML, false, null, [{id: 'dl-pres-as-vs-t2-comp-table-png', icon: 'fa-image', format: 'png', tableId: 'pres-as-vs-t2-comp-table', tableName: `Pres_ASvsT2_Metrics_${comparisonCriteriaSet?.id || 'T2'}`}]);
 
             const fPVal = (r) => (r?.pValue !== null && !isNaN(r?.pValue)) ? (getPValueText(r.pValue, 'en', true)) : '--';
+            const fValMcNemar = JSON.stringify({ stat: comparison.mcnemar?.statistic, p: comparison.mcnemar?.pValue });
+            const fValDeLong = JSON.stringify({ stat: comparison.delong?.Z, p: comparison.delong?.pValue });
+
             let testsTableHTML = `<table class="table table-sm table-striped small mb-0" id="pres-as-vs-t2-test-table"><thead class="small visually-hidden"><tr><th>Test</th><th>Statistic</th><th>p-Value</th><th>Method</th></tr></thead><tbody>`;
-            testsTableHTML += `<tr><td>McNemar (Acc)</td><td>${formatNumber(comparison?.mcnemar?.statistic, 3, '--', true)} (df=${comparison?.mcnemar?.df || '--'})</td><td>${fPVal(comparison?.mcnemar)} ${getStatisticalSignificanceSymbol(comparison?.mcnemar?.pValue)}</td><td class="text-muted">${comparison?.mcnemar?.method || '--'}</td></tr>`;
-            testsTableHTML += `<tr><td>DeLong (AUC)</td><td>Z=${formatNumber(comparison?.delong?.Z, 3, '--', true)}</td><td> ${fPVal(comparison?.delong)} ${getStatisticalSignificanceSymbol(comparison?.delong?.pValue)}</td><td class="text-muted">${comparison?.delong?.method || '--'}</td></tr>`;
+            testsTableHTML += `<tr><td data-tooltip-key="comparison.mcnemar">McNemar (Acc)</td><td>${formatNumber(comparison?.mcnemar?.statistic, 3, '--', true)} (df=${comparison?.mcnemar?.df || '--'})</td><td data-tooltip-key="comparison.mcnemar" data-tooltip-value='${fValMcNemar}'>${fPVal(comparison?.mcnemar)} ${getStatisticalSignificanceSymbol(comparison?.mcnemar?.pValue)}</td><td class="text-muted">${comparison?.mcnemar?.method || '--'}</td></tr>`;
+            testsTableHTML += `<tr><td data-tooltip-key="comparison.delong">DeLong (AUC)</td><td>Z=${formatNumber(comparison?.delong?.Z, 3, '--', true)}</td><td data-tooltip-key="comparison.delong" data-tooltip-value='${fValDeLong}'>${fPVal(comparison?.delong)} ${getStatisticalSignificanceSymbol(comparison?.delong?.pValue)}</td><td class="text-muted">${comparison?.delong?.method || '--'}</td></tr>`;
             testsTableHTML += `</tbody></table>`;
             const testsCardHTML = uiComponents.createStatisticsCard('pres-as-vs-t2-test-table_card', `Statistical Comparison (AS vs. ${t2ShortNameEffective})`, testsTableHTML, false, null, [{id: `dl-pres-as-vs-t2-test-table-png`, icon: 'fa-image', format: 'png', tableId: 'pres-as-vs-t2-test-table', tableName: `Pres_ASvsT2_Tests_${comparisonCriteriaSet?.id || 'T2'}`}]);
             
