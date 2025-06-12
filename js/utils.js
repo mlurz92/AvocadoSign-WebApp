@@ -277,7 +277,7 @@ function clampNumber(num, min, max) {
 
 function getAUCInterpretation(aucValue) {
     const value = parseFloat(aucValue);
-    if (isNaN(value) || value < 0 || value > 1) return APP_CONFIG.UI_TEXTS.statMetrics.associationStrengthTexts.undetermined;
+    if (isNaN(value) || value < 0 || value > 1) return 'undetermined';
     if (value >= 0.9) return 'excellent';
     if (value >= 0.8) return 'good';
     if (value >= 0.7) return 'moderate';
@@ -287,12 +287,32 @@ function getAUCInterpretation(aucValue) {
 
 function getPhiInterpretation(phiValue) {
     const value = parseFloat(phiValue);
-    if (isNaN(value)) return APP_CONFIG.UI_TEXTS.statMetrics.associationStrengthTexts.undetermined;
+    if (isNaN(value)) return 'undetermined';
     const absPhi = Math.abs(value);
-    const texts = APP_CONFIG.UI_TEXTS.statMetrics.associationStrengthTexts;
+    const texts = {
+        strong: "strong",
+        moderate: "moderate",
+        weak: "weak",
+        very_weak: "very weak"
+    };
     if (absPhi >= 0.5) return texts.strong;
     if (absPhi >= 0.3) return texts.moderate;
     if (absPhi >= 0.1) return texts.weak;
+    return texts.very_weak;
+}
+
+function getORInterpretation(orValue) {
+    const value = Math.abs(parseFloat(orValue));
+    if (isNaN(value)) return 'undetermined';
+    const texts = {
+        strong: "strong",
+        moderate: "moderate",
+        weak: "weak",
+        very_weak: "very weak"
+    };
+    if (value >= 10 || value <= 0.1) return texts.strong;
+    if (value >= 3 || value <= 0.33) return texts.moderate;
+    if (value >= 1.5 || value <= 0.67) return texts.weak;
     return texts.very_weak;
 }
 
@@ -300,6 +320,94 @@ function escapeHTML(text) {
     if (typeof text !== 'string') return text === null ? '' : String(text);
     const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
     return text.replace(/[&<>"']/g, match => map[match]);
+}
+
+function getDefinitionTooltip(metricKey) {
+    const definition = APP_CONFIG.UI_TEXTS.tooltips.definition[metricKey];
+    if (!definition) return `Definition for '${metricKey}' not found.`;
+    return `<strong>${escapeHTML(definition.title)}</strong><br>${definition.text}`;
+}
+
+function getInterpretationTooltip(metricKey, data, context = {}) {
+    const templates = APP_CONFIG.UI_TEXTS.tooltips.interpretation;
+    if (!templates[metricKey]) return `Interpretation for '${metricKey}' not found.`;
+    let text = '';
+
+    if (metricKey === 'pValue') {
+        const pValue = data.pValue;
+        if (pValue === null || pValue === undefined || isNaN(pValue)) return 'p-value not available.';
+        const pValueFormatted = getPValueText(pValue);
+        const significance = pValue < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL;
+        const significanceText = significance ? templates.significance.significant : templates.significance.not_significant;
+        const strength = significance ? templates.strength.strong : templates.strength.very_weak;
+
+        let template = templates.pValue.default;
+        if (data.testName?.includes("McNemar")) template = templates.pValue.mcnemar;
+        else if (data.testName?.includes("DeLong")) template = templates.pValue.delong;
+        else if (data.testName?.includes("Fisher")) template = templates.pValue.fisher;
+
+        text = template
+            .replace('{pValue}', `<strong>${pValueFormatted}</strong>`)
+            .replace('{significanceText}', `<strong>${significanceText}</strong>`)
+            .replace('{strength}', strength)
+            .replace('{comparison}', `<strong>${escapeHTML(context.comparisonName)}</strong>`)
+            .replace('{metric}', `<strong>${escapeHTML(context.metricName)}</strong>`)
+            .replace('{method1}', `<strong>${escapeHTML(context.method1)}</strong>`)
+            .replace('{method2}', `<strong>${escapeHTML(context.method2)}</strong>`)
+            .replace('{featureName}', `<strong>${escapeHTML(data.featureName)}</strong>`);
+
+    } else if (metricKey === 'or') {
+        const or = data?.value;
+        if (or === null || or === undefined || isNaN(or)) return 'Odds Ratio not available.';
+        const direction = or > 1 ? templates.direction.increased : (or < 1 ? templates.direction.decreased : templates.direction.unchanged);
+        const strength = getORInterpretation(or);
+        const featureName = data.featureName || 'this feature';
+        
+        text = templates.or.value
+            .replace('{value}', `<strong>${formatNumber(or, 2)}</strong>`)
+            .replace('{direction}', direction)
+            .replace('{featureName}', `<strong>${escapeHTML(featureName)}</strong>`)
+            .replace('{strength}', strength);
+            
+        if(data.ci) {
+            const includesOne = data.ci.lower < 1 && data.ci.upper > 1;
+            const ciText = includesOne ? templates.ci.includesOne : templates.ci.excludesOne;
+            text += '<br>' + templates.or.ci
+                .replace('{lower}', `<strong>${formatNumber(data.ci.lower, 2)}</strong>`)
+                .replace('{upper}', `<strong>${formatNumber(data.ci.upper, 2)}</strong>`)
+                .replace('{ciInterpretationText}', ciText);
+        }
+
+    } else if (metricKey === 'rd') {
+        const rd = data?.value;
+        if (rd === null || rd === undefined || isNaN(rd)) return 'Risk Difference not available.';
+        const direction = rd > 0 ? templates.direction.increased : (rd < 0 ? templates.direction.decreased : templates.direction.unchanged);
+        const featureName = data.featureName || 'this feature';
+
+        text = templates.rd.value
+            .replace('{value}', `<strong>${formatPercent(rd, 1)}</strong>`)
+            .replace('{direction}', direction)
+            .replace('{featureName}', `<strong>${escapeHTML(featureName)}</strong>`);
+
+        if(data.ci) {
+            const includesZero = data.ci.lower < 0 && data.ci.upper > 0;
+            const ciText = includesZero ? templates.ci.includesZero : templates.ci.excludesZero;
+            text += '<br>' + templates.rd.ci
+                .replace('{lower}', `<strong>${formatPercent(data.ci.lower, 1)}</strong>`)
+                .replace('{upper}', `<strong>${formatPercent(data.ci.upper, 1)}</strong>`)
+                .replace('{ciInterpretationText}', ciText);
+        }
+    } else if (metricKey === 'phi') {
+        const phi = data?.value;
+        if (phi === null || phi === undefined || isNaN(phi)) return 'Phi Coefficient not available.';
+        const strength = getPhiInterpretation(phi);
+        const featureName = data.featureName || 'this feature';
+        text = templates.phi.value
+            .replace('{value}', `<strong>${formatNumber(phi, 2)}</strong>`)
+            .replace('{strength}', `<strong>${strength}</strong>`)
+            .replace('{featureName}', `<strong>${escapeHTML(featureName)}</strong>`);
+    }
+    return text;
 }
 
 function getT2IconSVG(type, value) {
