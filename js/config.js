@@ -9,7 +9,7 @@ const DEFAULT_T2_CRITERIA = Object.freeze({
 
 const APP_CONFIG = Object.freeze({
     APP_NAME: "Nodal Staging: Avocado Sign vs. T2 Criteria",
-    APP_VERSION: "3.0.1",
+    APP_VERSION: "3.0.0",
     COHORTS: Object.freeze({
         OVERALL: { id: 'Overall', therapyValue: null, displayName: 'Overall' },
         SURGERY_ALONE: { id: 'surgeryAlone', therapyValue: 'surgeryAlone', displayName: 'Surgery alone' },
@@ -81,7 +81,7 @@ const APP_CONFIG = Object.freeze({
         ICON_SIZE: 20,
         ICON_STROKE_WIDTH: 1.5,
         ICON_COLOR: 'var(--text-dark)',
-        TOOLTIP_DELAY: Object.freeze([300, 100]),
+        TOOLTIP_DELAY: Object.freeze([200, 100]),
         TOAST_DURATION_MS: 4500,
         TRANSITION_DURATION_MS: 350,
         STICKY_HEADER_OFFSET: '111px'
@@ -185,11 +185,7 @@ const APP_CONFIG = Object.freeze({
         REFERENCE_KIM_2019: { id: 21, text: "Kim SH, Song BI, Kim BW et al (2019) Predictive value of [18F]FDG PET/CT for lymph node metastasis in rectal cancer. Sci Rep 9:4979. https://doi.org/10.1038/s41598-019-41422-8" },
         REFERENCE_ZHOU_2021: { id: 22, text: "Zhou H, Lei PJ, Padera TP (2021) Progression of metastasis through lymphatic system. Cells 10:1–23. https://doi.org/10.3390/cells10030627" },
         REFERENCE_LURZ_SCHAEFER_2025: { id: 23, text: "Lurz M, Schäfer AO (2025) The Avocado Sign: A novel imaging marker for nodal staging in rectal cancer. Eur Radiol. https://doi.org/10.1007/s00330-025-11462-y" },
-        REFERENCE_RUTEGARD_2025: { id: 24, text: "Rutegård J, Hallberg L, Carlsson J, Olsson J, Jarnheimer A (2025) Anatomically matched mesorectal nodal structures: evaluation of the 2016 ESGAR consensus criteria. Eur Radiol. https://doi.org/10.1007/s00330-024-11357-1" },
-        REFERENCE_BARBARO_2024_PDF: { id: 25, text: "Barbaro B, Carafa MRP, Minordi LM et al (2024) Magnetic resonance imaging for assessment of rectal cancer nodes after chemoradiotherapy: a single center experience. Radiother Oncol 193:110124. https://doi.org/10.1016/j.radonc.2024.110124" },
-        REFERENCE_BEETS_TAN_2018_PDF: { id: 26, text: "Beets-Tan RGH, Lambregts DMJ, Maas M et al (2018) Magnetic resonance imaging for clinical management of rectal cancer: updated recommendations from the 2016 European Society of Gastrointestinal and Abdominal Radiology (ESGAR) consensus meeting. Eur Radiol 28:1465–1475. https://doi.org/10.1007/s00330-017-5026-2" },
-        REFERENCE_KOH_2008_PDF: { id: 27, text: "Koh DM, Chau I, Tait D, Wotherspoon A, Cunningham D, Brown G (2008) Evaluating mesorectal lymph nodes in rectal cancer before and after neoadjuvant chemoradiation using thin-section T2-weighted magnetic resonance imaging. Int J Radiat Oncol Biol Phys 71:456–461. https://doi.org/10.1016/j.ijrobp.2007.10.016" },
-        REFERENCE_RUTEGARD_2025_PDF: { id: 28, text: "Rutegård J, Hallberg L, Carlsson J, Olsson J, Jarnheimer A (2025) Anatomically matched mesorectal nodal structures: evaluation of the 2016 ESGAR consensus criteria. Eur Radiol. https://doi.org/10.1007/s00330-024-11357-1" }
+        REFERENCE_RUTEGARD_2025: { id: 24, text: "Rutegård J, Hallberg L, Carlsson J, Olsson J, Jarnheimer A (2025) Anatomically matched mesorectal nodal structures: evaluation of the 2016 ESGAR consensus criteria. Eur Radiol. https://doi.org/10.1007/s00330-024-11357-1" }
     }),
     UI_TEXTS: Object.freeze({
         cohortDisplayNames: {
@@ -246,350 +242,338 @@ const APP_CONFIG = Object.freeze({
             t2Positive: 'T2+',
             t2Negative: 'T2-'
         },
+        statMetrics: {
+            significanceTexts: {
+                SIGNIFICANT: "statistically significant",
+                NOT_SIGNIFICANT: "not statistically significant"
+            },
+            orFactorTexts: {
+                INCREASED: "increased",
+                DECREASED: "decreased",
+                UNCHANGED: "unchanged"
+            },
+            rdDirectionTexts: {
+                HIGHER: "higher",
+                LOWER: "lower",
+                EQUAL: "equal"
+            },
+            associationStrengthTexts: {
+                strong: "strong",
+                moderate: "moderate",
+                weak: "weak",
+                very_weak: "very weak",
+                undetermined: "undetermined"
+            }
+        },
         tooltips: Object.freeze({
-            statisticsTab: {
-                diagnosticPerformance: {
-                    sens: {
-                        description: '<strong>Sensitivity (True Positive Rate)</strong><br>Measures the proportion of actual positives that are correctly identified. It answers: Of all patients with lymph node metastases, what percentage did the test correctly identify as positive?',
-                        interpretation: 'A Sensitivity of <strong>{value}</strong> means that the test correctly identified <strong>{value}</strong> of all patients who truly had lymph node metastases.'
-                    },
-                    spec: {
-                        description: '<strong>Specificity (True Negative Rate)</strong><br>Measures the proportion of actual negatives that are correctly identified. It answers: Of all patients without lymph node metastases, what percentage did the test correctly identify as negative?',
-                        interpretation: 'A Specificity of <strong>{value}</strong> means that the test correctly identified <strong>{value}</strong> of all patients who truly did not have lymph node metastases.'
-                    },
-                    ppv: {
-                        description: '<strong>Positive Predictive Value (PPV)</strong><br>The probability that a patient with a positive test result actually has the condition. It answers: If a patient tests positive, what is the probability that they truly have lymph node metastases?',
-                        interpretation: 'A PPV of <strong>{value}</strong> means there is a <strong>{value}</strong> probability that a patient with a positive test result actually has lymph node metastases.'
-                    },
-                    npv: {
-                        description: '<strong>Negative Predictive Value (NPV)</strong><br>The probability that a patient with a negative test result is truly free of the condition. It answers: If a patient tests negative, what is the probability that they truly do not have lymph node metastases?',
-                        interpretation: 'An NPV of <strong>{value}</strong> means there is a <strong>{value}</strong> probability that a patient with a negative test result is truly free of lymph node metastases.'
-                    },
-                    acc: {
-                        description: '<strong>Accuracy</strong><br>The overall proportion of correct classifications (both true positives and true negatives) among the total number of cases examined.',
-                        interpretation: 'An Accuracy of <strong>{value}</strong> means that the test correctly classified <strong>{value}</strong> of all patients.'
-                    },
-                    balAcc: {
-                        description: '<strong>Balanced Accuracy</strong><br>The average of Sensitivity and Specificity. It is a useful metric for imbalanced datasets, as it is not skewed by large differences in the number of positive and negative cases. It is arithmetically equivalent to the AUC for binary classifiers.',
-                        interpretation: 'A Balanced Accuracy of <strong>{value}</strong> indicates the average performance across both positive and negative classes, providing a more robust measure than standard accuracy for imbalanced cohorts.'
-                    },
-                    f1: {
-                        description: '<strong>F1-Score</strong><br>The harmonic mean of Precision (PPV) and Recall (Sensitivity). It provides a single score that balances both concerns. A score of 1.0 is perfect, while 0.0 is worst.',
-                        interpretation: 'An F1-Score of <strong>{value}</strong> represents the balance between precision and recall. A higher value indicates better overall performance in identifying positive cases.'
-                    },
-                    auc: {
-                        description: '<strong>Area Under the ROC Curve (AUC)</strong><br>Represents the ability of a test to distinguish between positive and negative classes. An AUC of 1.0 is a perfect test; an AUC of 0.5 indicates no discriminative ability (equivalent to chance). For a binary test like this, it is equivalent to Balanced Accuracy.',
-                        interpretation: 'An AUC of <strong>{value}</strong> indicates that there is a <strong>{value_pct}</strong> chance that the model will rank a randomly chosen positive instance higher than a randomly chosen negative one. This value suggests <strong>{interpretation}</strong> diagnostic performance.'
-                    }
+            quickGuideButton: { description: "Show a quick guide and important notes about the application." },
+            cohortButtons: { description: "Select the patient cohort for the analysis: <strong>Overall</strong>, <strong>Surgery alone</strong>, or <strong>Neoadjuvant therapy</strong>. This choice filters the data for all application tabs." },
+            headerStats: {
+                cohort: "Currently selected patient cohort for analysis.",
+                patientCount: "Total number of patients in the selected cohort.",
+                statusN: "Percentage of N+ patients (Pathology).",
+                statusAS: "Percentage of AS+ patients (Prediction).",
+                statusT2: "Percentage of T2+ patients (Applied Criteria)."
+            },
+            mainTabs: {
+                data: "Display the list of all patient data in the selected cohort with basic information and status (N/AS/T2). Allows sorting and expanding details on T2 lymph node features.",
+                analysis: "Central tab for defining T2 criteria, viewing a descriptive dashboard, running brute-force optimization, and detailed analysis results per patient based on the applied criteria.",
+                statistics: "Provides detailed statistical analyses (performance metrics, comparisons, associations) for the globally selected cohort or a comparison of two specifically chosen cohorts. All confidence intervals (CI) are 95% CIs.",
+                presentation: "Presents analysis results in a format optimized for presentations, focusing on the comparison of the Avocado Sign with T2-based approaches (applied or literature).",
+                publication: "Generates text suggestions and materials for scientific publications.",
+                export: "Offers extensive options for downloading raw data, analysis results, tables, and charts in various file formats."
+            },
+            dataTab: {
+                nr: "Patient's sequential ID number.",
+                name: "Patient's last name (anonymized/coded).",
+                firstName: "Patient's first name (anonymized/coded).",
+                sex: "Patient's sex (male/female/unknown).",
+                age: "Patient's age in years at the time of MRI.",
+                therapy: "Therapy administered before surgery (Neoadjuvant therapy, Surgery alone).",
+                n_as_t2: "Direct status comparison: N (Histopathology reference), AS (Avocado Sign prediction), T2 (current criteria prediction). Click N, AS, or T2 in the column header for sub-sorting.",
+                notes: "Additional clinical or radiological notes on the case, if available.",
+                expandAll: "Expand or collapse the detail view of T2-weighted lymph node features for all patients in the current table view.",
+                collapseAll: "Collapse all detail views of T2-weighted lymph node features.",
+                expandRow: "Click here or the arrow button to show/hide details on the morphological properties of this patient's T2-weighted lymph nodes. Only available if T2 node data exists."
+            },
+            analysisTab: {
+                nr: "Patient's sequential ID number.",
+                name: "Patient's last name (anonymized/coded).",
+                therapy: "Therapy administered before surgery.",
+                n_as_t2: "Direct status comparison: N (Histopathology reference), AS (Avocado Sign prediction), T2 (current criteria prediction). Click N, AS, or T2 in the column header for sub-sorting.",
+                n_counts: "Number of pathologically positive (N+) lymph nodes / Total number of histopathologically examined lymph nodes for this patient.",
+                as_counts: "Number of Avocado Sign positive (AS+) lymph nodes / Total number of lymph nodes visible on T1-CE MRI for this patient.",
+                t2_counts: "Number of T2-positive lymph nodes (based on current criteria) / Total number of lymph nodes visible on T2-MRI for this patient.",
+                expandAll: "Expand or collapse the detail view of the evaluated T2-weighted lymph nodes and the fulfilled criteria for all patients in the current table view.",
+                collapseAll: "Collapse all detail views of the evaluated T2-weighted lymph nodes and the fulfilled criteria.",
+                expandRow: "Click here or the arrow button to show/hide the detailed evaluation of this patient's individual T2-weighted lymph nodes according to the currently applied criteria. Fulfilled positive criteria are highlighted."
+            },
+            t2Logic: { description: "Logical operator for active T2 criteria: <strong>AND</strong> (A lymph node is positive only if ALL active criteria are met). <strong>OR</strong> (A lymph node is positive if AT LEAST ONE active criterion is met). The choice affects the T2 status calculation." },
+            t2Size: { description: "Size criterion (short axis): Lymph nodes with a diameter <strong>greater than or equal to (≥)</strong> the set threshold are considered suspicious. Adjustable range: [MIN] - [MAX] mm (step: [STEP] mm). Enable/disable with checkbox." },
+            t2Shape: { description: "Shape criterion: Select which shape ('round' or 'oval') is considered suspicious. Enable/disable with checkbox." },
+            t2Border: { description: "Border criterion: Select which border ('sharp' or 'irregular') is considered suspicious. Enable/disable with checkbox." },
+            t2Homogeneity: { description: "Homogeneity criterion: Select whether 'homogeneous' or 'heterogeneous' internal signal on T2w is considered suspicious. Enable/disable with checkbox." },
+            t2Signal: { description: "Signal criterion: Select which T2 signal intensity ('low', 'intermediate', or 'high') relative to surrounding muscle is considered suspicious. Nodes with non-assessable signal (value 'null') never fulfill this criterion. Enable/disable with checkbox." },
+            t2Actions: {
+                reset: "Resets the logic and all criteria to their default settings. The changes are not yet applied.",
+                apply: "Apply the currently set T2 criteria and logic to the entire dataset. This updates the T2 columns in the tables, all statistical analyses, and charts. The setting is also saved for future sessions."
+            },
+            t2CriteriaCard: { unsavedIndicator: "<strong>Attention:</strong> There are unsaved changes to the T2 criteria or logic. Click 'Apply & Save' to update the results and save the settings." },
+            t2MetricsOverview: {
+                cardTitle: "Quick overview of diagnostic performance (T2 vs. N) for the currently applied and saved T2 criteria for the selected cohort: <strong>[COHORT]</strong>. All confidence intervals (CI) are 95% CIs.",
+                sens: "Sensitivity (T2 vs. N): Proportion of N+ cases correctly identified as positive by the T2 criteria.",
+                spec: "Specificity (T2 vs. N): Proportion of N- cases correctly identified as negative by the T2 criteria.",
+                ppv: "Positive Predictive Value (PPV, T2 vs. N): Probability that a T2+ case is actually N+.",
+                npv: "Negative Predictive Value (NPV, T2 vs. N): Probability that a T2- case is actually N-.",
+                acc: "Accuracy (T2 vs. N): Overall proportion of correctly classified cases.",
+                balAcc: "Balanced Accuracy (T2 vs. N): Average of sensitivity and specificity. Useful for imbalanced class sizes.",
+                f1: "F1-Score (T2 vs. N): Harmonic mean of PPV and sensitivity. A value of 1 is optimal.",
+                auc: "AUC (T2 vs. N): Area Under the ROC Curve; for binary tests like this, equivalent to Balanced Accuracy."
+            },
+            bruteForceMetric: { description: "Select the target metric for the brute-force optimization.<br><strong>Accuracy:</strong> Proportion of correct classifications.<br><strong>Balanced Accuracy:</strong> (Sens+Spec)/2; good for imbalanced classes.<br><strong>F1-Score:</strong> Harmonic mean of PPV & Sensitivity.<br><strong>PPV:</strong> Precision for positive predictions.<br><strong>NPV:</strong> Precision for negative predictions." },
+            bruteForceStart: { description: "Starts the brute-force search for the T2 criteria combination that maximizes the selected target metric in the current cohort. This may take some time and runs in the background." },
+            bruteForceInfo: { description: "Shows the status of the optimization worker and the currently analyzed patient cohort: <strong>[COHORT_NAME]</strong>." },
+            bruteForceProgress: { description: "Progress of the ongoing optimization: Tested combinations / Total count ([TOTAL]). Displays the current best metric and the corresponding criteria." },
+            bruteForceResult: {
+                description: "Best result of the completed brute-force optimization for the selected cohort ([N_TOTAL] patients, including [N_PLUS] N+ and [N_MINUS] N-) and the target metric.",
+                cohortStats: "Statistics of the cohort used for this optimization: N (total count), N+ (count N-positive), N- (count N-negative)."
+            },
+            bruteForceDetailsButton: { description: "Opens a window with the top 10 results and more details about the completed optimization." },
+            bruteForceModal: { exportButton: "Exports the detailed report of the brute-force optimization (Top 10 results, cohort statistics, configuration) as a formatted text file (.txt)." },
+            statisticsLayout: { description: "Select the display mode: <strong>Single View</strong> for the globally selected cohort or <strong>Comparison Active</strong> to select and compare two specific cohorts." },
+            statisticsCohort1: { description: "Select the first cohort for statistical analysis or comparison (only active in 'Comparison Active' layout)." },
+            statisticsCohort2: { description: "Select the second cohort for comparison (only active in 'Comparison Active' layout)." },
+            statisticsToggleComparison: { description: "Toggle between the detailed single view for the globally selected cohort and the comparison view of two specifically chosen cohorts." },
+            descriptiveStatistics: {
+                cardTitle: "Demographics, clinical data, and baseline lymph node counts for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs.",
+                age: { name: "Age", description: "Patient age in years." },
+                sex: { name: "Sex", description: "Patient's sex (male/female/unknown)." },
+                therapy: { name: "Therapy", description: "Therapy administered before surgery (neoadjuvantTherapy, surgeryAlone)." },
+                nStatus: { name: "N-Status", description: "Histopathological lymph node status (N+ / N-)." },
+                asStatus: { name: "AS-Status", description: "Avocado Sign status (AS+ / AS-)." },
+                t2Status: { name: "T2-Status", description: "T2-weighted MRI lymph node status (T2+ / T2-) based on applied criteria." },
+                lnCounts_n_total: { name: "LN N total", description: "Total number of histopathologically examined lymph nodes per patient." },
+                lnCounts_n_plus: { name: "LN N+", description: "Number of pathologically positive lymph nodes per patient, only in N+ patients (n=[n])." },
+                lnCounts_as_total: { name: "LN AS total", description: "Total number of lymph nodes visible on T1-CE MRI per patient." },
+                lnCounts_as_plus: { name: "LN AS+", description: "Number of Avocado Sign positive lymph nodes per patient, only in AS+ patients (n=[n])." },
+                lnCounts_t2_total: { name: "LN T2 total", description: "Total number of lymph nodes visible on T2-MRI per patient." },
+                lnCounts_t2_plus: { name: "LN T2+", description: "Number of T2-positive lymph nodes per patient (based on applied criteria), only in T2+ patients (n=[n])." },
+                chartAge: { name: "Age Distribution Chart", description: "Histogram showing the distribution of patient ages in the [COHORT] cohort." },
+                chartGender: { name: "Sex Distribution Chart", description: "Pie chart illustrating the distribution of male and female patients in the [COHORT] cohort." }
+            },
+            diagnosticPerformanceAS: { cardTitle: "Diagnostic performance of the Avocado Sign (AS) vs. Histopathology (N) for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs." },
+            diagnosticPerformanceT2: { cardTitle: "Diagnostic performance of the currently applied T2 criteria vs. Histopathology (N) for cohort <strong>[COHORT]</strong>. All CIs are 95% CIs." },
+            statisticalComparisonASvsT2: { cardTitle: "Statistical comparison of the diagnostic performance of AS vs. currently applied T2 criteria (paired tests) in cohort <strong>[COHORT]</strong>." },
+            associationSingleCriteria: { cardTitle: "Association between AS status or individual T2 features and N-status (+/-) in cohort <strong>[COHORT]</strong>. OR: Odds Ratio, RD: Risk Difference, φ: Phi Coefficient. All CIs are 95% CIs." },
+            cohortComparison: { cardTitle: "Statistical comparison of Accuracy and AUC (for AS and T2) between <strong>[COHORT1]</strong> and <strong>[COHORT2]</strong> (unpaired tests)." },
+            criteriaComparisonTable: {
+                cardTitle: "Tabular performance comparison: Avocado Sign, applied T2 criteria, and literature sets for the globally selected cohort <strong>[GLOBAL_COHORT_NAME]</strong>. Literature-based sets are evaluated on their specific target cohort if different (indicated in parentheses). All values are without CIs.",
+                tableHeaderSet: "Method / Criteria Set (Eval. on Cohort N)",
+                tableHeaderSens: "Sens.",
+                tableHeaderSpec: "Spec.",
+                tableHeaderPPV: "PPV",
+                tableHeaderNPV: "NPV",
+                tableHeaderAcc: "Acc.",
+                tableHeaderAUC: "AUC/Bal. Acc."
+            },
+            presentation: {
+                viewSelect: { description: "Select the view: <strong>Avocado Sign (Performance)</strong> for an overview of AS performance, or <strong>AS vs. T2 (Comparison)</strong> for a direct comparison of AS with a selectable T2 criteria basis." },
+                studySelect: { description: "Select a T2 criteria basis for comparison with the Avocado Sign. Options: currently applied criteria in the app or predefined sets from published studies. The selection updates the comparisons below. The global cohort may adapt to the study's target cohort." },
+                t2BasisInfoCard: {
+                    title: "Information on T2 Comparison Basis",
+                    description: "Shows details about the selected T2 criteria for comparison with AS and the current comparison cohort.",
+                    reference: "Study reference or source of the criteria.",
+                    patientCohort: "Original study cohort or current comparison cohort (with patient count).",
+                    investigationType: "Type of examination in the original study (e.g., primary staging, restaging).",
+                    focus: "Main focus of the original study regarding these criteria.",
+                    keyCriteriaSummary: "Summary of the applied T2 criteria and their logic."
                 },
-                statisticalComparison: {
-                    mcnemar: {
-                        description: "<strong>McNemar's Test</strong><br>A non-parametric test used on paired nominal data to determine if there is a significant difference in the proportions of two related outcomes. Here, it compares the number of cases where AS and T2 disagree (one is correct, the other is not) to see if one method is significantly more accurate than the other.",
-                        interpretation: 'The p-value of <strong>{p_value}</strong> suggests that there is <strong>{significance}</strong> between the accuracy of the two tests (AS vs. T2).',
-                        interpretation_ns: 'no statistically significant difference',
-                        interpretation_s: 'a statistically significant difference'
-                    },
-                    delong: {
-                        description: "<strong>DeLong's Test</strong><br>A non-parametric statistical test used to compare the Area Under the Curve (AUC) of two correlated Receiver Operating Characteristic (ROC) curves. It determines if the difference in AUC between two diagnostic tests (here: AS and T2) on the same set of patients is statistically significant.",
-                        interpretation: 'The p-value of <strong>{p_value}</strong> suggests that there is <strong>{significance}</strong> between the AUCs of the two tests (AS vs. T2), indicating whether one test has a significantly better ability to discriminate between N+ and N- patients.',
-                        interpretation_ns: 'no statistically significant difference',
-                        interpretation_s: 'a statistically significant difference'
-                    }
+                asPurPerfTable: {
+                    cohort: "Patient cohort and its size (N).",
+                    sens: "Sensitivity of the Avocado Sign (vs. N) in this cohort.",
                 },
-                associationAnalysis: {
-                    or: {
-                        description: '<strong>Odds Ratio (OR)</strong><br>A measure of association between an exposure (e.g., a positive feature) and an outcome (e.g., N+ status). It represents the odds that an outcome will occur given a particular exposure, compared to the odds of the outcome occurring in the absence of that exposure.<br>• OR = 1: Exposure does not affect odds of outcome.<br>• OR > 1: Exposure associated with higher odds of outcome.<br>• OR < 1: Exposure associated with lower odds of outcome.',
-                        interpretation_gt1: 'An OR of <strong>{value}</strong> means the odds of having a positive N-status are <strong>{value}</strong> times higher for patients with a positive <strong>{feature}</strong> compared to those without.',
-                        interpretation_lt1: 'An OR of <strong>{value}</strong> means the odds of having a positive N-status are <strong>{value_inv}</strong> times lower for patients with a positive <strong>{feature}</strong> compared to those without.',
-                        interpretation_eq1: 'An OR of 1.0 indicates no association between <strong>{feature}</strong> and N-status.'
-                    },
-                    rd: {
-                        description: '<strong>Risk Difference (RD)</strong><br>Also known as absolute risk reduction, it is the simple difference between the risk of an outcome in the exposed group and the unexposed group. It provides an absolute measure of the effect size.',
-                        interpretation_pos: 'The risk of having a positive N-status is <strong>{value_pct}</strong> percentage points higher for patients with a positive <strong>{feature}</strong>.',
-                        interpretation_neg: 'The risk of having a positive N-status is <strong>{value_pct_abs}</strong> percentage points lower for patients with a positive <strong>{feature}</strong>.'
-                    },
-                    phi: {
-                        description: "<strong>Phi (φ) Coefficient</strong><br>A measure of association for two binary variables, equivalent to Pearson's correlation coefficient for dichotomous data. It ranges from -1 (perfect negative association) to +1 (perfect positive association), with 0 indicating no association.",
-                        interpretation: 'A Phi coefficient of <strong>{value}</strong> indicates a <strong>{strength}</strong> positive association between the presence of <strong>{feature}</strong> and a positive N-status.'
-                    },
-                    mwu: {
-                        description: "<strong>Mann-Whitney U Test (Z-statistic)</strong><br>A non-parametric test to compare differences between two independent groups when the dependent variable is either ordinal or continuous, but not normally distributed. Here, it tests if the distribution of lymph node sizes differs significantly between N+ and N- patients.",
-                        interpretation: 'The p-value of <strong>{p_value}</strong> suggests that the distributions of lymph node sizes are <strong>{significance}</strong> between N+ and N- patients.',
-                        interpretation_ns: 'not significantly different',
-                        interpretation_s: 'significantly different'
-                    },
-                    fisher: {
-                        description: "<strong>Fisher's Exact Test (p-value)</strong><br>A statistical significance test used to analyze contingency tables. It is employed when sample sizes are small. It calculates the exact probability of observing the results seen in the table, assuming the null hypothesis of no association is true.",
-                        interpretation: 'The p-value of <strong>{p_value}</strong> indicates a <strong>{significance}</strong> between the presence of <strong>{feature}</strong> and N-status.',
-                        interpretation_ns: 'non-significant association',
-                        interpretation_s: 'statistically significant association'
-                    }
+                asVsT2PerfTable: {
+                    metric: "Diagnostic metric.",
+                    asValue: "Value for Avocado Sign (AS) (vs. N) in cohort <strong>[COHORT_NAME_COMPARISON]</strong>, incl. 95% CI.",
+                    t2Value: "Value for the T2 basis <strong>[T2_SHORT_NAME]</strong> (vs. N) in cohort <strong>[COHORT_NAME_COMPARISON]</strong>, incl. 95% CI."
+                },
+                asVsT2TestTable: {
+                    test: "Statistical test comparing AS vs. <strong>[T2_SHORT_NAME]</strong>.",
+                    statistic: "Value of the test statistic.",
+                    pValue: "p-value of the test. p < 0.05 indicates a statistically significant difference between AS and <strong>[T2_SHORT_NAME]</strong> regarding the tested metric (Accuracy or AUC) in cohort <strong>[COHORT_NAME_COMPARISON]</strong>.",
+                    method: "Name of the statistical test used."
                 }
             },
             exportTab: {
-                description: 'All exports are based on the currently selected cohort ([COHORT]) and the applied T2 criteria from the Analysis tab.',
-                statscsv: { type: 'Statistics Report', ext: 'csv', description: 'Comprehensive statistical report for the selected cohort, including descriptive statistics, diagnostic performance, comparisons, and associations.' },
-                bruteforcetxt: { type: 'Brute-Force Optimization Report', ext: 'txt', description: 'Detailed report of the brute-force optimization, including the best criteria found and top 10 results.' },
-                datamd: { type: 'Data List', ext: 'md', description: 'Markdown table of the raw patient data for the selected cohort.' },
-                analysismd: { type: 'Analysis Table', ext: 'md', description: 'Markdown table of the patient data with T2 criteria evaluation based on current settings.' },
-                filtereddatacsv: { type: 'Filtered Raw Data', ext: 'csv', description: 'Raw patient data filtered by the selected cohort, exported as a CSV file.' },
-                comprehensivereport_html: { type: 'Comprehensive HTML Report', ext: 'html', description: 'A single, printable HTML file summarizing all key analyses, tables, and charts for the selected cohort.' },
-                allzip: { type: 'All Files', ext: 'zip', description: 'A ZIP archive containing all available data, reports, tables, and graphics.' },
-                csvzip: { type: 'CSV Files', ext: 'zip', description: 'A ZIP archive containing all raw data and statistics in CSV format.' },
-                mdzip: { type: 'Markdown Files', ext: 'zip', description: 'A ZIP archive containing all data lists, analysis tables, and publication sections in Markdown format.' },
-                pngzip: { type: 'PNG Graphics', ext: 'zip', description: 'A ZIP archive of all visible charts and tables (as PNG images).' },
-                svgzip: { type: 'SVG Graphics', ext: 'zip', description: 'A ZIP archive of all visible charts (as SVG vector images).' }
-            },
-            t2Criteria: {
-                size: { description: '<strong>Size (Short-Axis Diameter)</strong><br>A lymph node is considered suspicious if its short-axis diameter is greater than or equal to the specified threshold (e.g., ≥5mm).' },
-                shape: { description: '<strong>Shape</strong><br>A lymph node is considered suspicious if it has a specific shape (e.g., round).' },
-                border: { description: '<strong>Border</strong><br>A lymph node is considered suspicious if its border is irregular.' },
-                homogeneity: { description: '<strong>Homogeneity</strong><br>A lymph node is considered suspicious if its internal signal is heterogeneous.' },
-                signal: { description: '<strong>Signal Intensity</strong><br>A lymph node is considered suspicious if it exhibits a specific signal intensity (e.g., high signal).' },
-                t2Logic: { description: '<strong>Logic Operator (AND / OR)</strong><br>Selects how multiple active T2 criteria are combined:<br>• <strong>AND:</strong> All active criteria must be met for a node to be T2-positive.<br>• <strong>OR:</strong> At least one active criterion must be met for a node to be T2-positive.' },
-                reset: { description: '<strong>Reset to Default</strong><br>Resets all T2 criteria and logic to their initial default settings (Size ≥5mm, AND logic).' },
-                apply: { description: '<strong>Apply & Save Criteria</strong><br>Applies the currently configured T2 criteria and logic to the patient data, recalculates all statistics and charts, and saves the settings for future sessions.' }
-            },
-            dataTab: {
-                nr: { description: '<strong>Patient ID</strong><br>Unique identifier for the patient.' },
-                name: { description: '<strong>Last Name</strong><br>Pseudonymized last name of the patient.' },
-                firstName: { description: '<strong>First Name</strong><br>Pseudonymized first name of the patient.' },
-                sex: { description: '<strong>Sex</strong><br>Biological sex of the patient (male/female/unknown).' },
-                age: { description: '<strong>Age</strong><br>Patient\'s age at the time of examination (calculated from birth date and exam date).' },
-                therapy: { description: '<strong>Therapy</strong><br>Type of therapy received: "Surgery alone" (upfront surgery) or "Neoadjuvant therapy" (neoadjuvant chemoradiotherapy prior to surgery).' },
-                n_as_t2: { description: '<strong>N-Status (Pathology) / AS-Status / T2-Status</strong><br>• <strong>N-Status:</strong> Histopathologically confirmed nodal status (+: metastatic, -: no metastasis).<br>• <strong>AS-Status:</strong> Avocado Sign status (+: at least one AS+ node, -: no AS+ nodes).<br>• <strong>T2-Status:</strong> T2-weighted criteria status (+: at least one T2+ node based on applied criteria, -: no T2+ nodes).' },
-                n_as_t2_n: { description: '<strong>N-Status (Pathology)</strong><br>Histopathologically confirmed nodal status (+: metastatic, -: no metastasis).' },
-                n_as_t2_as: { description: '<strong>Avocado Sign Status</strong><br>Avocado Sign status (+: at least one AS+ node, -: no AS+ nodes).' },
-                n_as_t2_t2: { description: '<strong>T2-Status (Applied Criteria)</strong><br>T2-weighted criteria status (+: at least one T2+ node based on applied criteria, -: no T2+ nodes).' },
-                n_as_t2_subsort: { description: '<strong>Sub-sort by Status</strong><br>Click to sort patients primarily by this specific status (N, AS, or T2) in ascending or descending order. Combined with main column sort.' },
-                notes: { description: '<strong>Notes</strong><br>Additional clinical or imaging notes for the patient.' },
-                expandRow: { description: '<strong>Toggle Details</strong><br>Expands or collapses the row to show/hide individual T2 lymph node features.' },
-                expandAll: { description: '<strong>Expand/Collapse All Details</strong><br>Toggles the detailed view for all patients in the table simultaneously.' }
-            },
-            analysisTab: {
-                n_as_t2_n: { description: '<strong>N-Status (Pathology)</strong><br>Histopathologically confirmed nodal status (+: metastatic, -: no metastasis).' },
-                n_as_t2_as: { description: '<strong>Avocado Sign Status</strong><br>Avocado Sign status (+: at least one AS+ node, -: no AS+ nodes).' },
-                n_as_t2_t2: { description: '<strong>T2-Status (Applied Criteria)</strong><br>T2-weighted criteria status (+: at least one T2+ node based on applied criteria, -: no T2+ nodes).' },
-                n_as_t2_subsort: { description: '<strong>Sub-sort by Status</strong><br>Click to sort patients primarily by this specific status (N, AS, or T2) in ascending or descending order. Combined with main column sort.' },
-                n_counts: { description: '<strong>N+/N total</strong><br>Number of histopathologically positive lymph nodes out of the total number of resected lymph nodes.' },
-                as_counts: { description: '<strong>AS+/AS total</strong><br>Number of Avocado Sign positive lymph nodes out of the total number of T2-weighted lymph nodes evaluated for AS.' },
-                t2_counts: { description: '<strong>T2+/T2 total</strong><br>Number of T2-positive lymph nodes (based on applied criteria) out of the total number of T2-weighted lymph nodes evaluated.' },
-                expandRow: { description: '<strong>Toggle Evaluation Details</strong><br>Expands or collapses the row to show/hide the detailed evaluation of individual T2 lymph nodes against the applied criteria.' },
-                expandAll: { description: '<strong>Expand/Collapse All Details</strong><br>Toggles the detailed evaluation view for all patients in the table simultaneously.' },
-                expandRow_title: { description: '<strong>T2 Lymph Node Evaluation</strong><br>Details how each T2-weighted lymph node was classified (positive or negative) based on the currently applied criteria and logic. Features that contribute to a positive classification are highlighted.' },
-                expandRow_posBadge: { description: '<strong>Positive Node</strong><br>This lymph node was classified as positive (suspicious for metastasis) based on the applied T2 criteria.' },
-                expandRow_negBadge: { description: '<strong>Negative Node</strong><br>This lymph node was classified as negative (not suspicious for metastasis) based on the applied T2 criteria.' },
-                t2MetricsOverview: { description: '<strong>Diagnostic Performance (Applied T2 Criteria)</strong><br>Shows the diagnostic performance metrics (Sensitivity, Specificity, Predictive Values, Accuracy, F1-Score, AUC) for the currently applied T2 criteria against the histopathological N-status.'}
-            },
-            presentation: {
-                viewSelect: {
-                    title: '<strong>Presentation View Selection</strong><br>Choose the type of presentation view to generate.',
-                    asPerf: '<strong>AS Performance View</strong><br>Focuses on the diagnostic performance of the Avocado Sign across different cohorts.',
-                    asVsT2: '<strong>AS vs. T2 Comparison View</strong><br>Compares the diagnostic performance of the Avocado Sign against a selected T2 criteria set.'
-                },
-                studySelect: '<strong>T2 Comparison Basis Selection</strong><br>Choose which T2 criteria set (either the currently applied custom criteria or a predefined literature-based set) will be used for comparison with the Avocado Sign in the "AS vs. T2 Comparison" view.',
-                t2BasisInfoCard: {
-                    title: '<strong>T2 Comparison Basis Details</strong><br>Provides an overview of the selected T2 criteria set used for comparison with the Avocado Sign.',
-                    reference: '<strong>Reference:</strong> Source of the T2 criteria (e.g., scientific publication, user-defined).',
-                    patientCohort: '<strong>Basis Cohort:</strong> The patient cohort on which the selected T2 criteria were originally evaluated or are applicable.',
-                    keyCriteriaSummary: '<strong>Criteria Summary:</strong> A concise description of the key T2 morphological features and logic (AND/OR) that define this criteria set.'
-                },
-                asPerformanceChart: '<strong>AS Performance ROC Curve</strong><br>Receiver Operating Characteristic (ROC) curve illustrating the diagnostic performance of the Avocado Sign for the currently selected cohort.',
-                asVsT2PerfTable: {
-                    asValue: '<strong>Avocado Sign Performance</strong><br>The value and 95% Confidence Interval for the Avocado Sign diagnostic metric.',
-                    t2Value: '<strong>T2 Criteria Performance</strong><br>The value and 95% Confidence Interval for the selected T2 criteria diagnostic metric.'
-                },
-                asVsT2Chart: '<strong>Comparison Bar Chart (AS vs. T2)</strong><br>Visualizes key diagnostic performance metrics (Sensitivity, Specificity, Accuracy, AUC) side-by-side for the Avocado Sign and the selected T2 criteria.',
-                
-            },
-            statMetrics: {
-                associationStrengthTexts: {
-                    undetermined: 'undetermined',
-                    very_weak: 'very weak',
-                    weak: 'weak',
-                    moderate: 'moderate',
-                    strong: 'strong'
-                }
+                description: "Allows exporting analysis results, tables, and charts based on the currently selected global cohort ([COHORT]) and the currently applied T2 criteria.",
+                statscsv: { description: "Detailed table of all calculated statistical metrics (descriptive, AS & T2 performance, comparisons, associations) from the Statistics tab as a CSV file.", type: 'STATS_CSV', ext: "csv" },
+                bruteforcetxt: { description: "Detailed report of the last brute-force optimization for the current cohort (Top 10 results, configuration) as a text file (.txt), if performed.", type: 'BRUTEFORCE_TXT', ext: "txt" },
+                datamd: { description: "Current data list (Data tab) as a Markdown table (.md).", type: 'DATA_MD', ext: "md" },
+                analysismd: { description: "Current analysis table (Analysis tab, incl. T2 results) as a Markdown (.md) file.", type: 'ANALYSIS_MD', ext: "md" },
+                filtereddatacsv: { description: "Raw data of the currently selected cohort (incl. T2 evaluation) as a CSV file (.csv).", type: 'FILTERED_DATA_CSV', ext: "csv" },
+                comprehensivereport_html: { description: "Comprehensive analysis report as an HTML file (statistics, configurations, charts), printable.", type: 'COMPREHENSIVE_REPORT_HTML', ext: "html" },
+                allzip: { description: "All available single files (Statistics CSV, BruteForce TXT, all MDs, Raw Data CSV, HTML Report) in one ZIP archive.", type: 'ALL_ZIP', ext: "zip"},
+                csvzip: { description: "All available CSV files (Statistics, Raw Data) in one ZIP archive.", type: 'CSV_ZIP', ext: "zip"},
+                mdzip: { description: "All available Markdown files (Descriptive, Data, Analysis, Publication Texts) in one ZIP archive.", type: 'MD_ZIP', ext: "zip"},
+                pngzip: { description: "All currently visible charts (Statistics, Analysis, Presentation) and selected tables as individual PNG files (ZIP archive).", type: 'PNG_ZIP', ext: "zip" },
+                svgzip: { description: "All currently visible charts (Statistics, Analysis, Presentation) as individual SVG files (ZIP archive).", type: 'SVG_ZIP', ext: "zip"}
             }
         })
-    });
+    }),
+    T2_ICON_SVGS: Object.freeze({
+        SIZE_DEFAULT: (s, sw, iconColor, c, r, sq, sqPos) => `<path d="M${sw/2} ${c} H${s-sw/2} M${c} ${sw/2} V${s-sw/2}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`,
+        SHAPE_ROUND: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw}"/>`,
+        SHAPE_OVAL: (s, sw, iconColor, c, r, sq, sqPos) => `<ellipse cx="${c}" cy="${c}" rx="${r}" ry="${r * 0.65}" fill="none" stroke="${iconColor}" stroke-width="${sw}"/>`,
+        BORDER_SHARP: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
+        BORDER_IRREGULAR: (s, sw, iconColor, c, r, sq, sqPos) => `<path d="M ${c + r} ${c} A ${r} ${r} 0 0 1 ${c} ${c + r} A ${r*0.8} ${r*1.2} 0 0 1 ${c-r*0.9} ${c-r*0.3} A ${r*1.1} ${r*0.7} 0 0 1 ${c+r} ${c} Z" fill="none" stroke="${iconColor}" stroke-width="${sw * 1.2}"/>`,
+        HOMOGENEITY_HOMOGENEOUS: (s, sw, iconColor, c, r, sq, sqPos) => `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="${iconColor}" stroke="none" rx="1" ry="1"/>`,
+        HOMOGENEITY_HETEROGENEOUS: (s, sw, iconColor, c, r, sq, sqPos) => {
+            let svgContent = `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" rx="1" ry="1"/>`;
+            const pSize = sq / 4;
+            for(let i=0;i<3;i++){for(let j=0;j<3;j++){if((i+j)%2===0){svgContent+=`<rect x="${sqPos+i*pSize+pSize/2}" y="${sqPos+j*pSize+pSize/2}" width="${pSize}" height="${pSize}" fill="${iconColor}" stroke="none" style="opacity:0.6;"/>`;}}}
+            return svgContent;
+        },
+        SIGNAL_LOWSIGNAL: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#555555" stroke="rgba(0,0,0,0.1)" stroke-width="${sw * 0.75}"/>`,
+        SIGNAL_INTERMEDIATESIGNAL: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#aaaaaa" stroke="rgba(0,0,0,0.1)" stroke-width="${sw * 0.75}"/>`,
+        SIGNAL_HIGHSIGNAL: (s, sw, iconColor, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="#f0f0f0" stroke="#333333" stroke-width="${sw * 0.75}"/>`,
+        UNKNOWN: (s, sw, iconColor, c, r, sq, sqPos) => `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${iconColor}" stroke-width="${sw/2}" stroke-dasharray="2 2" /><line x1="${sqPos}" y1="${sqPos}" x2="${sqPos+sq}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/><line x1="${sqPos+sq}" y1="${sqPos}" x2="${sqPos}" y2="${sqPos+sq}" stroke="${iconColor}" stroke-width="${sw/2}" stroke-linecap="round"/>`
+    })
+});
 
 const PUBLICATION_CONFIG = Object.freeze({
     sections: Object.freeze([
         { id: 'abstract_main', labelKey: 'abstract_main', subSections: [{ id: 'abstract_main', label: 'Abstract' }] },
         { id: 'introduction_main', labelKey: 'introduction_main', subSections: [{ id: 'introduction_main', label: 'Introduction' }] },
-        { id: 'methoden_main', labelKey: 'methoden_main',
-            subSections: [
+        {
+            id: 'methoden_main', labelKey: 'methoden_main',
+            subSections: Object.freeze([
                 { id: 'methoden_studienanlage_ethik', label: 'Study Design and Patients' },
-                { id: 'methoden_mrt_protokoll_akquisition', label: 'MRI Protocol' },
-                { id: 'methoden_bildanalyse_avocado_sign', label: 'Image Analysis (Avocado Sign)' },
-                { id: 'methoden_bildanalyse_t2_kriterien', label: 'Image Analysis (T2 Criteria)' },
-                { id: 'methoden_referenzstandard_histopathologie', label: 'Reference Standard (Histopathology)' },
+                { id: 'methoden_mrt_protokoll_akquisition', label: 'MRI Protocol and Acquisition' },
+                { id: 'methoden_bildanalyse_avocado_sign', label: 'Image Analysis: Avocado Sign' },
+                { id: 'methoden_bildanalyse_t2_kriterien', label: 'Image Analysis: T2 Criteria' },
+                { id: 'methoden_referenzstandard_histopathologie', label: 'Reference Standard: Histopathology' },
                 { id: 'methoden_statistische_analyse_methoden', label: 'Statistical Analysis' }
-            ]
+            ])
         },
-        { id: 'ergebnisse_main', labelKey: 'ergebnisse_main',
-            subSections: [
+        {
+            id: 'ergebnisse_main', labelKey: 'ergebnisse_main',
+            subSections: Object.freeze([
                 { id: 'ergebnisse_patientencharakteristika', label: 'Patient Characteristics' },
                 { id: 'ergebnisse_as_diagnostische_guete', label: 'Diagnostic Performance of the Avocado Sign' },
                 { id: 'ergebnisse_t2_literatur_diagnostische_guete', label: 'Diagnostic Performance of Literature-Based T2 Criteria' },
-                { id: 'ergebnisse_t2_optimiert_diagnostische_guete', label: 'Diagnostic Performance of Optimized T2 Criteria' },
-                { id: 'ergebnisse_vergleich_as_vs_t2', label: 'Comparison of Avocado Sign vs. T2 Criteria' }
-            ]
+                { id: 'ergebnisse_t2_optimiert_diagnostische_guete', label: 'Diagnostic Performance of Cohort-Optimized T2 Criteria' },
+                { id: 'ergebnisse_vergleich_as_vs_t2', label: 'Comparison: Avocado Sign vs. T2 Criteria' }
+            ])
         },
         { id: 'discussion_main', labelKey: 'discussion_main', subSections: [{ id: 'discussion_main', label: 'Discussion' }] },
         { id: 'references_main', labelKey: 'references_main', subSections: [{ id: 'references_main', label: 'References' }] }
     ]),
     literatureCriteriaSets: Object.freeze([
         {
-            id: 'beets_tan_esgar_2018_restaging',
-            name: 'Beets-Tan et al. (2018) ESGAR Restaging',
-            displayShortName: 'ESGAR 2018',
-            applicableCohort: APP_CONFIG.COHORTS.NEOADJUVANT.id,
-            criteria: {
-                logic: 'OR', // For nodes >=5mm, this is effectively an "OR" of a simple size criterion for >=5mm
-                size: { active: true, threshold: 5.0, condition: '>=' },
-                shape: { active: false },
-                border: { active: false },
-                homogeneity: { active: false },
-                signal: { active: false }
-            },
-            note: 'Nodes < 5mm are considered benign. Nodes >= 5mm are considered malignant (no reliable criteria, but practical guideline).',
-            studyInfo: {
-                reference: 'Beets-Tan et al. (2018)', // Uses source 6 from original document (updated to 26 for this context)
-                patientCohort: 'Restaging after nCRT',
-                investigationType: 'Consensus guidelines',
-                focus: 'Updated guidelines for rectal cancer MRI staging',
-                keyCriteriaSummary: 'All nodes with short axis diameter < 5 mm should be considered benign. For nodes with a short axis diameter ≥ 5 mm, no reliable criteria exist, but as a practical guideline, they should be considered malignant.'
-            }
-        },
-        {
-            id: 'koh_et_al_2008',
-            name: 'Koh et al. (2008)',
-            displayShortName: 'Koh 2008',
-            applicableCohort: APP_CONFIG.COHORTS.NEOADJUVANT.id, // Study evaluated pre- and post-nCRT
-            criteria: {
-                logic: 'OR',
-                size: { active: false },
-                shape: { active: false },
+            id: 'rutegard_et_al_esgar',
+            name: 'ESGAR 2016 (Rutegård et al. 2025)',
+            displayShortName: 'ESGAR 2016',
+            applicableCohort: 'Overall',
+            logic: 'KOMBINIERT',
+            criteria: Object.freeze({
+                size: { active: true, threshold: 9.0, condition: '>=' },
+                shape: { active: true, value: 'round' },
                 border: { active: true, value: 'irregular' },
                 homogeneity: { active: true, value: 'heterogeneous' },
-                signal: { active: false }
-            },
-            note: 'A node was considered malignant if it exhibited irregular outlines OR internal signal heterogeneity.',
-            studyInfo: {
-                reference: 'Koh et al. (2008)', // Uses source 10 from original document (updated to 27 for this context)
-                patientCohort: 'Pre- and Post-nCRT',
+                signal: { active: false, value: null }
+            }),
+            studyInfo: Object.freeze({
+                reference: 'Rutegård et al. (2025)',
+                patientCohort: '46 rectal cancer patients (anatomically matched nodal structures)',
+                investigationType: 'Prospective study of baseline MRI',
+                focus: 'Evaluation of 2016 ESGAR consensus criteria for malignancy',
+                keyCriteriaSummary: 'Short axis ≥ 9 mm; OR short axis 5–8 mm and ≥2 suspicious features (round, irregular, heterogeneous); OR short axis < 5 mm and all 3 suspicious features.'
+            })
+        },
+        {
+            id: 'koh_2008',
+            name: 'Koh et al. (2008)',
+            displayShortName: 'Koh 2008',
+            applicableCohort: 'Overall',
+            logic: 'OR',
+            criteria: Object.freeze({
+                size: { active: false, threshold: 5.0, condition: '>=' },
+                shape: { active: false, value: null },
+                border: { active: true, value: 'irregular' },
+                homogeneity: { active: true, value: 'heterogeneous' },
+                signal: { active: false, value: null }
+            }),
+            studyInfo: Object.freeze({
+                reference: 'Koh et al. (2008)',
+                patientCohort: '25 patients (pre/post nCRT)',
                 investigationType: 'Prospective study',
-                focus: 'Morphological criteria for mesorectal lymph nodes',
+                focus: 'Evaluating mesorectal lymph nodes before and after nCRT using thin-section T2w MRI. Criteria based on morphology.',
                 keyCriteriaSummary: 'Irregular outlines OR internal signal heterogeneity.'
-            }
+            })
         },
         {
-            id: 'rutegard_et_al_esgar', // This is a special combined logic rule
-            name: 'Rutegård et al. (2025) ESGAR 2016 Evaluation',
-            displayShortName: 'Rutegård 2025',
-            applicableCohort: APP_CONFIG.COHORTS.OVERALL.id, // Study was baseline MRI, applicable to overall
-            logic: 'KOMBINIERT', // Custom logic defined in _checkSingleNodeESGAR
-            criteria: {
-                size: { active: true, threshold: 9.0 }, // Short axis >= 9mm
-                shape: { active: true, value: 'round' }, // Round shape
-                border: { active: true, value: 'irregular' }, // Irregular border
-                homogeneity: { active: true, value: 'heterogeneous' }, // Heterogeneous signal
-                signal: { active: false } // Not explicitly used as a direct criterion in their ESGAR 2016 interpretation for morphology
-            },
-            note: 'Based on ESGAR 2016 criteria: Short axis ≥ 9 mm; OR 5–8 mm AND ≥2 suspicious features; OR < 5 mm AND all 3 suspicious features. Mucinous nodes (any size) also malignant. Suspicious features: round shape, irregular border, heterogeneous signal.',
-            studyInfo: {
-                reference: 'Rutegård et al. (2025)', // Uses source 24 from original document (updated to 28 for this context)
-                patientCohort: 'Baseline MRI',
-                investigationType: 'Prospective study evaluating ESGAR 2016 criteria',
-                focus: 'Performance of ESGAR 2016 criteria in anatomically matched nodal structures',
-                keyCriteriaSummary: 'Short axis ≥ 9 mm; OR (5–8 mm AND ≥2 suspicious morphological features); OR (< 5 mm AND all 3 suspicious morphological features). Suspicious features: round shape, irregular border, heterogeneous signal. (Mucinous nodes also malignant).'
-            }
-        },
-        {
-            id: 'barbaro_et_al_2024_size_cutoff',
-            name: 'Barbaro et al. (2024) Size Cut-off',
-            displayShortName: 'Barbaro 2024 (Size)',
-            applicableCohort: APP_CONFIG.COHORTS.NEOADJUVANT.id,
-            criteria: {
-                logic: 'AND',
-                size: { active: true, threshold: 2.2, condition: '<=' }, // Optimal cut-off for ypN0, so nodes <= 2.2mm are benign. Inverse logic for malignancy.
-                shape: { active: false },
-                border: { active: false },
-                homogeneity: { active: false },
-                signal: { active: false }
-            },
-            note: 'Short-axis diameter ≤ 2.2 mm was optimal for predicting ypN0. So, for malignancy, nodes > 2.2mm are considered suspicious.',
-            studyInfo: {
-                reference: 'Barbaro et al. (2024)', // Uses source 14 from original document (updated to 25 for this context)
-                patientCohort: 'Restaging after nCRT',
-                investigationType: 'Retrospective study',
-                focus: 'Accuracy of MRI in identifying ypN0 after nCRT',
-                keyCriteriaSummary: 'Post-nCRT short-axis diameter ≤ 2.2 mm was optimal for predicting ypN0. (Thus, > 2.2mm for malignancy).'
-            }
-        },
-        {
-            id: 'barbaro_et_al_2024_size_reduction',
-            name: 'Barbaro et al. (2024) Size Reduction (Not directly applicable)',
-            displayShortName: 'Barbaro 2024 (Size Red.)',
-            applicableCohort: APP_CONFIG.COHORTS.NEOADJUVANT.id,
-            criteria: { // This criterion cannot be directly applied to our static, single-time T2 node data
-                logic: 'NONE',
-                size: { active: false },
-                shape: { active: false },
-                border: { active: false },
-                homogeneity: { active: false },
-                signal: { active: false }
-            },
-            note: '≥ 70% reduction in short-axis diameter of largest node was associated with ypN0. Requires pre- and post-nCRT measurements, not available in current dataset for node-level evaluation.',
-            studyInfo: {
+            id: 'barbaro_2024',
+            name: 'Barbaro et al. (2024)',
+            displayShortName: 'Barbaro 2024',
+            applicableCohort: 'neoadjuvantTherapy',
+            logic: 'AND',
+            criteria: Object.freeze({
+                size: { active: true, threshold: 2.3, condition: '>=' },
+                shape: { active: false, value: null },
+                border: { active: false, value: null },
+                homogeneity: { active: false, value: null },
+                signal: { active: false, value: null }
+            }),
+            studyInfo: Object.freeze({
                 reference: 'Barbaro et al. (2024)',
-                patientCohort: 'Restaging after nCRT',
-                investigationType: 'Retrospective study',
-                focus: 'Accuracy of MRI in identifying ypN0 after nCRT',
-                keyCriteriaSummary: '≥ 70% reduction in largest node short-axis diameter (not directly modelable with current data).'
-            }
+                patientCohort: '191 LARC patients (restaging after nCRT)',
+                investigationType: 'Retrospective, single-center study',
+                focus: 'Accuracy of MRI in identifying ypN0 status after nCRT, using short-axis diameter cut-off.',
+                keyCriteriaSummary: 'Optimal cut-off for short-axis diameter ≤ 2.2mm (predicting ypN0, so nodes > 2.2mm are positive).'
+            })
         }
     ]),
     publicationElements: Object.freeze({
         methoden: {
             literaturT2KriterienTabelle: {
-                id: 'table-literature-t2-criteria',
-                titleEn: 'Table 4: Summary of Literature-Based T2-weighted Criteria Sets'
+                id: 'table-methods-t2-literature',
+                titleEn: 'Table 1. Literature-Based T2-Weighted MRI Criteria for Nodal Malignancy'
             }
         },
         ergebnisse: {
             patientenCharakteristikaTabelle: {
-                id: 'table-patient-characteristics',
-                titleEn: 'Table 2: Patient Demographics and Treatment Approaches'
+                id: 'table-results-patient-char',
+                titleEn: 'Table 2. Patient Demographics and Treatment Approaches'
             },
             diagnostischeGueteASTabelle: {
-                id: 'table-as-diagnostic-performance',
-                titleEn: 'Table 3: Diagnostic performance and nominal values for the Avocado Sign in predicting nodal status'
+                id: 'table-results-as-performance',
+                titleEn: 'Table 3. Diagnostic Performance and Nominal Values for the Avocado Sign in Predicting Nodal Status'
             },
             diagnostischeGueteOptimierteT2Tabelle: {
-                id: 'table-optimized-t2-diagnostic-performance',
-                titleEn: 'Table 5: Diagnostic Performance of Optimized T2-weighted Criteria (Target Metric: {BF_METRIC})'
+                id: 'table-results-optimized-t2-performance',
+                titleEn: 'Table 4. Diagnostic Performance of Cohort-Optimized T2-Weighted Criteria by Target Metric ({BF_METRIC})'
             },
             vergleichASvsT2Tabelle: {
-                id: 'table-comparison-as-vs-t2',
-                titleEn: 'Table 6: Statistical Comparison of Diagnostic Performance (Avocado Sign vs. Optimized T2 Criteria)'
+                id: 'table-results-comparison-as-t2',
+                titleEn: 'Table 5. Statistical Comparison of Diagnostic Performance (Avocado Sign vs. Optimized T2 Criteria)'
+            },
+            rocKurveOverall: {
+                id: 'fig-results-roc-overall',
+                titleEn: 'Figure 1. ROC Curve for the Avocado Sign in the Overall Cohort'
+            },
+            rocKurveSurgeryAlone: {
+                id: 'fig-results-roc-surgery-alone',
+                titleEn: 'Figure 2. ROC Curve for the Avocado Sign in the Surgery alone Cohort'
+            },
+            rocKurveNRCT: {
+                id: 'fig-results-roc-nrcT',
+                titleEn: 'Figure 3. ROC Curve for the Avocado Sign in the Neoadjuvant therapy Cohort'
+            },
+            asVsT2ComparisonChart: {
+                id: 'fig-results-as-t2-comparison',
+                titleEn: 'Figure 4. Comparison of Key Diagnostic Metrics: Avocado Sign vs. Cohort-Optimized T2 Criteria'
             }
         }
-    }),
-    T2_ICON_SVGS: Object.freeze({
-        SIZE_DEFAULT: (s, sw, color, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${color}" stroke-width="${sw}"/><text x="${c}" y="${c + s * 0.08}" font-size="${s * 0.4}" text-anchor="middle" dominant-baseline="middle" fill="${color}">D</text>`,
-        SHAPE_ROUND: (s, sw, color, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="${color}"/>`,
-        SHAPE_OVAL: (s, sw, color, c, r, sq, sqPos) => `<ellipse cx="${c}" cy="${c}" rx="${r}" ry="${r * 0.7}" fill="${color}"/>`,
-        BORDER_SHARP: (s, sw, color, c, r, sq, sqPos) => `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="none" stroke="${color}" stroke-width="${sw}"/>`,
-        BORDER_IRREGULAR: (s, sw, color, c, r, sq, sqPos) => `<path d="M${sqPos},${sqPos} L${sqPos + sq * 0.3},${sqPos} L${sqPos + sq * 0.4},${sqPos + sq * 0.2} L${sqPos + sq * 0.6},${sqPos} L${sqPos + sq},${sqPos} L${sqPos + sq},${sqPos + sq * 0.3} L${sqPos + sq * 0.8},${sqPos + sq * 0.4} L${sqPos + sq},${sqPos + sq * 0.6} L${sqPos + sq},${sqPos + sq} L${sqPos + sq * 0.7},${sqPos + sq} L${sqPos + sq * 0.6},${sqPos + sq * 0.8} L${sqPos + sq * 0.4},${sqPos + sq} L${sqPos},${sqPos + sq} L${sqPos},${sqPos + sq * 0.7} L${sqPos + sq * 0.2},${sqPos + sq * 0.6} L${sqPos},${sqPos + sq * 0.4} Z" fill="${color}"/>`,
-        HOMOGENEITY_HOMOGENEOUS: (s, sw, color, c, r, sq, sqPos) => `<rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="${color}"/>`,
-        HOMOGENEITY_HETEROGENEOUS: (s, sw, color, c, r, sq, sqPos) => `<defs><pattern id="pattern-hetero" x="0" y="0" width="${sq/4}" height="${sq/4}" patternUnits="userSpaceOnUse"><rect x="0" y="0" width="${sq/8}" height="${sq/8}" fill="${color}" /><rect x="${sq/8}" y="${sq/8}" width="${sq/8}" height="${sq/8}" fill="${color}" /></pattern></defs><rect x="${sqPos}" y="${sqPos}" width="${sq}" height="${sq}" fill="url(#pattern-hetero)" stroke="${color}" stroke-width="${sw/2}"/>`,
-        SIGNAL_LOWSIGNAL: (s, sw, color, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="${color}"/>`,
-        SIGNAL_INTERMEDIATESIGNAL: (s, sw, color, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="${color}" fill-opacity="0.6"/>`,
-        SIGNAL_HIGHSIGNAL: (s, sw, color, c, r, sq, sqPos) => `<circle cx="${c}" cy="${c}" r="${r}" fill="${color}" fill-opacity="0.3"/>`,
-        UNKNOWN: (s, sw, color, c, r, sq, sqPos) => `<line x1="0" y1="${s}" x2="${s}" y2="0" stroke="${color}" stroke-width="${sw}"/><line x1="0" y1="0" x2="${s}" y2="${s}" stroke="${color}" stroke-width="${sw}"/>`
     })
 });
 

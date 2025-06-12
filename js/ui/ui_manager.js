@@ -44,82 +44,14 @@ const uiManager = (() => {
     function initializeTooltips(scope = document.body) {
         if (!window.tippy || typeof scope?.querySelectorAll !== 'function') return;
 
-        const tippyElements = scope.querySelectorAll('[data-tippy-content], [data-tippy-key]');
-        
-        const newInstances = tippy(tippyElements, {
-            allowHTML: true,
-            placement: 'top',
-            animation: 'fade',
-            interactive: false,
-            appendTo: () => document.body,
-            delay: APP_CONFIG.UI_SETTINGS.TOOLTIP_DELAY,
-            maxWidth: 400,
-            duration: [150, 150],
-            zIndex: 3050,
-            onShow(instance) {
-                const element = instance.reference;
-                const staticContent = element.getAttribute('data-tippy-content');
-                const dynamicKey = element.getAttribute('data-tippy-key');
-
-                if (dynamicKey) {
-                    instance.setProps({ theme: 'interpretive-glass' });
-                    const path = dynamicKey.split('.');
-                    const tooltipConfig = getObjectValueByPath(APP_CONFIG.UI_TEXTS.tooltips, path.join('.'));
-                    
-                    if (!tooltipConfig || !tooltipConfig.description) {
-                        instance.setContent('Tooltip not configured.');
-                        return;
-                    }
-
-                    let finalContent = `${tooltipConfig.description}`;
-                    const valueStr = element.dataset.value;
-
-                    if (valueStr !== undefined && valueStr !== null && valueStr !== '' && tooltipConfig.interpretation) {
-                        const value = parseFloat(valueStr);
-                        let interpretation = '';
-                        
-                        const metricKey = path[path.length - 1];
-                        
-                        if (path.includes('associationAnalysis')) {
-                            const featureName = element.dataset.featureName || 'this feature';
-                            if (metricKey === 'or') {
-                                interpretation = getORInterpretation(value, featureName);
-                            } else if (metricKey === 'rd') {
-                                interpretation = getRDInterpretation(value, featureName);
-                            } else if (metricKey === 'phi') {
-                                const strength = getPhiInterpretation(value);
-                                interpretation = tooltipConfig.interpretation.replace('{value}', formatNumber(value, 2)).replace('{strength}', `<strong>${strength}</strong>`).replace('{feature}', `<strong>${featureName}</strong>`);
-                            } else if (metricKey === 'fisher' || metricKey === 'mwu') {
-                                interpretation = tooltipConfig.interpretation.replace('{p_value}', getPValueText(value, true)).replace('{significance}', `<strong>${getPValueInterpretation(value)}</strong>`);
-                            }
-                        } else if (path.includes('statisticalComparison')) {
-                             interpretation = getComparativeTestInterpretation(metricKey, value);
-                        } else {
-                            interpretation = getSimpleMetricInterpretation(metricKey, value);
-                        }
-                        
-                        if (interpretation) {
-                            finalContent += `<hr class="my-1 border-light opacity-25"><p class="mb-0">${interpretation}</p>`;
-                        }
-                    }
-                    instance.setContent(finalContent);
-                } else {
-                    instance.setProps({ theme: 'glass' });
-                    if (!staticContent || String(staticContent).trim() === '') {
-                        instance.disable();
-                        return false;
-                    }
-                }
-                return true;
-            },
-            onCreate(instance) {
-                 const staticContent = instance.reference.getAttribute('data-tippy-content');
-                 if (!instance.reference.hasAttribute('data-tippy-key') && (!staticContent || String(staticContent).trim() === '')) {
-                     instance.disable();
-                 }
-            }
+        const newInstances = tippy(scope.querySelectorAll('[data-tippy-content]'), {
+            allowHTML: true, theme: 'glass', placement: 'top', animation: 'fade',
+            interactive: false, appendTo: () => document.body,
+            delay: (APP_CONFIG && APP_CONFIG.UI_SETTINGS) ? APP_CONFIG.UI_SETTINGS.TOOLTIP_DELAY : [200, 100],
+            maxWidth: 400, duration: [150, 150], zIndex: 3050,
+            onCreate(instance) { if (!instance.props.content || String(instance.props.content).trim() === '') { instance.disable(); } },
+            onShow(instance) { const content = instance.reference.getAttribute('data-tippy-content'); return !!content && String(content).trim() !== ''; }
         });
-
         if (Array.isArray(newInstances)) tippyInstances = tippyInstances.concat(newInstances);
         else if (newInstances) tippyInstances.push(newInstances);
     }
@@ -432,8 +364,16 @@ const uiManager = (() => {
             if (bfResult && bfResult.bestResult) {
                 const best = bfResult.bestResult;
                 const criteriaDisplay = studyT2CriteriaManager.formatCriteriaForDisplay(best.criteria, best.logic);
+                let cohortStats = `(N=${bfResult.nTotal}, N+: ${bfResult.nPlus}, N-: ${bfResult.nMinus})`;
+
+                const resultTooltipTemplate = APP_CONFIG.UI_TEXTS.tooltips.bruteForceResult.description;
+                const resultTooltip = resultTooltipTemplate
+                    .replace('[N_TOTAL]', bfResult.nTotal)
+                    .replace('[N_PLUS]', bfResult.nPlus)
+                    .replace('[N_MINUS]', bfResult.nMinus);
+
                 contentHTML = `
-                    <p class="small text-muted">
+                    <p class="small text-muted" data-tippy-content="${resultTooltip}">
                         <strong>Optimization complete for cohort '${cohortDisplayName}'.</strong><br>
                         Best ${bfResult.metric}: <strong class="text-primary">${formatNumber(best.metricValue, 4, 'N/A', true)}</strong><br>
                         Criteria: <code>${criteriaDisplay}</code><br>
@@ -448,21 +388,23 @@ const uiManager = (() => {
             }
         }
 
+        const infoTooltipTemplate = APP_CONFIG.UI_TEXTS.tooltips.bruteForceInfo.description;
+        const cardTitleTooltip = infoTooltipTemplate.replace('[COHORT_NAME]', `<strong>${cohortDisplayName}</strong>`);
         const isRunning = status === 'started' || status === 'progress';
 
         container.innerHTML = `
             <div class="card h-100" id="brute-force-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>Criteria Optimization (Brute-Force)</span>
+                    <span data-tippy-content="${cardTitleTooltip}">Criteria Optimization (Brute-Force)</span>
                     <div class="d-flex align-items-center">
-                        <label for="brute-force-metric" class="me-2 small text-muted">Target:</label>
+                        <label for="brute-force-metric" class="me-2 small text-muted" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.bruteForceMetric.description}">Target:</label>
                         <select class="form-select form-select-sm me-2" id="brute-force-metric" ${isRunning ? 'disabled' : ''}>
                             ${APP_CONFIG.AVAILABLE_BRUTE_FORCE_METRICS.map(metric => `<option value="${metric.value}" ${payload.metric === metric.value ? 'selected' : ''}>${metric.label}</option>`).join('')}
                         </select>
-                        <button class="btn btn-sm btn-success me-2" id="btn-start-brute-force" ${isRunning || !isWorkerAvailable ? 'disabled' : ''}><i class="fas fa-play me-1"></i> Start</button>
+                        <button class="btn btn-sm btn-success me-2" id="btn-start-brute-force" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.bruteForceStart.description}" ${isRunning || !isWorkerAvailable ? 'disabled' : ''}><i class="fas fa-play me-1"></i> Start</button>
                         <button class="btn btn-sm btn-danger me-2" id="btn-cancel-brute-force" ${!isRunning ? 'disabled' : ''}><i class="fas fa-stop me-1"></i> Cancel</button>
                         <button class="btn btn-sm btn-primary" id="btn-apply-best-bf-criteria" ${!showResultControls || isRunning ? 'disabled' : ''}><i class="fas fa-magic me-1"></i> Apply Best</button>
-                        <button class="btn btn-sm btn-outline-info ms-2" ${!showResultControls ? 'disabled' : ''} data-bs-toggle="modal" data-bs-target="#brute-force-modal" id="btn-show-bf-details"><i class="fas fa-info-circle"></i> Top 10</button>
+                        <button class="btn btn-sm btn-outline-info ms-2" ${!showResultControls ? 'disabled' : ''} data-bs-toggle="modal" data-bs-target="#brute-force-modal" id="btn-show-bf-details" data-tippy-content="${APP_CONFIG.UI_TEXTS.tooltips.bruteForceDetailsButton.description}"><i class="fas fa-info-circle"></i> Top 10</button>
                     </div>
                 </div>
                 <div class="card-body">
@@ -514,13 +456,13 @@ const uiManager = (() => {
             let instance = criteriaCard._tippy;
             if (isUnsaved && !instance) {
                 tippy(criteriaCard, {
-                    content: "<strong>Attention:</strong> There are unsaved changes to the T2 criteria or logic. Click 'Apply & Save' to update the results and save the settings.",
+                    content: APP_CONFIG.UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator,
                     theme: 'warning',
                     placement: 'top',
                 });
             } else if (instance) {
                 instance.setProps({
-                    content: "<strong>Attention:</strong> There are unsaved changes to the T2 criteria or logic. Click 'Apply & Save' to update the results and save the settings.",
+                    content: APP_CONFIG.UI_TEXTS.tooltips.t2CriteriaCard.unsavedIndicator,
                 });
                 if (isUnsaved) instance.enable(); else instance.disable();
             }
@@ -541,10 +483,12 @@ const uiManager = (() => {
         });
 
         toggleButton.dataset.action = isExpanding ? 'collapse' : 'expand';
+        const expandAllTooltip = APP_CONFIG.UI_TEXTS.tooltips.dataTab.expandAll;
+        const collapseAllTooltip = APP_CONFIG.UI_TEXTS.tooltips.dataTab.collapseAll;
         toggleButton.innerHTML = isExpanding
             ? `Collapse All Details <i class="fas fa-chevron-up ms-1"></i>`
             : `Expand All Details <i class="fas fa-chevron-down ms-1"></i>`;
-        toggleButton.setAttribute('data-tippy-content', isExpanding ? 'Collapse all detail views.' : 'Expand all detail views.');
+        toggleButton.setAttribute('data-tippy-content', isExpanding ? collapseAllTooltip : expandAllTooltip);
     }
 
 

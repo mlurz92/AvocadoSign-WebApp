@@ -29,15 +29,17 @@ const analysisTab = (() => {
                 }
             }
             
+            const baseTooltipContent = APP_CONFIG.UI_TEXTS.tooltips.analysisTab[col.tooltipKey] || `Sort by ${col.label}`;
             const subHeaders = col.subKeys ? col.subKeys.map(sk => {
                 const isActiveSubSort = activeSubKey === sk.key;
                 const style = isActiveSubSort ? 'font-weight: bold; text-decoration: underline; color: var(--primary-color);' : '';
-                return `<span class="sortable-sub-header" data-sub-key="${sk.key}" style="cursor: pointer; ${style}" data-tippy-key="analysisTab.n_as_t2_subsort" data-tippy-content="Sort by Status ${sk.label}">${sk.label}</span>`;
+                return `<span class="sortable-sub-header" data-sub-key="${sk.key}" style="cursor: pointer; ${style}" data-tippy-content="Sort by Status ${sk.label}">${sk.label}</span>`;
             }).join(' / ') : '';
             
+            const mainTooltip = col.subKeys ? `${baseTooltipContent}` : `Sort by ${col.label}. ${baseTooltipContent}`;
             const sortAttributes = `data-sort-key="${col.key}" ${col.subKeys || col.key === 'details' ? '' : 'style="cursor: pointer;"'}`;
             
-            headerHTML += `<th scope="col" ${sortAttributes} data-tippy-key="analysisTab.${col.tooltipKey}" ${thStyle ? `style="${thStyle}"`: ''}>${col.label}${subHeaders ? ` (${subHeaders})` : ''} ${col.key !== 'details' ? sortIconHTML : ''}</th>`;
+            headerHTML += `<th scope="col" ${sortAttributes} data-tippy-content="${mainTooltip}" ${thStyle ? `style="${thStyle}"`: ''}>${col.label}${subHeaders ? ` (${subHeaders})` : ''} ${col.key !== 'details' ? sortIconHTML : ''}</th>`;
         });
         headerHTML += `</tr></thead>`;
 
@@ -51,11 +53,12 @@ const analysisTab = (() => {
         }
         tableHTML += `</tbody></table>`;
         
+        const toggleButtonTooltip = APP_CONFIG.UI_TEXTS.tooltips.analysisTab.expandAll || 'Expand or collapse all details';
         return `
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>Patient Overview & Analysis Results (based on applied T2 criteria)</span>
-                    <button id="analysis-toggle-details" class="btn btn-sm btn-outline-secondary" data-action="expand" data-tippy-key="analysisTab.expandAll">
+                    <button id="analysis-toggle-details" class="btn btn-sm btn-outline-secondary" data-action="expand" data-tippy-content="${toggleButtonTooltip}">
                        Expand All Details <i class="fas fa-chevron-down ms-1"></i>
                    </button>
                 </div>
@@ -112,12 +115,12 @@ const analysisTab = (() => {
             const dlBtns = (baseId, titleKey) => [{id:`dl-${baseId}-png`, icon: 'fa-image', tooltip: `Download '${APP_CONFIG.UI_TEXTS.chartTitles[titleKey]}' as PNG`, format:'png', chartId: baseId, chartName: APP_CONFIG.UI_TEXTS.chartTitles[titleKey]}, {id:`dl-${baseId}-svg`, icon: 'fa-file-code', tooltip: `Download '${APP_CONFIG.UI_TEXTS.chartTitles[titleKey]}' as SVG`, format:'svg', chartId: baseId, chartName: APP_CONFIG.UI_TEXTS.chartTitles[titleKey]}];
             
             dashboardCardsHTML = `
-                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.ageDistribution, `<p class="mb-0 small">Median: ${formatNumber(stats.age?.median, 1)} (${formatNumber(stats.age?.min, 0)} - ${formatNumber(stats.age?.max, 0)})</p>`, 'chart-dash-age', '', '', 'p-1', dlBtns('chart-dash-age', 'ageDistribution'), cohortDisplayName, 'descriptiveStatistics.chartAge')}
-                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.genderDistribution, `<p class="mb-0 small">M: ${stats.sex?.m ?? 0} F: ${stats.sex?.f ?? 0}</p>`, 'chart-dash-gender', '', '', 'p-1', dlBtns('chart-dash-gender', 'genderDistribution'), cohortDisplayName, 'descriptiveStatistics.chartGender')}
-                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.therapyDistribution, `<p class="mb-0 small">Surgery alone: ${stats.therapy?.surgeryAlone ?? 0} Neoadjuvant therapy: ${stats.therapy?.neoadjuvantTherapy ?? 0}</p>`, 'chart-dash-therapy', '', '', 'p-1', dlBtns('chart-dash-therapy', 'therapyDistribution'), cohortDisplayName, 'descriptiveStatistics.therapy')}
-                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusN, `<p class="mb-0 small">N+: ${stats.nStatus?.plus ?? 0} N-: ${stats.nStatus?.minus ?? 0}</p>`, 'chart-dash-status-n', '', '', 'p-1', dlBtns('chart-dash-status-n', 'statusN'), cohortDisplayName, 'descriptiveStatistics.nStatus')}
-                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusAS, `<p class="mb-0 small">AS+: ${stats.asStatus?.plus ?? 0} AS-: ${stats.asStatus?.minus ?? 0}</p>`, 'chart-dash-status-as', '', '', 'p-1', dlBtns('chart-dash-status-as', 'statusAS'), cohortDisplayName, 'descriptiveStatistics.asStatus')}
-                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusT2, `<p class="mb-0 small">T2+: ${stats.t2Status?.plus ?? 0} T2-: ${stats.t2Status?.minus ?? 0}</p>`, 'chart-dash-status-t2', '', '', 'p-1', dlBtns('chart-dash-status-t2', 'statusT2'), cohortDisplayName, 'descriptiveStatistics.t2Status')}
+                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.ageDistribution, `<p class="mb-0 small">Median: ${formatNumber(stats.age?.median, 1)} (${formatNumber(stats.age?.min, 0)} - ${formatNumber(stats.age?.max, 0)})</p>`, 'chart-dash-age', '', '', 'p-1', dlBtns('chart-dash-age', 'ageDistribution'), cohortDisplayName)}
+                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.genderDistribution, `<p class="mb-0 small">M: ${stats.sex?.m ?? 0} F: ${stats.sex?.f ?? 0}</p>`, 'chart-dash-gender', '', '', 'p-1', dlBtns('chart-dash-gender', 'genderDistribution'), cohortDisplayName)}
+                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.therapyDistribution, `<p class="mb-0 small">Surgery alone: ${stats.therapy?.surgeryAlone ?? 0} Neoadjuvant therapy: ${stats.therapy?.neoadjuvantTherapy ?? 0}</p>`, 'chart-dash-therapy', '', '', 'p-1', dlBtns('chart-dash-therapy', 'therapyDistribution'), cohortDisplayName)}
+                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusN, `<p class="mb-0 small">N+: ${stats.nStatus?.plus ?? 0} N-: ${stats.nStatus?.minus ?? 0}</p>`, 'chart-dash-status-n', '', '', 'p-1', dlBtns('chart-dash-status-n', 'statusN'), cohortDisplayName)}
+                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusAS, `<p class="mb-0 small">AS+: ${stats.asStatus?.plus ?? 0} AS-: ${stats.asStatus?.minus ?? 0}</p>`, 'chart-dash-status-as', '', '', 'p-1', dlBtns('chart-dash-as', 'statusAS'), cohortDisplayName)}
+                ${uiComponents.createDashboardCard(APP_CONFIG.UI_TEXTS.chartTitles.statusT2, `<p class="mb-0 small">T2+: ${stats.t2Status?.plus ?? 0} T2-: ${stats.t2Status?.minus ?? 0}</p>`, 'chart-dash-t2', '', '', 'p-1', dlBtns('chart-dash-t2', 'statusT2'), cohortDisplayName)}
             `;
         } else {
             dashboardCardsHTML = '<div class="col-12"><p class="text-muted text-center small p-3">No data for dashboard.</p></div>';
@@ -159,14 +162,14 @@ const analysisTab = (() => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td data-tippy-key="statisticsTab.diagnosticPerformance.sens">Sensitivity</td><td data-tippy-key="statisticsTab.diagnosticPerformance.sens" data-value="${statsT2.sens?.value}">${fCI(statsT2.sens, 1, true)}</td><td>${statsT2.sens?.method || na}</td></tr>
-                                    <tr><td data-tippy-key="statisticsTab.diagnosticPerformance.spec">Specificity</td><td data-tippy-key="statisticsTab.diagnosticPerformance.spec" data-value="${statsT2.spec?.value}">${fCI(statsT2.spec, 1, true)}</td><td>${statsT2.spec?.method || na}</td></tr>
-                                    <tr><td data-tippy-key="statisticsTab.diagnosticPerformance.ppv">PPV</td><td data-tippy-key="statisticsTab.diagnosticPerformance.ppv" data-value="${statsT2.ppv?.value}">${fCI(statsT2.ppv, 1, true)}</td><td>${statsT2.ppv?.method || na}</td></tr>
-                                    <tr><td data-tippy-key="statisticsTab.diagnosticPerformance.npv">NPV</td><td data-tippy-key="statisticsTab.diagnosticPerformance.npv" data-value="${statsT2.npv?.value}">${fCI(statsT2.npv, 1, true)}</td><td>${statsT2.npv?.method || na}</td></tr>
-                                    <tr><td data-tippy-key="statisticsTab.diagnosticPerformance.acc">Accuracy</td><td data-tippy-key="statisticsTab.diagnosticPerformance.acc" data-value="${statsT2.acc?.value}">${fCI(statsT2.acc, 1, true)}</td><td>${statsT2.acc?.method || na}</td></tr>
-                                    <tr><td data-tippy-key="statisticsTab.diagnosticPerformance.balAcc">Balanced Accuracy</td><td data-tippy-key="statisticsTab.diagnosticPerformance.balAcc" data-value="${statsT2.balAcc?.value}">${fCI(statsT2.balAcc, 1, true)}</td><td>${statsT2.balAcc?.method || na}</td></tr>
-                                    <tr><td data-tippy-key="statisticsTab.diagnosticPerformance.f1">F1-Score</td><td data-tippy-key="statisticsTab.diagnosticPerformance.f1" data-value="${statsT2.f1?.value}">${fCI(statsT2.f1, 3, false)}</td><td>${statsT2.f1?.method || na}</td></tr>
-                                    <tr><td data-tippy-key="statisticsTab.diagnosticPerformance.auc">AUC</td><td data-tippy-key="statisticsTab.diagnosticPerformance.auc" data-value="${statsT2.auc?.value}">${fCI(statsT2.auc, 2, false)}</td><td>${statsT2.auc?.method || na}</td></tr>
+                                    <tr><td>Sensitivity</td><td>${fCI(statsT2.sens, 1, true)}</td><td>${statsT2.sens?.method || na}</td></tr>
+                                    <tr><td>Specificity</td><td>${fCI(statsT2.spec, 1, true)}</td><td>${statsT2.spec?.method || na}</td></tr>
+                                    <tr><td>PPV</td><td>${fCI(statsT2.ppv, 1, true)}</td><td>${statsT2.ppv?.method || na}</td></tr>
+                                    <tr><td>NPV</td><td>${fCI(statsT2.npv, 1, true)}</td><td>${statsT2.npv?.method || na}</td></tr>
+                                    <tr><td>Accuracy</td><td>${fCI(statsT2.acc, 1, true)}</td><td>${statsT2.acc?.method || na}</td></tr>
+                                    <tr><td>Balanced Accuracy</td><td>${fCI(statsT2.balAcc, 1, true)}</td><td>${statsT2.balAcc?.method || na}</td></tr>
+                                    <tr><td>F1-Score</td><td>${fCI(statsT2.f1, 3, false)}</td><td>${statsT2.f1?.method || na}</td></tr>
+                                    <tr><td>AUC</td><td>${fCI(statsT2.auc, 2, false)}</td><td>${statsT2.auc?.method || na}</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -176,7 +179,7 @@ const analysisTab = (() => {
                         'Diagnostic Performance (Applied T2)',
                         metricsHtml,
                         false,
-                        'analysisTab.t2MetricsOverview',
+                        't2MetricsOverview',
                         [{id: 'dl-t2-metrics-overview-png', icon: 'fa-image', format: 'png', tableId: 't2-metrics-overview-card-content table', tableName: `T2_Metrics_Overview_${getCohortDisplayName(currentCohort).replace(/\s+/g, '_')}`}],
                         't2-metrics-overview-card-content table'
                     ));
