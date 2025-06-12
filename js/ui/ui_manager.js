@@ -114,6 +114,24 @@ const uiManager = (() => {
         collapseEventListenersAttached.add(tableBodyId);
     }
 
+    function updatePublicationWordCounts() {
+        const textareas = document.querySelectorAll('.publication-textarea');
+        textareas.forEach(textarea => {
+            const componentId = textarea.dataset.componentId;
+            const counterElement = document.getElementById(`word-count-${componentId}`);
+            if (counterElement) {
+                const wordCount = textarea.value.trim() === '' ? 0 : textarea.value.trim().split(/\s+/).length;
+                let limit = 0;
+                if (componentId === 'summary-statement') {
+                    limit = 30;
+                } else if (componentId === 'key-results') {
+                    limit = 75;
+                }
+                counterElement.textContent = `${wordCount} / ${limit} words`;
+            }
+        });
+    }
+
     function renderTabContent(tabId, renderFunction) {
         const containerId = `${tabId}-pane`;
         const container = document.getElementById(containerId);
@@ -122,6 +140,9 @@ const uiManager = (() => {
         try {
             const contentHTML = renderFunction();
             updateElementHTML(containerId, contentHTML || '<p class="text-muted p-3">No content generated.</p>');
+            if (tabId === 'publication') {
+                updatePublicationWordCounts();
+            }
         } catch (error) {
             const errorMessage = `<div class="alert alert-danger m-3">Error loading tab: ${error.message}</div>`;
             updateElementHTML(containerId, errorMessage);
@@ -136,7 +157,7 @@ const uiManager = (() => {
         }
         let modalElement = document.getElementById('quick-guide-modal');
         if (!modalElement) {
-            const appVersion = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG.APP_VERSION : '3.0.1';
+            const appVersion = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG.APP_VERSION : '3.1.0';
             const quickGuideContent = `
                 <h2>1. Introduction</h2>
                 <p>The <strong>Nodal Staging: Avocado Sign vs. T2 Criteria</strong> analysis tool is a client-side web application designed for scientific research in the radiological diagnosis of rectal cancer. It enables in-depth analyses and detailed comparisons of diagnostic performance for various MRI-based criteria for assessing mesorectal lymph node status (N-status). The application focuses on evaluating the novel "Avocado Sign" (AS) against established T2-weighted (T2w) morphological criteria. It is intended solely as a <strong>research instrument</strong>. The results are <strong>not for clinical diagnosis or direct patient treatment decisions</strong>. </p>
@@ -189,7 +210,7 @@ const uiManager = (() => {
                 <h3>4.5 Publication Tab</h3>
                 <ul>
                     <li><strong>Purpose:</strong> Assists in writing scientific manuscripts, generating text, tables, and figures adhering to <em>Radiology</em> journal style.</li>
-                    <li><strong>Features:</strong> Section Navigation (Abstract, Intro, Methods, Results, Discussion, References). BF Target Metric Selection. Dynamically generated, professionally formulated English text integrating data and results (e.g., P < .001). Embedded tables and figures. Stylistic adherence (abbreviations, reporting language).</li>
+                    <li><strong>Features:</strong> Manuscript component inputs (Summary Statement, Key Results). Section Navigation (Abstract, Intro, Methods, Results, Discussion, References). BF Target Metric Selection. Dynamically generated, professionally formulated English text integrating data and results (e.g., P < .001). Embedded tables and figures. Stylistic adherence (abbreviations, reporting language).</li>
                 </ul>
                 <h3>4.6 Export Tab</h3>
                 <ul>
@@ -515,5 +536,6 @@ const uiManager = (() => {
         updateSortIcons,
         markCriteriaSavedIndicator,
         toggleAllDetails,
+        updatePublicationWordCounts
     });
 })();
