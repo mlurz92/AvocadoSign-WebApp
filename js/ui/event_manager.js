@@ -11,6 +11,14 @@ const eventManager = (() => {
         }
     }, APP_CONFIG.PERFORMANCE_SETTINGS.DEBOUNCE_DELAY_MS);
 
+    const debouncedUpdateSummaryStatement = debounce(value => {
+        state.setPublicationSummaryStatement(value);
+    }, APP_CONFIG.PERFORMANCE_SETTINGS.DEBOUNCE_DELAY_MS);
+
+    const debouncedUpdateKeyResults = debounce(value => {
+        state.setPublicationKeyResults(value);
+    }, APP_CONFIG.PERFORMANCE_SETTINGS.DEBOUNCE_DELAY_MS);
+
     function init(appInstance) {
         app = appInstance;
         document.body.addEventListener('click', handleBodyClick);
@@ -151,6 +159,22 @@ const eventManager = (() => {
                 if(sizeRangeInput) sizeRangeInput.value = parseFloat(newValue);
             }
             debouncedUpdateSizeInput(newValue);
+            return;
+        }
+
+        if (target.classList.contains('publication-textarea')) {
+            const componentId = target.dataset.componentId;
+            const value = target.value;
+            const wordCount = value.trim() === '' ? 0 : value.trim().split(/\s+/).length;
+            const counterElement = document.getElementById(`word-count-${componentId}`);
+            
+            if (componentId === 'summary-statement') {
+                debouncedUpdateSummaryStatement(value);
+                if (counterElement) counterElement.textContent = `${wordCount} / 30 words`;
+            } else if (componentId === 'key-results') {
+                debouncedUpdateKeyResults(value);
+                if (counterElement) counterElement.textContent = `${wordCount} / 75 words`;
+            }
         }
     }
 
