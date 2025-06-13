@@ -212,39 +212,25 @@ function getStatisticalSignificanceSymbol(pValue) {
 }
 
 function getPValueText(pValue, forPublication = false) {
-    if (pValue === null || pValue === undefined || isNaN(pValue) || !isFinite(pValue)) return 'N/A';
-
-    const pLessThanThreshold = 0.001;
-    const pDot01Threshold = 0.01;
-    const pDot05Threshold = 0.05;
-    const pGreater099Threshold = 0.99;
-
-    let formattedP;
+    const p = parseFloat(pValue);
+    if (p === null || p === undefined || isNaN(p) || !isFinite(p)) return 'N/A';
 
     if (forPublication) {
-        const prefix = 'P';
-        if (pValue < pLessThanThreshold) {
-            formattedP = `${prefix} < .001`;
-        } else if (pValue >= pLessThanThreshold && pValue < pDot01Threshold) {
-            formattedP = `${prefix} = ${formatNumber(pValue, 3, 'N/A', true)}`;
-        } else if (pValue >= pDot01Threshold && pValue < pDot05Threshold) {
-             formattedP = `${prefix} = ${formatNumber(pValue, 3, 'N/A', true)}`;
-        } else if (pValue >= pDot05Threshold && pValue <= pGreater099Threshold) {
-            formattedP = `${prefix} = ${formatNumber(pValue, 2, 'N/A', true)}`;
-        } else if (pValue > pGreater099Threshold) {
-            formattedP = `${prefix} > .99`;
-        } else {
-            formattedP = `${prefix} = ${formatNumber(pValue, 2, 'N/A', true)}`;
+        const prefix = '*P*';
+        if (p < 0.001) return `${prefix} < .001`;
+        if (p > 0.99) return `${prefix} > .99`;
+        if (p < 0.01) return `${prefix} = .${p.toFixed(3).substring(2)}`;
+        // Special rule: show 3 digits if rounding to 2 would cross the .05 threshold
+        if (p.toFixed(2) === '0.05' && p < 0.05) {
+             return `${prefix} = .${p.toFixed(3).substring(2)}`;
         }
+        return `${prefix} = .${p.toFixed(2).substring(2)}`;
     } else {
+        // UI-friendly format
         const prefix = 'p';
-        if (pValue < 0.001) {
-            formattedP = `${prefix} < 0.001`;
-        } else {
-            formattedP = `${prefix} = ${formatNumber(pValue, 3, 'N/A', true)}`;
-        }
+        if (p < 0.001) return `${prefix} < 0.001`;
+        return `${prefix} = ${p.toFixed(3)}`;
     }
-    return formattedP;
 }
 
 
@@ -359,7 +345,7 @@ function getInterpretationTooltip(metricKey, data, context = {}) {
              break;
 
         case 'pValue':
-            const pValueFormatted = getPValueText(value);
+            const pValueFormatted = getPValueText(value, false); // Use UI format for tooltips
             const significance = value < APP_CONFIG.STATISTICAL_CONSTANTS.SIGNIFICANCE_LEVEL;
             const significanceText = significance ? templates.significance.significant : templates.significance.not_significant;
             const pStrength = significance ? templates.strength.strong : templates.strength.very_weak;
