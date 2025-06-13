@@ -214,26 +214,37 @@ function getStatisticalSignificanceSymbol(pValue) {
 function getPValueText(pValue, forPublication = false) {
     if (pValue === null || pValue === undefined || isNaN(pValue) || !isFinite(pValue)) return 'N/A';
 
+    const pLessThanThreshold = 0.001;
+    const pDot01Threshold = 0.01;
+    const pDot05Threshold = 0.05;
+    const pGreater099Threshold = 0.99;
+
+    let formattedP;
+
     if (forPublication) {
         const prefix = 'P';
-        if (pValue < 0.001) {
-            return `${prefix} < .001`;
+        if (pValue < pLessThanThreshold) {
+            formattedP = `${prefix} < .001`;
+        } else if (pValue >= pLessThanThreshold && pValue < pDot01Threshold) {
+            formattedP = `${prefix} = ${formatNumber(pValue, 3, 'N/A', true)}`;
+        } else if (pValue >= pDot01Threshold && pValue < pDot05Threshold) {
+             formattedP = `${prefix} = ${formatNumber(pValue, 3, 'N/A', true)}`;
+        } else if (pValue >= pDot05Threshold && pValue <= pGreater099Threshold) {
+            formattedP = `${prefix} = ${formatNumber(pValue, 2, 'N/A', true)}`;
+        } else if (pValue > pGreater099Threshold) {
+            formattedP = `${prefix} > .99`;
+        } else {
+            formattedP = `${prefix} = ${formatNumber(pValue, 2, 'N/A', true)}`;
         }
-        if (pValue > 0.99) {
-            return `${prefix} > .99`;
-        }
-        if (pValue < 0.05) {
-            return `${prefix} = ${formatNumber(pValue, 3, 'N/A', true).substring(1)}`;
-        }
-        return `${prefix} = ${formatNumber(pValue, 2, 'N/A', true).substring(1)}`;
-
     } else {
         const prefix = 'p';
         if (pValue < 0.001) {
-            return `${prefix} < 0.001`;
+            formattedP = `${prefix} < 0.001`;
+        } else {
+            formattedP = `${prefix} = ${formatNumber(pValue, 3, 'N/A', true)}`;
         }
-        return `${prefix} = ${formatNumber(pValue, 3, 'N/A', true)}`;
     }
+    return formattedP;
 }
 
 

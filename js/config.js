@@ -103,14 +103,14 @@ const APP_CONFIG = Object.freeze({
     }),
     EXPORT_SETTINGS: Object.freeze({
         DATE_FORMAT: 'YYYYMMDD',
-        FILENAME_TEMPLATE: 'AvocadoSignT2_{TYPE}_{KOLLEKTIV}_{DATE}.{EXT}',
+        FILENAME_TEMPLATE: 'AvocadoSignT2_{TYPE}_{COHORT}_{DATE}.{EXT}',
         TABLE_PNG_EXPORT_SCALE: 2,
         ENABLE_TABLE_PNG_EXPORT: true,
         CSV_DELIMITER: ';',
         FILENAME_TYPES: Object.freeze({
             STATS_CSV: 'Statistics_CSV',
             BRUTEFORCE_TXT: 'BruteForce_Report_TXT',
-            DESKRIPTIV_MD: 'Descriptive_Statistics_MD',
+            DESCRIPTIVE_MD: 'Descriptive_Statistics_MD',
             DATA_MD: 'Data_List_MD',
             ANALYSIS_MD: 'Analysis_Table_MD',
             FILTERED_DATA_CSV: 'Filtered_Data_CSV',
@@ -201,9 +201,6 @@ const APP_CONFIG = Object.freeze({
         publicationTab: {
             bfMetricSelectLabel: 'BF Optimization Metric for T2:',
             sectionLabels: {
-                title_page: 'Title Page',
-                summary_statement: 'Summary Statement',
-                key_results: 'Key Results',
                 abstract_main: 'Abstract',
                 introduction_main: 'Introduction',
                 methoden_main: 'Methods',
@@ -412,9 +409,6 @@ const APP_CONFIG = Object.freeze({
 
 const PUBLICATION_CONFIG = Object.freeze({
     sections: Object.freeze([
-        { id: 'title_page', labelKey: 'title_page', subSections: [] },
-        { id: 'summary_statement', labelKey: 'summary_statement', subSections: [] },
-        { id: 'key_results', labelKey: 'key_results', subSections: [] },
         { id: 'abstract_main', labelKey: 'abstract_main', subSections: [{ id: 'abstract_main', label: 'Abstract' }] },
         { id: 'introduction_main', labelKey: 'introduction_main', subSections: [{ id: 'introduction_main', label: 'Introduction' }] },
         {
@@ -446,7 +440,7 @@ const PUBLICATION_CONFIG = Object.freeze({
             id: 'rutegard_et_al_esgar',
             name: 'ESGAR 2016 (Rutegård et al. 2025)',
             displayShortName: 'ESGAR 2016',
-            applicableCohort: 'surgeryAlone',
+            applicableCohort: 'Overall',
             logic: 'KOMBINIERT',
             criteria: Object.freeze({
                 size: { active: true, threshold: 9.0, condition: '>=' },
@@ -507,19 +501,6 @@ const PUBLICATION_CONFIG = Object.freeze({
         }
     ]),
     publicationElements: Object.freeze({
-        manuscriptTitle: 'The Avocado Sign: A Novel MRI Marker for Nodal Staging in Rectal Cancer and a Comparative Analysis with T2-weighted Criteria',
-        summaryStatement: {
-            id: 'summary-statement',
-            titleEn: 'Summary Statement'
-        },
-        keyResults: {
-            id: 'key-results',
-            titleEn: 'Key Results'
-        },
-        figure1_flowchart: {
-            id: 'figure-1-flowchart',
-            titleEn: 'Figure 1: STROBE flow diagram of patient enrollment.'
-        },
         methoden: {
             literaturT2KriterienTabelle: {
                 id: 'table-methods-t2-literature',
@@ -545,11 +526,19 @@ const PUBLICATION_CONFIG = Object.freeze({
             },
             rocKurveOverall: {
                 id: 'fig-results-roc-overall',
-                titleEn: 'Figure 2. ROC Curve for the Avocado Sign in the Overall Cohort'
+                titleEn: 'Figure 1. ROC Curve for the Avocado Sign in the Overall Cohort'
+            },
+            rocKurveSurgeryAlone: {
+                id: 'fig-results-roc-surgery-alone',
+                titleEn: 'Figure 2. ROC Curve for the Avocado Sign in the Surgery alone Cohort'
+            },
+            rocKurveNRCT: {
+                id: 'fig-results-roc-nrcT',
+                titleEn: 'Figure 3. ROC Curve for the Avocado Sign in the Neoadjuvant therapy Cohort'
             },
             asVsT2ComparisonChart: {
                 id: 'fig-results-as-t2-comparison',
-                titleEn: 'Figure 3. Comparison of Key Diagnostic Metrics: Avocado Sign vs. Cohort-Optimized T2 Criteria'
+                titleEn: 'Figure 4. Comparison of Key Diagnostic Metrics: Avocado Sign vs. Cohort-Optimized T2 Criteria'
             }
         }
     })
