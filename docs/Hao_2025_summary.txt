@@ -1,0 +1,38 @@
+**Hao Y, Zheng J, Li W, et al. Ultra-high b-value DWI in rectal cancer: image quality assessment and regional lymph node prediction based on radiomics. Eur Radiol. 2025;35:49-60. DOI: 10.1007/s00330-024-10958-3**
+
+**Study Aim**
+To evaluate the image quality of multi-b-value diffusion-weighted imaging (DWI) in rectal cancer and to assess the performance of radiomics models based on different b-value images for predicting regional lymph node metastasis (LNM).
+
+**Methods**
+*   **Study Design:** Retrospective, single-institution study.
+*   **Patient Population:** 199 patients with rectal cancer who underwent preoperative multi-b-value DWI before any treatment. Patients were randomly split into training (n=140) and validation (n=59) cohorts.
+*   **Imaging Protocol:** Multi-b-value DWI was performed at 3.0T, acquiring images at b=1000, b=2000, and b=3000 s/mm².
+*   **Analysis:**
+    1.  **Image Quality Assessment:** Subjective (5-point Likert scales for conspicuity, artifact, etc.) and objective (Signal-to-Noise Ratio - SNR, Contrast-to-Noise Ratio - CNR) evaluation of DWI images at b=1000, 2000, and 3000.
+    2.  **Radiomics Analysis:**
+        *   Radiomics features were extracted from the whole tumor volume on ADC maps and on DWI images at b=1000, 2000, and 3000.
+        *   Five separate prediction models were built using logistic regression to predict LNM status: 1) ADC model, 2) DWIb1000 model, 3) DWIb2000 model, 4) DWIb3000 model, and 5) a multi-b-value model combining features from all three.
+*   **Reference Standard:** Histopathological confirmation of LNM.
+
+**Key Results (beyond Abstract)**
+*   **Image Quality Assessment:**
+    *   As b-value increased, SNR decreased progressively.
+    *   The **Contrast-to-Noise Ratio (CNR) was significantly highest at b=2000** (CNR=4.58) compared to b=1000 (3.82) and b=3000 (4.18) (p < 0.001).
+    *   Subjectively, **lesion conspicuity was highest at b=2000**.
+    *   Overall image quality was best at b=1000 and b=2000, with no significant difference between them, but both were significantly better than b=3000 (p < 0.001).
+    *   This indicates that **DWI at b=2000 provides the optimal balance between suppressing background signal and maintaining sufficient SNR, resulting in the best lesion contrast.**
+
+*   **Performance of Radiomics Models for LNM Prediction:**
+    *   The performance of the five models was evaluated in the independent validation cohort.
+    *   The **radiomics model based on DWIb2000 images achieved the highest AUC** among the single-b-value models.
+    *   **AUC values in the validation cohort:**
+        *   Model 1 (ADC): 0.690
+        *   Model 2 (DWIb1000): 0.699
+        *   **Model 3 (DWIb2000): 0.728**
+        *   Model 4 (DWIb3000): 0.707
+        *   Model 5 (Multi-b-value): 0.739
+    *   The multi-b-value model had the highest AUC overall (0.739), but the DWIb2000 model provided the best performance for a single, efficient sequence.
+    *   Decision curve analysis (DCA) showed that the DWIb2000 and multi-b-value models provided the most clinical benefit.
+
+**Conclusion**
+For rectal cancer imaging, an ultra-high b-value of **DWI at b=2000 s/mm² provides superior image quality**, specifically in terms of contrast-to-noise ratio and lesion conspicuity, compared to both conventional b=1000 and higher b=3000. This makes DWIb2000 the optimal b-value for lesion visualization. Furthermore, a **radiomics model built from features extracted from these DWIb2000 images demonstrates the best predictive performance for regional lymph node metastasis** compared to models from ADC or other b-value images. This suggests that the microstructural information captured at b=2000 is most valuable for preoperatively and non-invasively predicting LNM, which can aid in stratified treatment planning for rectal cancer patients.

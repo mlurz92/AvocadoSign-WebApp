@@ -1,0 +1,38 @@
+**Pangarkar S, Mistry K, Choudhari A, et al. Accuracy of MRI for nodal restaging in rectal cancer: a retrospective study of 166 cases. Abdom Radiol (NY). 2021;46(2):498-505. DOI: 10.1007/s00261-020-02708-y**
+
+**Study Aim**
+To assess the diagnostic accuracy of post-chemoradiation (post-CRT) presurgical MRI for nodal restaging in rectal cancer and to validate the Society of Abdominal Radiology (SAR) consensus criterion, which considers a lymph node short-axis diameter of ≥ 5 mm as metastatic.
+
+**Methods**
+*   **Study Design:** Retrospective, single-institution study.
+*   **Patient Population:** 166 patients with locally advanced rectal cancers who underwent neoadjuvant treatment followed by surgery.
+*   **Imaging Analysis:** Two oncoradiologists reviewed the post-CRT, pre-surgical MRIs in consensus. Nodal size (short-axis diameter) and morphological features (shape, margins, signal intensity) were recorded. The SAR criterion (≥ 5 mm = ymrN+) was applied.
+*   **Reference Standard:** Histopathological evaluation of the surgical specimen to determine the pathologic nodal status (ypN). Node-for-node matching was not performed.
+*   **Statistical Analysis:** ROC curve analysis was used to determine the most accurate size cut-off. Sensitivity, specificity, PPV, NPV, and accuracy were calculated.
+
+**Key Results (beyond Abstract)**
+*   **Overall Accuracy of the SAR 5 mm Criterion:**
+    *   Using the ≥ 5 mm cut-off, MRI **understaged 18%** of patients (i.e., called ymrN0 but pathology was ypN+) and **overstaged 24%** (i.e., called ymrN+ but pathology was ypN0).
+    *   The median size of the largest node was 7 mm in patients who were truly node-positive (ypN+) and 3 mm in those who were node-negative (ypN0).
+
+*   **Optimal Size Cut-off and Diagnostic Performance:**
+    *   The ROC analysis identified the most accurate cut-off for node size to be **5.5 mm**.
+    *   This 5.5 mm cut-off yielded an **AUC of 0.657**, indicating only fair-to-moderate diagnostic performance.
+    *   Performance metrics for the 5.5 mm cut-off were:
+        *   **Sensitivity:** 75%
+        *   **Specificity:** 60.2%
+        *   **PPV:** 40.7% (Poor)
+        *   **NPV:** 86.9% (Good)
+        *   **Accuracy:** 64.2% (Moderate)
+
+*   **Ancillary Morphological Features:**
+    *   For nodes ≥ 5 mm, morphological features such as shape (round vs. oval), margins (irregular vs. regular), and signal intensity (heterogeneous vs. homogeneous) were analyzed.
+    *   **None of these morphological features were found to be statistically significant** in differentiating benign from malignant nodes. For example, of the nodes with irregular margins, only 30.5% were pathologically positive.
+
+*   **Mucinous Nodes:**
+    *   A major challenge for MRI accuracy was identified in patients with mucinous nodes.
+    *   29 patients had mucinous changes in their nodes on MRI. The accuracy of MRI in correctly predicting the final pathology in these cases was only **31% (9/29)**.
+    *   There were 7 cases where MRI showed yN2 disease with mucinous features, but pathology revealed yN0 with only acellular mucin in the nodes. This highlights a key reason for overstaging: **MRI cannot differentiate viable cellular mucin from non-viable acellular mucin**, a known post-treatment effect.
+
+**Conclusion**
+In the post-treatment setting, MRI has only **moderate accuracy** for nodal restaging. Its strength lies in its **good negative predictive value (NPV)**, meaning it is reliable for ruling out nodal disease when nodes are small. However, its **positive predictive value (PPV) is poor**, leading to significant overstaging. The study validates that a size cut-off around 5 mm (specifically 5.5 mm) is the most accurate, but its overall performance is modest. Crucially, **ancillary morphological criteria do not add diagnostic value** for nodes ≥ 5 mm in the post-CRT setting. The accuracy is particularly low in patients with mucinous nodes, where MRI's inability to distinguish acellular from cellular mucin leads to frequent overstaging.

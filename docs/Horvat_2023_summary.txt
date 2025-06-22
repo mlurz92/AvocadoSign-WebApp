@@ -1,0 +1,47 @@
+**Horvat N, El Homsi M, Miranda J, et al. Rectal MRI Interpretation After Neoadjuvant Therapy. J Magn Reson Imaging. 2023;57(2):353-369. DOI: 10.1002/jmri.28426**
+
+**Study Aim**
+To provide a comprehensive review and step-by-step guide for the interpretation of rectal MRI after neoadjuvant therapy, focusing on assessing treatment response, identifying challenges, and discussing the role of advanced imaging techniques.
+
+**Key Concepts and Recommendations (Review Article)**
+
+*   **The Evolving Role of Restaging MRI:** With the rise of organ preservation strategies (watch-and-wait) and total neoadjuvant therapy (TNT), accurate assessment of treatment response on restaging MRI has become critically important. The goal is no longer just to plan surgery, but to predict pathologic complete response (pCR) and select patients who can safely avoid major resection.
+
+*   **Optimal MRI Protocol for Restaging:**
+    *   **Core Sequences:** High-resolution 2D T2-weighted imaging (T2WI) without fat suppression remains the cornerstone. Diffusion-weighted imaging (DWI) with an ADC map (b-value ≥ 800) is now considered essential.
+    *   **Patient Preparation:** A microenema immediately before the scan is recommended to reduce gas-related artifacts on DWI, which is a major pitfall. Spasmolytic agents are also suggested.
+    *   **"Maybe's":** The use of gadolinium-based contrast (T1WI) is variable. While not standard, it is used in some institutions and research shows it can be helpful, particularly for assessing post-treatment changes.
+
+*   **Step-by-Step Interpretation (The "RECTAL" Mnemonic):**
+    1.  **R**eview clinical information & **R**elationship with adjacent structures.
+    2.  **E**valuate baseline MRI & assess **E**MVI/Tumor Deposits.
+    3.  **C**onclusion (summarizing the overall response).
+    4.  **T**umor response (assessing the primary tumor bed).
+    5.  **A**wareness of pitfalls & **A**natomical landmarks.
+    6.  **L**ymph node response.
+
+*   **Assessing Primary Tumor Response:**
+    *   **T2WI:** The challenge is differentiating fibrotic scar (low signal) from residual tumor (intermediate signal). The MRI tumor regression grade (mrTRG) is a 5-point scale used to standardize this assessment, but it has poor-to-moderate correlation with pathologic TRG.
+    *   **DWI:** This is a crucial adjunct. Residual tumor typically shows restricted diffusion (high signal on DWI, low on ADC map). A "pattern-based approach" combining T2WI morphology and DWI findings is advocated to improve accuracy.
+    *   **Pitfalls in DWI:**
+        *   **T2 Shine-through:** High signal on both DWI and ADC, often due to mucin or fluid. Can mimic tumor.
+        *   **T2 Dark-through:** Low signal on both DWI and ADC, representing fibrosis. Can obscure small foci of residual tumor if relying only on the ADC map.
+    *   **Mucin:** A major challenge. MRI cannot reliably differentiate acellular mucin (good response) from cellular mucin (residual viable tumor), as both appear as high T2 signal.
+
+*   **Assessing Lymph Node Response:**
+    *   Performance of MRI for nodal restaging is **better than at primary staging**.
+    *   **Morphological criteria are NOT recommended** for restaging mesorectal nodes.
+    *   **Reliable criteria for negative nodes (ypN0):**
+        1.  Non-visualization of nodes on DWI.
+        2.  Decrease of at least 70% in node size.
+        3.  Nodes measuring **less than 5 mm** in short axis.
+    *   Nodes ≥ 5 mm are considered metastatic, but this has known false positives and negatives.
+    *   For **lateral pelvic lymph nodes**, size criteria are still used (e.g., >7 mm at primary staging, >4-6 mm at restaging), but these are arbitrary and associated with specific recurrence risks.
+
+*   **Assessing EMVI and Tumor Deposits:**
+    *   These are crucial to assess, as persistent EMVI after treatment is a poor prognostic sign.
+    *   It is challenging to differentiate post-treatment fibrosis from residual tumor within a vessel. DWI can be helpful.
+    *   These are particularly important to identify in the nonoperative management setting, as they represent locoregional regrowth that would be missed by endoscopy.
+
+**Conclusion**
+Restaging MRI is a complex but essential part of modern rectal cancer management. A high-quality, standardized protocol including DWI is mandatory. Interpretation requires a systematic, step-by-step approach, careful correlation with the baseline MRI, and awareness of numerous imaging pitfalls (especially regarding mucin and DWI artifacts). While challenges remain, particularly in differentiating cellular from acellular mucin and in definitive nodal characterization, a comprehensive MRI report that clearly communicates findings on tumor, node, and EMVI/TD response is vital for guiding the multidisciplinary team in making critical treatment decisions, especially concerning organ preservation.

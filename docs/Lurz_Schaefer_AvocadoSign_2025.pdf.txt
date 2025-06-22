@@ -1,0 +1,226 @@
+Lurz and Schäfer European Radiology
+https://doi.org/10.1007/s00330-025-11462-y
+
+**ONCOLOGY**
+
+# The Avocado Sign: A novel imaging marker for nodal staging in rectal cancer
+
+**Markus Lurz¹* and Arnd-Oliver Schäfer¹**
+
+## Abstract
+
+### Objectives
+To evaluate the diagnostic performance of the Avocado Sign, a novel contrast-enhancement-based MR imaging marker, for prognostication of mesorectal lymph node spread in rectal cancer.
+### Methods
+This retrospective study included 106 patients with rectal cancer who underwent MRI examination. The Avocado Sign, defined as a hypointense core within an otherwise homogeneously hyperintense lymph node on contrast-enhanced T1-weighted images, was assessed. Of the cohort, 77 patients received neoadjuvant chemoradiotherapy followed by restaging MRI. Histopathological examination served as the reference standard. Diagnostic metrics were calculated and compared between subgroups using chi-square tests. Interobserver agreement was evaluated using Cohen’s kappa.
+### Results
+The Avocado Sign demonstrated high diagnostic accuracy for predicting lymph node involvement, with an overall sensitivity of 88.7%, specificity of 84.9%, PPV of 85.5%, NPV of 88.2%, and accuracy of 86.8%. The area under the ROC curve was 0.87. Subgroup analysis revealed excellent performance in both patients undergoing surgery alone (sensitivity 100%, specificity 83.3%) and those receiving neoadjuvant therapy (sensitivity 84.2%, specificity 85.4%). Interobserver agreement was almost perfect (κ = 0.92).
+### Conclusion
+The Avocado Sign is a promising imaging predictor for mesorectal lymph node status in rectal cancer. Its straightforward application, high reproducibility, and remarkable diagnostic accuracy underline its potential to refine MRI staging. However, further validation in larger, prospective multicenter studies is warranted to confirm these findings and assess their impact on clinical decision-making.
+
+### Key Points
+**Question** Can the Avocado Sign on contrast-enhanced MRI improve mesorectal lymph node staging in rectal cancer independently of classical morphological criteria?
+**Findings** The Avocado Sign demonstrated high sensitivity (88.7%) and specificity (84.9%) as a standalone marker for predicting mesorectal lymph node involvement.
+**Clinical relevance** Incorporating contrast-enhanced sequences and the Avocado Sign into MRI protocols enhances nodal staging accuracy in rectal cancer, potentially informing treatment decisions. Further validation is required to confirm its effectiveness and compare it with existing criteria.
+
+*Correspondence:
+Markus Lurz
+Markus.Lurz@sanktgeorg.de
+¹Department of Radiology and Nuclear Medicine, Leipzig, Germany
+
+**Keywords** Rectal neoplasms, Magnetic resonance imaging, Lymph nodes, Contrast media, Neoadjuvant therapy
+
+[Graphical Abstract]
+
+## Introduction
+
+Rectal cancer is a significant public health concern, with an estimated 44,850 new cases and 12,630 deaths in the United States in 2023 [1]. While neoadjuvant chemoradiotherapy followed by total mesorectal excision surgery has been the standard of care for locally advanced rectal cancer, new treatment options, such as total neoadjuvant therapy and nonoperative management, have emerged as potential alternatives [2–5]. Consequently, refined imaging techniques are becoming increasingly important for the reliable stratification of patients, particularly regarding nodal status, which is a critical factor in treatment decision-making.
+
+Magnetic resonance imaging (MRI) is widely recognized as the gold standard for local staging of rectal cancer [6]. However, MRI staging is typically based on T2-weighted sequences, with contrast administration not routinely recommended. For instance, a meta-analysis by Zhang et al found that morphological criteria on T2-weighted MRI had limited accuracy, with a pooled sensitivity of 77% and specificity of 76% for predicting nodal involvement [7]. Similarly, a study by Ale Ali et al reported an accuracy of only 65% for nodal staging using T2-weighted MRI, emphasizing the limitations of current staging methods and highlighting the need for improved imaging techniques [8].
+
+We hypothesize that contrast administration may be useful in the prediction of locoregional lymph node involvement in rectal cancer patients. Specifically, we propose the “Avocado Sign,” a hypointense core within mesorectal lymph nodes on contrast-enhanced T1-weighted fat-saturated sequences resembling the kernel of an avocado, as a potential imaging predictor of locoregional lymph node status. By leveraging the additional information provided by contrast enhancement, the Avocado Sign aims to address the limitations of T2-weighted MRI and improve the accuracy of nodal staging in rectal cancer.
+
+The purpose of this study was to evaluate the diagnostic performance of the Avocado Sign as an imaging predictor of mesorectal lymph node status in patients with rectal cancer. We aim to assess the sensitivity, specificity, accuracy, positive predictive value (PPV), and negative predictive value (NPV) of the Avocado Sign for prognostication of locoregional lymph node involvement, and to investigate its performance by subgroup analysis. The results of this study may have important implications for refining MRI protocols and optimizing treatment strategies for rectal cancer patients.
+
+## Methods
+
+### Study design and patients
+We conducted a single-institution retrospective study to evaluate the diagnostic performance of the Avocado Sign, a novel MR imaging marker, in predicting locoregional lymph node status in patients with rectal cancer. The study was approved by the institutional review board of Klinikum St. Georg Leipzig, Germany, and written informed consent was obtained from all patients before enrolment.
+Patients were eligible for inclusion if they were 18 years of age or older and had histologically confirmed rectal cancer. Exclusion criteria were unresectable tumors and contraindications to MRI. From January 2020 through November 2023, 106 consecutive patients underwent baseline staging MRI. Of these patients, 77 received standard neoadjuvant chemoradiotherapy followed by restaging MRI prior to rectal surgery, according to current guidelines and the decision of a multidisciplinary tumor board. For patients undergoing surgery alone, the mean interval between MRI and surgery was 7 days (range: 5–14 days). For patients receiving neoadjuvant chemoradiotherapy, restaging MRI was performed a mean of 6 weeks (range: 5–8 weeks) after completion of therapy, with surgery occurring approximately 10 days (range: 7–15 days) post-MRI. The patients who underwent primary surgery without prior therapy served as an internal control group, enabling us to evaluate the Avocado Sign’s performance in a treatment-naive cohort. Histopathological examination of the resected specimens served as the reference standard (Fig. 1).
+
+[Flowchart of patient enrollment and study design]
+**Fig. 1** Flowchart of patient enrollment and study design
+
+### MRI protocol
+All MRI examinations were performed on a 3.0-T system (MAGNETOM Prisma Fit; Siemens Healthineers) using body and spine array coils. The imaging protocol included high-resolution sagittal, axial, and coronal T2-weighted turbo spin echo (TSE) sequences; axial diffusion-weighted imaging (DWI); and contrast-enhanced axial T1-weighted volumetric interpolated breath-hold examination with Dixon fat suppression. Sequence parameters are detailed in Table 1. A weight-based dose (0.2 mL/kg of body weight) of a macrocyclic gadolinium-based contrast agent (Gadoteridol; ProHance; Bracco) was administered intravenously. Contrast-enhanced images were acquired immediately after the intravenous contrast agent had been fully administered. Butylscopolamine was administered at the start and midpoint of each examination to reduce motion artifacts. Notably, the imaging protocol was identical for baseline staging and restaging.
+
+**Table 1** MRI sequence parameters
+
+| Sequence | Sagittal T2-TSE | Axial T2-TSE | Coronal T2-TSE | DWI (b100/500/1000) | Dixon-VIBE (post-contrast) |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| Repetition time (ms) | 4170 | 4400 | 4400 | 3700 | 5.8 |
+| Echo time (ms) | 72 | 81 | 81 | 59 | 2.5/3.7 |
+| Field of view (mm) | 220 | 220 | 220 | 220 | 270 |
+| Slice thickness (mm) | 3 | 2 | 2 | 2 | 1.5 |
+| Matrix | 394 × 448 | 380 × 432 | 380 × 432 | 140 × 140 | 326 × 384 |
+| Acquisition time (min) | 4:37 | 4:50 | 4:50 | 3:57 | 4:10 |
+
+*Detailed parameters of the MRI sequences used in the study, including repetition time, echo time, field of view, matrix, and slice thickness. Sequences include T2-weighted TSE in sagittal, axial, and coronal planes; axial DWI; and post-contrast axial VIBE with Dixon fat suppression*
+
+### Image analysis
+Two radiologists with 29 years and 7 years of experience in abdominal MRI independently assessed the images for the presence of the Avocado Sign, defined as a hypointense core within an otherwise homogeneous lymph node on contrast-enhanced T1-weighted images, regardless of node size or shape (Fig. 2). The Avocado Sign was assessed in all visible mesorectal lymph nodes, regardless of size. No minimum size threshold was applied for lymph node evaluation to avoid overlooking small metastatic nodes and to comprehensively assess the sign’s performance across the full spectrum of lymph node sizes encountered in clinical practice. The Avocado Sign was assessed exclusively in mesorectal lymph nodes. Extramesorectal nodes, such as lateral pelvic lymph nodes, and tumor deposits were not assessed in this study. The radiologists were blinded to the histopathological results during image analysis to prevent bias. Discrepancies were resolved by consensus with a third radiologist who had 19 years of experience in abdominal MRI.
+In the neoadjuvant subgroup, the Avocado Sign was assessed on restaging MRI images obtained after the completion of neoadjuvant chemoradiotherapy. This approach ensured that imaging findings corresponded directly with the post-therapy histopathological results. While both baseline and restaging MRI images were available for patients undergoing neoadjuvant therapy, a direct comparison between pre- and post-neoadjuvant therapy MRI images was not performed. The focus of this study was on assessing the Avocado Sign on restaging MRI to evaluate its diagnostic performance following neoadjuvant treatment. Lymph node status was categorized as positive if the Avocado Sign was present in at least one node and negative if the sign was absent. Histopathological analysis of the surgical specimens served as the reference standard.
+Before commencing the study, the radiologists underwent a joint training session to standardize the assessment of the Avocado Sign. They were provided with a written definition of the imaging marker, along with a set of example images demonstrating positive and negative cases (see Supplementary Material). The training ensured consistent interpretation among the raters. During the study, the radiologists independently assessed the MRI images, blinded to each other’s evaluations and the histopathological results.
+The Avocado Sign was initially identified during routine clinical practice. For this study, we retrospectively applied the predefined imaging criteria to a separate cohort of patients who were not part of the initial observations or the rater training examples, thus minimizing in-sample bias and enhancing the generalizability of our findings.
+
+### Statistical analysis
+Descriptive statistics were used to summarize patient characteristics. The prevalence of the Avocado Sign and lymph node metastases was determined for the overall cohort, the surgery alone subgroup, and the neoadjuvant subgroup. Diagnostic performance metrics, including sensitivity, specificity, PPV, NPV, and accuracy, were calculated using contingency tables and compared between subgroups using the chi-square test for independence, which is appropriate for analyzing categorical data [9]. Receiver operating characteristic (ROC) curve analysis was performed, and the area under the curve (AUC) was calculated to evaluate the diagnostic performance of the Avocado Sign. Interobserver agreement was assessed using Cohen’s kappa coefficient. To address the cohort heterogeneity, we performed subgroup analyses for patients undergoing primary surgery and those receiving neoadjuvant chemoradiotherapy. This approach allowed us to evaluate the diagnostic performance of the Avocado Sign within more homogeneous groups.
+Analyses were performed using SPSS version 26 (IBM) for descriptive statistics, R (version 4.0.3; R Foundation for Statistical Computing) for ROC curve analysis and chi-square tests, and Python (version 3.8; Python Software Foundation) for additional data visualization and interobserver agreement assessment.
+
+## Results
+
+### Patient characteristics
+A total of 106 patients with histologically confirmed rectal cancer were included in the study (Table 2). The mean age was 65 ± 8.4 years, and 75.5% were male. 29 patients (27.4%) underwent surgery alone, while 77 (72.6%) received neoadjuvant chemoradiotherapy. Histopathological examination revealed lymph node metastases in 52 patients (49.1%).
+
+**Table 2** Patient demographics and treatment approaches
+
+| Characteristic | Value |
+| :--- | :--- |
+| Age— mean ± SD | 65 ± 8.4 |
+| Male— no. (%) | 80 (75.5) |
+| Female— no. (%) | 26 (24.5) |
+| Treatment approach— no. (%) | |
+| Surgery alone | 29 (27.4) |
+| Neoadjuvant therapy | 77 (72.6) |
+
+[Illustration of the Avocado Sign]
+
+**Fig. 2** Illustration of the Avocado Sign. **a** Photograph of an avocado without a core symbolizes a normal lymph node. **b** Contrast-enhanced image of local staging MRI displays a homogeneously enhancing mesorectal lymph node (arrow). **c** Photograph of an avocado with a core symbolizes lymph node metastasis. **d** Contrast-enhanced image of local staging MRI detects a lymph node metastasis owing to the prominent hypointense center (arrow) as a striking example of the typical appearance and concept of the Avocado Sign. Additional examples of subtle manifestations are provided in the Supplementary Material
+
+### Diagnostic performance of the Avocado Sign
+In the overall cohort, the Avocado Sign was found in 55 patients and was negative in 51 patients. Histopathological examination revealed lymph node metastases in 52 patients, while 54 patients were classified N0. In the surgery-alone subgroup (n = 29), the Avocado Sign was positive in 59 out of 265 evaluated lymph nodes, and histopathological examination identified 58 metastatic nodes out of 409 examined. In the neoadjuvant subgroup (n = 77), the Avocado Sign was positive in 99 out of 493 evaluated nodes, with histopathology confirming 106 metastatic nodes out of 1212 examined. In the neoadjuvant subgroup, six patients exhibited a positive Avocado Sign without histologically confirmed lymph node involvement; similarly, in the surgery-alone subgroup, two patients showed a positive Avocado Sign but no histological evidence of lymph node metastasis. All three radiologists jointly reviewed the discrepant cases and conducted a critical analysis of the false-positive and false-negative findings, confirming the initial assessment.
+The Avocado Sign demonstrated high diagnostic accuracy for predicting lymph node involvement in the overall cohort and subgroups. Overall sensitivity was 88.7% (95% confidence interval [CI]: 77.4–94.7), specificity was 84.9% (95% CI: 72.9–92.1), PPV was 85.5% (95% CI: 73.8–92.4), NPV was 88.2% (95% CI: 76.6–94.5), and accuracy was 86.8% (95% CI: 79.0–91.9). The area under the ROC curve (AUC) was 0.87 for the overall cohort, indicating high diagnostic performance (Fig. 3a).
+Subgroup analysis revealed excellent performance of the Avocado Sign in patients undergoing surgery alone, with a sensitivity of 100% (95% CI: 79.6–100), specificity of 83.3% (95% CI: 50.1–97.1), PPV of 88.2% (95% CI: 64.2–98.2), NPV of 100% (95% CI: 71.3–100), and accuracy of 92.6% (95% CI: 77.0–99.1). The AUC was 0.92 (95% CI: 0.80–1.00) (Fig. 3b).
+In patients receiving neoadjuvant chemoradiotherapy, the Avocado Sign showed a sensitivity of 84.2% (95% CI: 69.6–92.9), specificity of 85.4% (95% CI: 71.5–93.6), PPV of 84.2% (95% CI: 69.7–92.9), NPV of 85.4% (95% CI: 71.6–93.6), and accuracy of 84.8% (95% CI: 73.1–92.5). The AUC was 0.85 (95% CI: 0.77–0.93) (Fig. 3c). Chi-square tests indicated no significant differences in diagnostic performance between subgroups (p = 0.34), affirming the robustness of the Avocado Sign across treatment types. An overview of nominal values and diagnostic performance metrics for overall collective and subgroups is provided in Table 3.
+
+[ROC curves for the Avocado Sign]
+
+**Fig. 3** ROC curves for the Avocado Sign. **a** ROC curve for the overall cohort, demonstrating the diagnostic accuracy of the Avocado Sign in predicting mesorectal lymph node involvement. **b** ROC curve for patients undergoing surgery alone, highlighting the diagnostic performance in this subgroup. **c** ROC curve for patients receiving neoadjuvant chemoradiotherapy, illustrating the effectiveness of the Avocado Sign post-therapy
+
+**Table 3** Diagnostic performance and nominal values for the Avocado Sign in predicting nodal status
+
+| Metric | Overall (n = 106) | Surgery alone (n = 29) | Neoadjuvant therapy (n = 77) |
+| :--- | :--- | :--- | :--- |
+| AS+ | 55 | 17 | 38 |
+| AS− | 51 | 10 | 41 |
+| N+ | 53 | 15 | 38 |
+| N0 | 53 | 12 | 41 |
+| AS+ N+ | 47 | 15 | 32 |
+| AS+ N0 | 8 | 2 | 6 |
+| AS− N+ | 6 | 0 | 6 |
+| AS− N0 | 45 | 10 | 35 |
+| Sensitivity (95% CI) | 88.7% (77.4–94.7) | 100% (79.6–100) | 84.2% (69.6–92.9) |
+| Specificity (95% CI) | 84.9% (72.9–92.1) | 83.3% (50.1–97.1) | 85.4% (71.5–93.6) |
+| PPV (95% CI) | 85.5% (73.8–92.4) | 88.2% (64.2–98.2) | 84.2% (69.7–92.9) |
+| NPV (95% CI) | 88.2% (76.6–94.5) | 100% (71.3–100) | 85.4% (71.6–93.6) |
+| Accuracy (95% CI) | 86.8% (79.0–91.9) | 92.6% (77.0–99.1) | 84.8% (73.1–92.5) |
+| AUC (95% CI) | 0.87 (0.79–0.94) | 0.92 (0.80–1.00) | 0.85 (0.77–0.93) |
+
+*Metrics include the number of patients with positive and negative Avocado Signs (AS+ and AS−), histologically confirmed nodal metastasis (N+ and N0), and the sensitivity, specificity, PPV, NPV, accuracy, and AUC for the Avocado Sign in predicting lymph node involvement*
+
+### Interobserver agreement
+There was an almost perfect interobserver agreement between the two radiologists in assessing the Avocado Sign, with a Cohen’s kappa value of 0.92 (95% CI: 0.85–0.99), and an absolute agreement rate of 95% (101 out of 106 cases).
+
+## Discussion
+
+This retrospective study demonstrates that the Avocado Sign can accurately predict mesorectal lymph node status in patients with rectal cancer. Its high diagnostic performance across patient subgroups underlines its potential to ameliorate MRI nodal staging.
+
+Earlier studies focused on morphological criteria on T2-weighted MRI sequences for lymph node assessment in rectal cancer. A systematic review by Koh et al reported sensitivities of up to 85% using a combination of size and morphological criteria [10]. However, the overall diagnostic accuracy of morphological criteria has been suboptimal. A meta-analysis by Al-Sukhni et al [11] found that morphological criteria on T2-weighted MRI had limited accuracy, with a pooled sensitivity of 77% and specificity of 71% for predicting nodal involvement, lower than the performance reported by Koh et al [10]. Similarly, in the large prospective observational trial “Optimized surgery and MRI-based multimodal therapy in rectal carcinoma” (OCUM), Stelzner et al reported an accuracy of only 56.5% for lymph node staging using morphological criteria on T2-weighted MRI [12]. The authors concluded that selecting patients for neoadjuvant chemoradiotherapy based on mesorectal fascia status is superior to selection based on T- and N-staging due to the low reliability of the latter approach.
+
+Recent studies have explored the potential of size-based criteria and contrast-enhanced MRI for improving nodal staging. Lambregts et al investigated contrast-enhanced sequences in 33 patients and found that benign lymph nodes exhibited significant contrast enhancement after gadofosveset injection, whereas metastatic nodes did not [13]. The authors hypothesized that the different contrast enhancement patterns were due to the presence of tumor cells in the metastatic nodes, leading to a disruption in the normal lymph node architecture and altered contrast uptake. Although this study provided initial evidence for the potential of contrast-enhanced MRI in differentiating benign from metastatic nodes, it was limited by the small number of patients and nodes evaluated. Furthermore, the contrast agent Gadofosveset (Vasovist, Lantheus Medical, MA) used in this study is no longer commercially available, limiting the clinical applicability of their findings. Barbaro et al evaluated the performance of MRI for identifying negative nodal status (ypN0) after neoadjuvant chemoradiotherapy in 191 patients with locally advanced rectal cancer [14]. The study was conducted retrospectively and included patients who underwent both pre- and post-treatment MRI examinations at 6–8 weeks after completion of chemoradiotherapy, followed by total mesorectal excision surgery. The authors found that a short-axis diameter ≤ 2.2 mm cut-off was associated with an AUC of 0.83 for predicting ypN0, with 79.5% sensitivity and 91.1% NPV. Horvat et al also provided specific MRI criteria for assessing nodal response after neoadjuvant therapy, with nonvisualization of nodes on DWI, ≥ 70% decrease in node size, and nodes < 0.5 cm in the short axis being most reliably associated with negative lymph node status [15].
+
+To the best of our knowledge, the Avocado Sign currently provides the most accurate diagnostic performance reported in larger clinical trials. It demonstrates excellent accuracy in predicting nodal status, regardless of whether the assessment is conducted using baseline or restaging MRI after neoadjuvant therapy. This is particularly relevant given the evolving landscape of rectal cancer treatment that increasingly emphasizes risk-adapted approaches and organ-preserving strategies [4, 5, 16, 17]. Schrag et al recently highlighted the expanding range of treatment options for locally advanced rectal cancer, which enables personalized treatment based on tumor-specific features [18]. They noted that patients with high microsatellite instability tumors can achieve durable complete responses with immunotherapy alone. Furthermore, they emphasized the potential of newer approaches, such as total neoadjuvant therapy with the option of nonoperative management. In the era of total neoadjuvant therapy, as demonstrated in the OPRA trial (organ preservation in patients with rectal adenocarcinoma treated with total neoadjuvant therapy) by Garcia-Aguilar et al [19] and more recently in the PROSPECT trial (Preoperative Treatment of Locally Advanced Rectal Cancer) by Schrag et al [18], accurate nodal staging has become pivotal for optimizing treatment strategies and mitigating the risks of overtreatment or undertreatment.
+
+Recent studies have explored advanced imaging techniques for nodal staging in rectal cancer. Hao et al [20] investigated ultra-high b-value DWI in treatment-naive patients and demonstrated that DWI b2000-based radiomics achieved an AUC of 0.728 for predicting lymph node metastasis, with a sensitivity of 73.3% and specificity of 64.7%. Although their radiomics approach is promising, it requires complex post-processing and is susceptible to artifacts, which can limit its clinical applicability. Kim et al [21] evaluated 18F-FDG PET/CT for nodal staging in rectal cancer, reporting a sensitivity of 48.5% and specificity of 93.9%. While PET/CT offers the advantage of whole-body staging, its limited spatial resolution for small lymph nodes remains a significant limitation compared to the detailed soft-tissue assessment provided by contrast-enhanced MRI with the Avocado Sign.
+
+We observed false-positive and false-negative findings. As we hypothesize that the Avocado Sign reflects the presence of nodal tumor deposits, supported by the work of Zhou et al [22] and Lambregts et al [13], these discrepancies could be explained due to sampling errors, treatment-induced fibrosis or necrosis, metastases below the MRI resolution threshold, and partial volume effects. It is essential to clarify that our objective was not to conduct a node-by-node analysis due to its inherent challenges after neoadjuvant chemoradiotherapy and limited clinical applicability, which aligns with recent studies [20]. The Avocado Sign was intentionally evaluated independently of traditional morphological criteria, such as lymph node size and shape. Our objective was to assess its diagnostic performance as a standalone imaging marker, potentially simplifying nodal assessment by reducing reliance on size thresholds that can be subjective and variable.
+
+The straightforward application and high reproducibility of the Avocado Sign constitute additional strengths. Unlike some advanced MRI techniques, such as DWI or dynamic contrast-enhanced MRI, assessment of the Avocado Sign only requires routine high-resolution, thin-slice, fat-saturated contrast-enhanced T1-weighted sequences and can be easily incorporated into standard MRI protocols. Furthermore, the almost perfect interobserver agreement (κ = 0.92) indicates that the Avocado Sign can be reliably assessed by radiologists with varying levels of expertise.
+
+Some limitations of our study have to be addressed. The Avocado Sign was identified using Gadoteridol (ProHance), a widely available extracellular gadolinium-based contrast agent. While we anticipate that the sign can be reproduced with other agents in this class due to similar pharmacokinetic profiles, this has not been directly tested in our study. The use of gadolinium-based contrast agents is not without drawbacks. Potential risks include allergic reactions and nephrogenic systemic fibrosis in patients with severe renal impairment. Additionally, contrast administration increases examination time and costs. These factors must be balanced against the benefits of improved diagnostic accuracy when considering the incorporation of contrast-enhanced sequences into routine MRI protocols for rectal cancer staging. Future studies should explore the reproducibility of the Avocado Sign with different contrast agents to confirm its generalizability. While we focused on mesorectal nodes, future studies should evaluate the validity of the Avocado Sign in other lymph node regions, such as the lateral pelvic nodes. Although our study included a larger sample size than many similar studies, further validation in even larger multicenter cohorts would strengthen the evidence for the Avocado Sign and facilitate its wider distribution. Additionally, we did not assess the impact of the Avocado Sign on long-term clinical outcomes, such as local recurrence or survival. The retrospective, single-center design may limit generalizability, and selection bias cannot be entirely ruled out. Future research directions should include prospective, multi-center validation studies to confirm the diagnostic performance and assess the impact on clinical decision-making and patient outcomes. Long-term follow-up studies are needed to evaluate the prognostic value of the Avocado Sign in predicting recurrence and survival.
+
+## Conclusion
+
+The Avocado Sign represents a promising advancement in the nodal staging of rectal cancer on the basis of high-resolution contrast-enhanced gradient-echo sequences. Its potential to enhance treatment stratification and support personalized management strategies warrants further investigation and validation. As we move towards increasingly tailored approaches in rectal cancer care, the Avocado Sign may prove to be a valuable tool in optimizing patient outcomes and resource utilization. We strongly recommend contrast administration for improved detection of lymph node metastasis. The Avocado Sign specifies MRI assessment of rectal cancer and contributes to enhanced patient selection to the various therapeutic algorithms. Future studies in a prospective setting within a more homogeneous patient cohort including a control group and direct comparisons between T2-based morphological criteria and the Avocado Sign are mandatory to validate these findings.
+
+## Abbreviations
+
+**AUC** Area under the curve
+**DWI** Diffusion-weighted imaging
+**MRI** Magnetic resonance imaging
+**NPV** Negative predictive value
+**PPV** Positive predictive value
+**ROC** Receiver operating characteristic
+**TSE** Turbo spin echo
+
+## Supplementary information
+
+The online version contains supplementary material available at https://doi.org/10.1007/s00330-025-11462-y.
+
+## Funding
+
+The authors state that this work has not received any funding.
+
+## Data availability
+
+De-identified data that underlie the results reported in this article will be made available upon reasonable request to the corresponding author.
+
+## Compliance with ethical standards
+
+### Guarantor
+The scientific guarantor of this publication is Arnd-Oliver Schäfer.
+### Conflict of interest
+The authors of this manuscript declare no relationships with any companies, whose products or services may be related to the subject matter of the article.
+### Statistics and biometry
+No complex statistical methods were necessary for this paper.
+### Informed consent
+Written informed consent was obtained from all patients in this study.
+### Ethical approval
+The institutional review board of Klinikum St. Georg Leipzig reviewed and approved this retrospective study (approval number not provided). All procedures performed were in accordance with the ethical standards of the institutional research committee and with the 1964 Helsinki Declaration and its later amendments.
+### Study subjects or cohorts overlap
+Study subjects have not been previously reported.
+### Methodology
+- Retrospective
+- Diagnostic
+- Performed at one Institution
+
+Received: 8 October 2024 Revised: 19 December 2024 Accepted: 27 January 2025
+
+## References
+
+1. Siegel RL, Miller KD, Wagle NS, Jemal A (2023) Cancer statistics, 2023. CA Cancer J Clin 73:17–48. https://doi.org/10.3322/caac.21763
+2. Sauer R, Becker H, Hohenberger W et al (2004) Preoperative versus postoperative chemoradiotherapy for rectal cancer. N Engl J Med 351:1731–1740. https://doi.org/10.1056/NEJMoa040694
+3. Bosset JF, Collette L, Calais G et al (2006) Chemotherapy with preoperative radiotherapy in rectal cancer. N Engl J Med 355:1114–1123. https://doi.org/10.1056/NEJMoa060829
+4. Habr-Gama A, São Julião GP, Vailati BB et al (2019) Organ preservation in cT2N0 rectal cancer after neoadjuvant chemoradiation therapy: the impact of radiation therapy dose-escalation and consolidation chemotherapy. Ann Surg 269:102–107. https://doi.org/10.1097/SLA.0000000000002447
+5. Smith JJ, Chow OS, Gollub MJ et al (2015) Organ preservation in rectal adenocarcinoma: a phase II randomized controlled trial evaluating 3-year disease-free survival in patients with locally advanced rectal cancer treated with chemoradiation plus induction or consolidation chemotherapy, and total mesorectal excision or nonoperative management. BMC Cancer 15:767. https://doi.org/10.1186/s12885-015-1632-z
+6. Beets-Tan RGH, Lambregts DMJ, Maas M et al (2018) Magnetic resonance imaging for clinical management of rectal cancer: updated recommendations from the 2016 European Society of Gastrointestinal and Abdominal Radiology (ESGAR) consensus meeting. Eur Radiol 28:1465–1475. https://doi.org/10.1007/s00330-017-5026-2
+7. Zhang H, Zhang C, Zheng Z et al (2017) Chemical shift effect predicting lymph node status in rectal cancer using high-resolution MR imaging with node-for-node matched histopathological validation. Eur Radiol 27:3845–3855. https://doi.org/10.1007/s00330-017-4738-7
+8. Ale Ali H, Kirsch R, Razaz S et al (2019) Extramural venous invasion in rectal cancer: overview of imaging, histopathology, and clinical implications. Abdom Radiol (NY) 44:1–10. https://doi.org/10.1007/s00261-018-1673-2
+9. Bewick V, Cheek L, Ball J (2004) Statistics review 8: qualitative data—tests of association. Crit Care 8:46–53. https://doi.org/10.1186/cc2428
+10. Koh DM, Chau I, Tait D, Wotherspoon A, Cunningham D, Brown G (2008) Evaluating mesorectal lymph nodes in rectal cancer before and after neoadjuvant chemoradiation using thin-section T2-weighted magnetic resonance imaging. Int J Radiat Oncol Biol Phys 71:456–461. https://doi.org/10.1016/j.ijrobp.2007.10.016
+11. Al-Sukhni E, Milot L, Fruitman M et al (2012) Diagnostic accuracy of MRI for assessment of T category, lymph node metastases, and circumferential resection margin involvement in patients with rectal cancer: a systematic review and meta-analysis. Ann Surg Oncol 19:2212–2223. https://doi.org/10.1245/s10434-011-2210-5
+12. Stelzner S, Ruppert R, Kube R et al (2022) Selection of patients with rectal cancer for neoadjuvant therapy using pre-therapeutic MRI—results from OCUM trial. Eur J Radiol 147:110113. https://doi.org/10.1016/j.ejrad.2021.110113
+13. Lambregts DMJ, Heijnen LA, Maas M et al (2013) Gadofosveset-enhanced MRI for the assessment of rectal cancer lymph nodes: predictive criteria. Abdom Imaging 38:720–727. https://doi.org/10.1007/s00261-012-9957-4
+14. Barbaro B, Carafa MRP, Minordi LM et al (2024) Magnetic resonance imaging for assessment of rectal cancer nodes after chemoradiotherapy: a single center experience. Radiother Oncol 193:110124. https://doi.org/10.1016/j.radonc.2024.110124
+15. Horvat N, El Homsi M, Miranda J, Mazaheri Y, Gollub MJ, Paroder V (2023) Rectal MRI interpretation after neoadjuvant therapy. J Magn Reson Imaging 57:353–369. https://doi.org/10.1002/jmri.28426
+16. Kennedy ED, Simunovic M, Jhaveri K et al (2019) Safety and feasibility of using magnetic resonance imaging criteria to identify patients with “good prognosis” rectal cancer eligible for primary surgery: the phase 2 nonrandomized QuickSilver clinical trial. JAMA Oncol 5:961–966. https://doi.org/10.1001/jamaoncol.2019.0186
+17. Hanna CR, O’Cathail SM, Graham JS et al (2021) Durvalumab (MEDI 4736) in combination with extended neoadjuvant regimens in rectal cancer: a study protocol of a randomised phase II trial (PRIME-RT). Radiat Oncol 16:163. https://doi.org/10.1186/s13014-021-01888-1
+18. Schrag D, Shi Q, Weiser MR et al (2023) Preoperative treatment of locally advanced rectal cancer. N Engl J Med 389:322–334. https://doi.org/10.1056/NEJMoa2303269
+19. Garcia-Aguilar J, Patil S, Gollub MJ et al (2022) Organ preservation in patients with rectal adenocarcinoma treated with total neoadjuvant therapy. J Clin Oncol 40:2546–2556. https://doi.org/10.1200/JCO.22.00032
+20. Hao Y, Zheng J, Li W et al (2025) Ultra-high b-value DWI in rectal cancer: image quality assessment and regional lymph node prediction based on radiomics. Eur Radiol 35:49–60. https://doi.org/10.1007/s00330-024-10958-3
+21. Kim SH, Song BI, Kim BW et al (2019) Predictive value of [18F]FDG PET/CT for lymph node metastasis in rectal cancer. Sci Rep 9:4979. https://doi.org/10.1038/s41598-019-41422-8
+22. Zhou H, Lei PJ, Padera TP (2021) Progression of metastasis through lymphatic system. Cells 10:1–23. https://doi.org/10.3390/cells10030627
+
+**Publisher’s Note**
+Springer Nature remains neutral with regard to jurisdictional claims in published maps and institutional affiliations.
+Springer Nature or its licensor (e.g. a society or other partner) holds exclusive rights to this article under a publishing agreement with the author(s) or other rightsholder(s); author self-archiving of the accepted manuscript version of this article is solely governed by the terms of such publishing agreement and applicable law.

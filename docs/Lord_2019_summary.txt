@@ -1,0 +1,35 @@
+**Lord AC, D’Souza N, Shaw A, Day N, Brown G. The Current Status of Nodal Staging in Rectal Cancer. Curr Colorectal Cancer Rep. 2019;15(4):143-48. DOI: 10.1007/s11888-019-00441-3**
+
+**Study Aim**
+To review the evidence for MRI-based nodal staging in rectal cancer, assess its prognostic accuracy, and discuss the role of lymph node metastases (LNM) versus other entities like tumour deposits (TD) in the metastatic pathway.
+
+**Key Arguments and Evidence (Review Article)**
+
+*   **Inaccuracy of Current Nodal Staging:**
+    *   The review argues that current pathological TNM staging is suboptimal, citing studies where Stage IIB/C (T4, N0) has a worse prognosis than Stage IIIA (T1-2, N1). This suggests that T-stage and other factors are more powerful predictors than N-stage.
+    *   MRI-based nodal staging is only moderately accurate. It relies on size and morphological criteria (irregular borders, mixed signal intensity).
+    *   **Morphology vs. Size:** Morphological criteria are more accurate than size alone (sensitivity 85% & specificity 97% for morphology vs. 67% & 83% for a 5mm cut-off). However, the authors suggest that what was previously defined as LNM with irregular borders might have actually been tumour deposits (TD).
+    *   A large retrospective study is cited showing MRI sensitivity for LNM of only 38% and a PPV of 56%, comparing it to "flipping a coin". A 2012 meta-analysis found a poor diagnostic odds ratio of 8.3 for LNM detection.
+
+*   **Tumour Deposits (TD) vs. Lymph Node Metastases (LNM):**
+    *   There is a critical distinction between TD and LNM. TD are defined as tumor nodules in the mesorectum without evidence of underlying lymph node architecture.
+    *   TD are associated with a **worse prognosis than LNM**. This is not adequately reflected in the current TNM system, where their presence (N1c) is placed below N2 disease in the prognostic hierarchy.
+    *   **MRI Appearance:** TD have a different appearance to LNM on MRI. The authors define them as nodules of tumor that appear to directly interrupt the course of a vein, whereas LNM are adjacent to veins but do not interrupt them.
+    *   The authors state that in their practice, they report TD separately and use the term 'mrN1c', superseding mrLNM status due to its worse prognosis.
+
+*   **The Metastatic Pathway: Are LNM Bystanders?**
+    *   The review challenges the long-held dogma that cancer spreads sequentially from the primary tumor, to lymph nodes, and then to distant sites (e.g., liver).
+    *   There is no direct anatomical route from mesorectal lymph nodes to the portal circulation and the liver. The more likely pathway for liver metastases is venous invasion (EMVI and TD).
+    *   Evidence is presented from studies showing:
+        1.  No association between LNM and liver metastases in an autopsy study.
+        2.  Discordant KRAS mutation status between LNM and liver metastases, suggesting they arise from different clones.
+        3.  A landmark *Science* paper by Naxerova et al. showing that in 2/3 of cases, LNM and distant metastases were of different phylogenetic origins.
+    *   This evidence strongly suggests that LNM are often a **bystander** or an end-point of spread, rather than a necessary step on the pathway to distant metastasis.
+
+*   **Moving Beyond TNM on MRI:**
+    *   The authors argue that MRI staging should move away from simply trying to predict the pathological TNM stage.
+    *   Radiologists should focus on reporting features that have been proven to be independent prognostic markers on MRI, such as **mrEMVI status, mrCRM status, and mrTD status**.
+    *   The prognostic accuracy of MRI-detected nodal status has never been proven, unlike the other markers.
+
+**Conclusion**
+Nodal staging on MRI is prognostically inaccurate and less reliable than other MRI-detected markers like CRM and EMVI. The historical view of lymph nodes as a key step in the metastatic cascade is likely incorrect; they are more often bystanders. The radiology community should shift its focus from trying to predict pathological N-stage to reporting prognostically powerful features like EMVI and, crucially, distinguishing and separately reporting tumour deposits (TD), which are prognostically more significant than LNM and have a distinct appearance on MRI. This reappraisal is needed to provide truly valuable prognostic information for treatment decisions.

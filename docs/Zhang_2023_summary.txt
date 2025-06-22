@@ -1,0 +1,35 @@
+**Zhang Z, Chen Y, Wen Z, et al. MRI for nodal restaging after neoadjuvant therapy in rectal cancer with histopathologic comparison. Cancer Imaging. 2023;23(1):67. DOI: 10.1186/s40644-023-00589-0**
+
+**Study Aim**
+To evaluate the diagnostic performance of the ESGAR criterion (short-axis diameter ≥ 5 mm) for restaging lymph nodes (LNs) after neoadjuvant therapy in rectal cancer, and to assess whether adding morphological characteristics improves accuracy for LNs ≥ 5 mm.
+
+**Methods**
+*   **Study Design:** Retrospective, single-institution study with node-by-node matching.
+*   **Patient Population:** 90 patients with locally advanced rectal cancer who underwent neoadjuvant therapy followed by surgery and had a post-treatment MRI.
+*   **Imaging and Pathological Analysis:**
+    *   Two radiologists reviewed post-treatment MRIs to measure the short-axis diameter of all visible LNs.
+    *   For LNs ≥ 5 mm, morphological features (shape, border, signal homogeneity, enhancement homogeneity) were assessed in consensus.
+    *   An experienced surgeon localized and removed the LNs during surgery based on the MRI map. Each LN was then matched with its histopathological result (benign/malignant).
+*   **Reference Standard:** Node-by-node histopathology.
+*   **Statistical Analysis:** ROC curve analysis for nodal size. Comparison of morphological characteristics between benign and malignant LNs ≥ 5 mm using chi-square or Fisher's exact test.
+
+**Key Results (beyond Abstract)**
+*   **Nodal Cohort:** 298 LNs were successfully matched between MRI and pathology. 44 (14.8%) were malignant. 62 of these nodes had a short-axis diameter ≥ 5 mm.
+*   **Performance of Nodal Size Criterion:**
+    *   The ROC analysis for short-axis diameter as a predictor of malignancy yielded an **AUC of 0.81**, indicating moderate diagnostic performance.
+    *   Using the ESGAR cut-off of **≥ 5 mm** to define a node as malignant:
+        *   **Sensitivity:** 65.9% (29/44 malignant LNs were ≥ 5 mm)
+        *   **Specificity:** 87.0% (221/254 benign LNs were < 5 mm)
+        *   **PPV:** 46.8% (Only 29 of the 62 nodes ≥ 5 mm were malignant)
+        *   **NPV:** 93.6% (221 of the 236 nodes < 5 mm were benign)
+        *   **Accuracy:** 83.9%
+    *   The high NPV confirms that LNs < 5 mm post-treatment can be confidently considered benign, validating this part of the ESGAR criterion.
+    *   The low PPV shows that a significant number of LNs ≥ 5 mm are benign, making this criterion unreliable for confirming malignancy.
+
+*   **Performance of Morphological Characteristics for LNs ≥ 5 mm:**
+    *   The study analyzed shape, border, T2W signal homogeneity, and contrast-enhancement homogeneity for the 62 nodes with a diameter ≥ 5 mm.
+    *   **There was no statistically significant difference in any of the morphological characteristics** between the 33 benign and 29 malignant nodes in this size category (all p > 0.05).
+    *   For example, while 86.2% of malignant nodes were round, so were 78.8% of benign nodes. While 86.2% of malignant nodes showed heterogeneous enhancement, so did 78.8% of benign nodes.
+
+**Conclusion**
+The study validates that the ESGAR size criterion for nodal restaging has **moderate overall diagnostic performance**. The criterion is **highly effective and reliable for ruling out malignancy in LNs < 5 mm** due to its high NPV. However, for LNs that remain **≥ 5 mm after neoadjuvant therapy, the size criterion is unreliable**, with a low PPV indicating frequent false positives. Crucially, this study demonstrates that **adding morphological characteristics (shape, border, signal, enhancement) does not improve the diagnostic efficiency for these larger residual nodes**. Therefore, after neoadjuvant therapy, a node ≥ 5 mm remains suspicious, but its status cannot be confirmed by either size or morphology on MRI.

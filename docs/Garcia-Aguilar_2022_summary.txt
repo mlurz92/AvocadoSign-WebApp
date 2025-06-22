@@ -1,0 +1,16 @@
+### Garcia-Aguilar et al. (2022) - The OPRA Trial (JCO)
+
+*   **Purpose:** To compare two total neoadjuvant therapy (TNT) strategies—induction chemotherapy followed by chemoradiotherapy (CRT) versus CRT followed by consolidation chemotherapy—and their impact on achieving organ preservation in patients with locally advanced rectal cancer.
+
+*   **Methods:** A phase II randomized trial (Organ Preservation in Rectal Adenocarcinoma - OPRA). 324 patients with stage II or III rectal cancer were randomly assigned to either:
+    1.  **Induction Group:** FOLFOX or CAPOX chemotherapy for 8 cycles, followed by CRT.
+    2.  **Consolidation Group:** CRT first, followed by 4 cycles of FOLFOX or 3 cycles of CAPOX.
+    Patients were then assessed for clinical complete response (cCR). Those with cCR were offered a watch-and-wait (nonoperative management) approach. Those without cCR proceeded to total mesorectal excision (TME).
+
+*   **Key Findings:**
+    *   **Organ Preservation:** At 3 years, the rate of TME-free survival (the primary endpoint, meaning the patient was alive and had not undergone TME) was significantly higher in the consolidation group (53%) compared with the induction group (41%).
+    *   **Clinical Complete Response (cCR):** A higher proportion of patients in the consolidation group achieved a cCR and were eligible for the watch-and-wait strategy.
+    *   **Disease-Free Survival (DFS):** There was no significant difference in 3-year DFS between the two groups (76% for induction vs. 78% for consolidation).
+    *   **Toxicity:** Both regimens had manageable toxicity profiles, consistent with their components.
+
+*   **Conclusion:** For patients with locally advanced rectal cancer, a TNT strategy of CRT followed by consolidation chemotherapy results in a higher likelihood of successful organ preservation compared to induction chemotherapy followed by CRT, without compromising disease-free survival. The trial validates TNT as a standard-of-care option and underscores the importance of accurately identifying patients who are likely to achieve a complete response to be candidates for nonoperative management.

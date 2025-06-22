@@ -1,0 +1,39 @@
+**Schrag D, Shi Q, Weiser MR, et al. Preoperative Treatment of Locally Advanced Rectal Cancer. N Engl J Med. 2023;389(4):322-334. DOI: 10.1056/NEJMoa2303269 (PROSPECT Trial)**
+
+**Study Aim**
+To determine whether a neoadjuvant chemotherapy-first approach (FOLFOX) with selective use of chemoradiotherapy (CRT) is non-inferior to standard preoperative CRT for disease-free survival in patients with locally advanced rectal cancer who are candidates for sphincter-sparing surgery.
+
+**Methods**
+*   **Study Design:** Multicenter, randomized, non-inferiority, phase 3 trial (PROSPECT).
+*   **Patient Population:** 1194 patients with clinical stage T2 node-positive, T3 node-negative, or T3 node-positive rectal cancer. Key exclusion criteria were T4 tumors or tumors threatening the mesorectal fascia (within 3 mm on MRI), making this a relatively lower-risk "locally advanced" population.
+*   **Interventions:**
+    *   **FOLFOX-first Group (Experimental):** Received six cycles of modified FOLFOX6 chemotherapy. This was followed by restaging.
+        *   If tumor response was good (≥20% size reduction), patients proceeded directly to surgery.
+        *   If tumor response was poor (<20% reduction) or if FOLFOX was discontinued early, patients received standard preoperative CRT before surgery.
+    *   **CRT Group (Standard):** Received standard preoperative CRT (pelvic radiation with concurrent fluoropyrimidine).
+*   **Endpoints:**
+    *   **Primary:** Disease-free survival (DFS). The non-inferiority margin was a hazard ratio (HR) of 1.29.
+    *   **Secondary:** Overall survival (OS), local recurrence, pathological complete response (pCR), and toxicity.
+
+**Key Results (beyond Abstract)**
+*   **Use of Chemoradiotherapy in the FOLFOX-first Group:**
+    *   **The vast majority of patients (90.9%) in the experimental arm successfully avoided radiation.**
+    *   Only 53 patients (9.1%) received preoperative CRT due to inadequate response or toxicity. An additional 8 patients (1.4%) received postoperative CRT.
+
+*   **Primary Endpoint: Disease-Free Survival (DFS):**
+    *   The FOLFOX-first approach was **non-inferior** to standard CRT.
+    *   **5-year DFS:** 80.8% in the FOLFOX group vs. 78.6% in the CRT group.
+    *   **Hazard Ratio for recurrence or death:** 0.92 (90.2% CI, 0.74 to 1.14), which was well below the non-inferiority margin of 1.29 (P=0.005 for non-inferiority).
+
+*   **Secondary Endpoints:**
+    *   **Overall Survival (OS):** No significant difference. 5-year OS was 89.5% (FOLFOX) vs. 90.2% (CRT) (HR for death, 1.04).
+    *   **Local Recurrence:** Rates were very low and similar in both groups. 5-year incidence was 1.8% (FOLFOX) vs. 1.6% (CRT) (HR, 1.18).
+    *   **Pathological Complete Response (pCR):** No significant difference. pCR rates were 21.9% (FOLFOX) vs. 24.3% (CRT).
+
+*   **Toxicity:**
+    *   **Neoadjuvant Phase:** Clinician-reported grade ≥3 adverse events were **more frequent in the FOLFOX group (41.0%)** compared to the CRT group (22.8%). This is expected as the FOLFOX treatment period was much longer (12 weeks vs. ~6 weeks). Neuropathy was a key side effect in the FOLFOX group.
+    *   **Postoperative Phase:** This pattern reversed. Patients in the **CRT group experienced more grade ≥3 adverse events postoperatively (32.6%)** than those in the FOLFOX group (25.6%), largely because the CRT group received more cycles of adjuvant FOLFOX.
+    *   The differences in toxicity profiles reflect the timing and type of systemic therapy administered in each arm.
+
+**Conclusion**
+For patients with locally advanced rectal cancer who are candidates for sphincter-sparing surgery and do not have very high-risk features (i.e., T4 or threatened margin), a neoadjuvant strategy starting with FOLFOX chemotherapy and reserving chemoradiotherapy only for non-responders is **non-inferior to standard preoperative chemoradiotherapy** in terms of disease-free survival. This approach **allows over 90% of patients to avoid pelvic radiation** and its associated long-term toxicities, without compromising oncologic outcomes like local recurrence or overall survival. The PROSPECT trial establishes selective, response-guided use of radiation as a valid and important new treatment option for this patient population.

@@ -1,0 +1,41 @@
+**Koh DM, Chau I, Tait D, et al. Evaluating mesorectal lymph nodes in rectal cancer before and after neoadjuvant chemoradiation using thin-section T2-weighted magnetic resonance imaging. Int J Radiat Oncol Biol Phys. 2008;71(2):456-461. DOI: 10.1016/j.ijrobp.2007.10.016**
+
+**Study Aim**
+To use thin-section T2-weighted MRI to evaluate the changes in number, size, distribution, and morphology of mesorectal lymph nodes after neoadjuvant chemoradiation and to compare the post-treatment MRI nodal staging with histopathology.
+
+**Methods**
+*   **Study Design:** Prospective evaluation of a patient cohort.
+*   **Patient Population:** 25 patients with MRI-defined, poor-risk adenocarcinoma of the rectum.
+*   **Intervention:** Neoadjuvant chemotherapy (12 weeks, Oxaliplatin and Capecitabine) followed by synchronous chemoradiation (45-54 Gy with Capecitabine), and then total mesorectal excision (TME) surgery.
+*   **Imaging Protocol:** Thin-section (3-mm) T2-weighted MRI performed before and within 6 weeks after the completion of chemoradiation.
+*   **Analysis:** Nodes were assessed before and after treatment. A node was considered malignant based on **morphologic criteria** (irregular outlines or internal signal heterogeneity), not size. Post-treatment MR nodal stage was compared to pathology using kappa statistics.
+
+**Key Results (beyond Abstract)**
+*   **Nodal Changes (Pre- vs. Post-CRT):**
+    *   **Number:** A total of 152 nodes were visible on pre-CRT MRI. After CRT, **only 29 nodes (19%) remained visible**. The majority of nodes that regressed completely were benign-appearing at baseline.
+    *   **Size:** The mean short-axis diameter of nodes decreased significantly from **6.2 mm** pre-CRT to **4.1 mm** post-CRT (p=0.002).
+    *   **Malignant-Appearing Nodes:** Pre-CRT, 52 nodes were deemed malignant. Post-CRT, only 5 nodes were deemed malignant.
+
+*   **Nodal Downstaging:**
+    *   On a per-patient basis, there was significant downward migration in N-stage (p<0.01).
+    *   Pre-CRT staging: 7 N0, 10 N1, 7 N2.
+    *   Post-CRT staging on MRI: **20 N0, 5 N1, 0 N2**. No patient was staged as N2 after treatment.
+
+*   **Correlation with Pathology:**
+    *   There was **good agreement** between the post-treatment MR nodal stage and the pathologic nodal stage (κ = 0.65).
+    *   The diagnostic performance of post-treatment MRI for predicting any residual nodal disease (N1 vs N0) was:
+        *   **Sensitivity:** 67% (95% CI, 24–94%)
+        *   **Specificity:** 95% (95% CI, 71–99%)
+        *   **PPV:** 80% (95% CI, 30-99%)
+        *   **NPV:** 90% (95% CI, 67-98%)
+        *   **Accuracy:** 88% (95% CI, 70-96%)
+    *   All patients with residual pathologic nodal disease (N1) also had residual primary tumor (T2 or T3).
+
+*   **Relationship to Mesorectal Fascia (MRF):**
+    *   Pre-CRT, 4 malignant nodes were in contact with the MRF.
+    *   Post-CRT, **all of these nodes had completely regressed away from the fascia**. No nodes were in contact with the MRF on post-treatment imaging.
+
+*   **Morphological Changes:** 3 malignant nodes demonstrated a post-treatment change to uniform high T2 signal intensity, which was confirmed as **mucinous change** on histopathology.
+
+**Conclusion**
+Neoadjuvant chemoradiation induces a substantial reduction in both the number and size of mesorectal lymph nodes. Thin-section T2-weighted MRI is a useful tool for observing these treatment effects *in vivo*. It can demonstrate nodal downstaging and regression of nodes away from the mesorectal fascia. Post-treatment MRI using morphological criteria shows good agreement with pathology and has a high specificity and negative predictive value for assessing residual nodal disease, making it valuable for monitoring response to neoadjuvant therapy.

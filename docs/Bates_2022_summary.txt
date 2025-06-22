@@ -1,0 +1,33 @@
+**Bates DDB, El Homsi M, Chang K, et al. MRI for Rectal Cancer: Staging, mrCRM, EMVI, Lymph Node Staging and Post-Treatment Response. Clin Colorectal Cancer. 2022;21(1):10-18. DOI: 10.1016/j.clcc.2021.10.007**
+
+**Study Aim**
+To provide a broad, practical overview and guide for radiologists on the comprehensive role of MRI in the management of rectal cancer, covering baseline staging, risk stratification, and assessment of post-treatment response. This is a review article summarizing best practices and current evidence.
+
+**Key Concepts and Recommendations (Review Article)**
+
+*   **Baseline Staging:**
+    *   **T-Category:** MRI is reliable for T-staging. The review details the criteria for T1-T4 stages and emphasizes the prognostic significance of T3 sub-categories (T3a-d) based on the depth of extramural invasion, as established by the MERCURY trial. A key pitfall is differentiating T3 tumor extension from desmoplastic reaction.
+    *   **Circumferential Resection Margin (CRM) / Mesorectal Fascia (MRF):** This is a critical predictor of local recurrence. The report must state the shortest distance from the tumor to the MRF. A distance ≤ 1 mm is considered a "positive" or involved CRM. For low rectal tumors, where the MRF is not the sole determinant of the margin, the relationship to the sphincter complex is paramount.
+    *   **Extramural Venous Invasion (EMVI):** A poor prognostic indicator, associated with recurrence and decreased survival. It appears on T2WI as intermediate signal intensity within a vascular structure. Its presence (mrEMVI) should be reported to guide neoadjuvant therapy decisions.
+    *   **Lymph Node (LN) Staging:** The review acknowledges this as a challenge. It summarizes the standard morphological criteria:
+        *   **Size:** Nodes >9 mm are suspicious.
+        *   **Morphology:** For nodes <9 mm, a combination of features is used: irregular/indistinct outline, heterogeneous T2W signal, and round shape.
+        *   For mucinous tumors, any T2 hyperintense node is considered suspicious.
+
+*   **Restaging After Neoadjuvant Therapy:**
+    *   The primary goal is to assess response to therapy, especially to identify complete responders for potential "watch-and-wait" strategies.
+    *   **Tumor Response:** Differentiating post-treatment fibrosis (dark on T2WI, no restricted diffusion) from residual tumor (intermediate signal on T2WI, restricted diffusion) is the main challenge. The MR Tumor Regression Grade (mrTRG) is presented as a tool, though its consensus use is not widespread.
+    *   **Lymph Node Response:** The most reliable MR features for predicting a negative nodal status (ypN0) post-treatment are:
+        1.  **Absence of nodes on DWI.**
+        2.  **Decrease of at least 70% in node size.**
+        3.  **Mesorectal nodes < 5 mm** in short-axis diameter.
+        4.  **Pelvic sidewall nodes < 4 mm** in short-axis diameter.
+        *   It is stressed that none of these provide 100% accuracy.
+
+*   **Practical Recommendations for Radiologists:**
+    *   **Standardized Protocols:** The importance of using standardized, high-resolution MRI protocols is emphasized. The Society of Abdominal Radiology (SAR) provides such protocols online.
+    *   **Standardized Reporting:** Using structured synoptic reports is crucial for clear communication with the multidisciplinary team. SAR also provides templates for this.
+    *   **Multidisciplinary Collaboration:** The review repeatedly highlights the necessity for radiologists to work closely with surgeons, oncologists, and pathologists to provide the best patient care. The radiologist's interpretation must be placed in the clinical context.
+
+**Conclusion**
+MRI is the cornerstone of modern rectal cancer management. This review serves as a comprehensive guide for radiologists, detailing the state-of-the-art in MRI staging and response assessment. It emphasizes a structured approach, focusing not just on the basic TNM stage but on key prognostic factors like the **circumferential resection margin (CRM/MRF)** and **extramural venous invasion (EMVI)**, which are critical for risk stratification and treatment planning. For post-treatment assessment, the article provides specific, evidence-based criteria for evaluating tumor and nodal response to identify candidates for organ preservation. The overarching message is the need for high-quality, standardized imaging and reporting, integrated within a collaborative multidisciplinary team setting.

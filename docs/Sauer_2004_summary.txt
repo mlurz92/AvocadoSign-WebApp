@@ -1,0 +1,45 @@
+**Sauer R, Becker H, Hohenberger W, et al. Preoperative versus Postoperative Chemoradiotherapy for Rectal Cancer. N Engl J Med 2004;351:1731-40. DOI: 10.1056/NEJMoa040694**
+
+**Study Aim**
+To compare the efficacy and toxicity of preoperative chemoradiotherapy versus postoperative chemoradiotherapy for patients with locally advanced rectal cancer (clinical stage T3/T4 or node-positive).
+
+**Methods**
+*   **Study Design:** Randomized, multicenter trial conducted by the German Rectal Cancer Study Group.
+*   **Patient Population:** 823 patients were randomized between 1995 and 2002. Inclusion criteria were histopathologically confirmed, resectable adenocarcinoma with the inferior margin within 16 cm from the anal verge, and clinical stage T3, T4, or node-positive disease. Patients were stratified by surgeon.
+*   **Interventions:**
+    *   **Preoperative Group:** Received 5040 cGy in 28 fractions (180 cGy/day, 5 days/week) plus concurrent fluorouracil (1000 mg/m²/day continuous infusion during weeks 1 and 5). Surgery (total mesorectal excision - TME) was performed 6 weeks later, followed by 4 cycles of adjuvant bolus fluorouracil (500 mg/m²/day).
+    *   **Postoperative Group:** Underwent surgery (TME) first, followed by identical chemoradiotherapy, but with an additional radiation boost of 540 cGy to the tumor bed. This was followed by 4 cycles of adjuvant bolus fluorouracil.
+*   **Endpoints:**
+    *   **Primary:** Overall survival.
+    *   **Secondary:** Disease-free survival, local and distant recurrence, postoperative complications, acute and long-term toxicity, and sphincter preservation.
+
+**Key Results (beyond Abstract)**
+*   **Patient Population & Compliance:**
+    *   421 patients were assigned to the preoperative group and 402 to the postoperative group.
+    *   **Compliance was significantly better in the preoperative group.** In the preoperative group, 92% received the full prescribed radiotherapy dose, and 89% completed chemoradiotherapy as planned.
+    *   In the postoperative group, **28% were excluded from receiving the planned chemoradiotherapy**. The main reasons were:
+        *   Pathological Stage I disease found after surgery (18% of the group), for which adjuvant therapy was not indicated.
+        *   Intraoperatively detected distant metastases, postoperative complications, or death (10% of the group).
+    *   Protocol violations were more frequent in the postoperative group (13% vs. 4% for chemotherapy, 9% vs. 3% for radiotherapy), mainly due to patient refusal.
+
+*   **Pathological Outcomes:**
+    *   **Downstaging:** Preoperative therapy led to significant tumor downstaging (p<0.001).
+        *   **Complete Response (pCR):** 8% of patients in the preoperative group had a complete pathological response, versus 0% in the postoperative group.
+        *   **Nodal Status:** Only 25% of patients in the preoperative group had positive lymph nodes (pTNM Stage III) compared to 40% in the postoperative group.
+    *   **Surgical Outcomes:**
+        *   **Sphincter Preservation:** In the overall population (n=799), there was no significant difference in the rate of sphincter-sparing surgery.
+        *   **Subgroup Analysis:** Among 194 patients for whom the surgeon deemed an abdominoperineal resection necessary *before* randomization, sphincter preservation was achieved in **39% of the preoperative group versus 19% of the postoperative group (p=0.004)**.
+
+*   **Toxicity:**
+    *   **Acute Toxicity (Grade 3/4):** Significantly lower in the preoperative group (27%) compared to the postoperative group (40%) (p=0.001). This was mainly driven by differences in diarrhea, hand-foot syndrome, and other skin reactions.
+    *   **Long-Term Toxicity (Grade 3/4):** Also significantly lower in the preoperative group (14%) versus the postoperative group (24%) (p=0.01). This was mainly due to a lower incidence of small-bowel obstruction and strictures at the anastomotic site.
+    *   **Postoperative Complications:** No significant difference in the overall rate (36% preop vs. 34% postop), including anastomotic leakage (11% vs. 12%).
+
+*   **Survival and Recurrence:**
+    *   **Overall Survival (5-year):** 76% (preop) vs. 74% (postop) (P=0.80). No significant difference.
+    *   **Disease-Free Survival (5-year):** 68% (preop) vs. 65% (postop) (P=0.32). No significant difference.
+    *   **Local Recurrence (5-year cumulative incidence):** **Significantly lower in the preoperative group (6%)** compared to the postoperative group (13%) (P=0.006). The relative risk of local recurrence was 0.46 (95% CI, 0.26 to 0.82).
+    *   **Distant Recurrence (5-year cumulative incidence):** 36% (preop) vs. 38% (postop) (P=0.84). No significant difference.
+
+**Conclusion**
+Preoperative chemoradiotherapy, compared to postoperative chemoradiotherapy, significantly improves local tumor control and reduces treatment-related toxicity without compromising surgical safety. It also increases the rate of sphincter preservation in patients with low-lying tumors. However, these benefits did not translate into an improvement in overall survival.

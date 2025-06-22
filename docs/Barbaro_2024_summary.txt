@@ -1,0 +1,30 @@
+**Barbaro B, Carafa MRP, Minordi LM, et al. Magnetic resonance imaging for assessment of rectal cancer nodes after chemoradiotherapy: A single center experience. Radiother Oncol. 2024;193:110124. DOI: 10.1016/j.radonc.2024.110124**
+
+**Study Aim**
+To evaluate the accuracy of MRI in identifying negative nodal status (ypN0) in patients with locally advanced rectal cancer (LARC) after neoadjuvant chemoradiotherapy (nCRT), focusing on nodal size and change in size as predictive markers.
+
+**Methods**
+*   **Study Design:** Single-center retrospective study.
+*   **Patient Population:** 191 consecutive patients with LARC who underwent MRI before and 6-8 weeks after nCRT, followed by total mesorectal excision (TME).
+*   **MRI Analysis:** Two radiologists evaluated pre- and post-nCRT T2-weighted images. They assessed the total number of lymph nodes, the short-axis diameter of each node, and the percentage change in size of each node after nCRT.
+*   **Reference Standard:** Histopathological analysis of the TME specimen to determine the final ypN status.
+*   **Statistical Analysis:** ROC curve analysis was used to determine the accuracy of different MRI criteria (post-CRT nodal size, percentage reduction in size of the largest node, and node disappearance) for predicting ypN0 status.
+
+**Key Results (beyond Abstract)**
+*   **Patient and Nodal Cohort:**
+    *   The study included 191 patients, of whom 146 (76.4%) were ypN0 and 45 (23.6%) were ypN+.
+    *   Pre-CRT, a total of 532 nodes were identified. Post-CRT, 353 (66.4%) of these nodes remained visible, while **179 (33.6%) disappeared**.
+    *   **Node Disappearance:** Disappearance of all nodes on restaging MRI was highly predictive of a negative nodal status. This was observed in 38 patients; 37 of them (97.4%) were confirmed as ypN0. This criterion yielded a **sensitivity of 93.3%** and a **negative predictive value (NPV) of 92.5%** for ypN0.
+
+*   **Nodal Size as a Predictor:**
+    *   Patients with ypN+ status had significantly larger lymph nodes than ypN0 patients, both before CRT (mean size 5.86 mm vs. 4.90 mm, p<0.05) and after CRT (3.21 mm vs. 1.58 mm, p<0.01).
+    *   The optimal post-CRT short-axis diameter cut-off to predict ypN0 was **≤ 2.2 mm**. This yielded an **AUC of 0.83**, with a sensitivity of 79.5% and an NPV of 91.1%.
+
+*   **Change in Nodal Size as a Predictor:**
+    *   The mean percentage reduction in node size was significantly greater in ypN0 patients compared to ypN+ patients (69.0% vs. 40.8%, p<0.01).
+    *   A **≥ 70% reduction in the size of the largest lymph node** was the most powerful predictor. This criterion was associated with an **AUC of 0.818** for predicting ypN0 stage, with a **sensitivity of 93.3%** and an **NPV of 95.4%**.
+
+*   **Special Cases:** Two patients had a complete T-stage response (pT0) but still had positive lymph nodes (pN1).
+
+**Conclusion**
+In the post-nCRT setting, MRI demonstrates high accuracy in predicting a negative nodal status (ypN0). The most effective predictors are not just the final size of the nodes but also their response to therapy. Specifically, a **reduction in the size of the largest lymph node by ≥ 70%** and the **complete disappearance of all nodes** on restaging MRI are highly sensitive criteria with excellent negative predictive value for ruling out residual nodal metastasis. A post-CRT nodal size of **≤ 2.2 mm** is also a strong, confirmed predictor. These criteria are more reliable than standard morphological assessments in the post-treatment setting and are crucial for decision-making in organ-preserving strategies.

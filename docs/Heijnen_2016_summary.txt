@@ -1,0 +1,33 @@
+**Heijnen LA, Maas M, Beets-Tan RG, et al. Nodal staging in rectal cancer: why is restaging after chemoradiation more accurate than primary nodal staging? Int J Colorectal Dis. 2016;31(6):1157-62. DOI: 10.1007/s00384-016-2576-8**
+
+**Study Aim**
+To explore the influence of chemoradiation (CRT) on the number and size of mesorectal lymph nodes and to generate hypotheses explaining why MRI-based nodal restaging after CRT is more accurate than primary nodal staging.
+
+**Methods**
+*   **Study Design:** Retrospective analysis of prospectively collected data.
+*   **Patient Population:** 39 patients with locally advanced rectal cancer who underwent both pre- and post-CRT MRI.
+*   **Imaging Protocol:** MRI was performed on a 1.5T unit. A key sequence was a 3D T1-weighted gradient echo (3D T1W GRE) with 1-mm³ voxels, which was used for nodal measurements and matching.
+*   **Analysis:** All visible mesorectal nodes on pre-CRT MRI were measured and matched with their counterparts on post-CRT MRI. Nodes were also matched with histology on a lesion-by-lesion basis. Changes in node number and size were analyzed.
+
+**Key Results (beyond Abstract)**
+*   **Node Population:** A total of 895 nodes were identified on pre-CRT MRI in 39 patients. Histopathology confirmed that 44 of 453 examined nodes were malignant (ypN+).
+*   **Effect of CRT on Nodal Number and Size:**
+    *   **Disappearance:** **44% (392/895) of nodes visible on pre-CRT MRI were no longer visible on post-CRT MRI.**
+    *   **Shrinkage:** 40% of nodes became smaller, 14% showed no change, and 2% increased in size.
+    *   **Size as a Predictor of Disappearance:** Nodes that disappeared were significantly smaller at baseline than nodes that remained visible (mean pre-CRT size: 2.9 mm vs. 3.8 mm, p<0.0001).
+    *   Of nodes ≤5 mm pre-CRT, 46% disappeared. Of nodes >5 mm pre-CRT, 26% disappeared.
+
+*   **Diagnostic Performance and Nodal Characteristics:**
+    *   **Prevalence of Malignancy:** At primary staging, 97% of patients were considered cN+. After CRT, only 36% of patients were found to be ypN+ on pathology. This dramatic drop in prevalence is a key factor.
+    *   **Node Size and Malignancy:** ypN+ patients had significantly larger nodes than ypN0 patients both *before* CRT (mean size 6.3 mm vs 3.6 mm, p<0.0001) and *after* CRT (4.5 mm vs 2.3 mm, p<0.0001).
+    *   **Optimal Size Cut-off for Restaging:** The optimal size cut-off for predicting ypN+ status on post-CRT MRI was **2.5 mm**, which yielded an AUC of 0.78, with a sensitivity of 75% and specificity of 64%. This is much lower than the typical 5 mm cut-off used in primary staging.
+    *   **Change in Size:** A reduction in node size of at least 70% was highly indicative of a negative nodal status (ypN0) in 100% of cases.
+
+**Hypotheses and Conclusion**
+The study concludes that the increased accuracy of nodal restaging on MRI after CRT can be explained by several factors:
+1.  **Disappearance of Small, Benign Nodes:** A large proportion (44%) of nodes, particularly the smaller ones (<5 mm) which are most difficult to characterize morphologically, disappear after CRT. This simplifies the diagnostic task for the radiologist.
+2.  **Lower Prevalence of Malignancy:** The prevalence of positive nodes is drastically lower post-CRT (36%) than pre-CRT (97%). In a low-prevalence setting, the negative predictive value (NPV) of any diagnostic test inherently increases, leading to a more confident prediction of ypN0 status.
+3.  **Use of Response as a Criterion:** The ability to compare pre- and post-CRT scans allows the radiologist to assess response. A significant decrease in node size is a strong indicator that the node is benign.
+4.  **Concurrent Tumor Response:** Nodal response often coincides with tumor response. If the primary tumor shows a good response to CRT, the radiologist can be more confident that the nodes have also responded.
+
+These findings support the use of a much lower size threshold (e.g., 2.5 mm) for nodal restaging after CRT and are clinically relevant for selecting patients for organ-preserving strategies where accurate ypN0 prediction is crucial.

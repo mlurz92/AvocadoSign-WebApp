@@ -1,0 +1,38 @@
+**Rutegård MK, Båtsman M, Blomqvist L, et al. Evaluation of MRI characterisation of histopathologically matched lymph nodes and other mesorectal nodal structures in rectal cancer. Eur Radiol. 2025;35(1):49-60. DOI: 10.1007/s00330-025-11361-2**
+
+**Study Aim**
+To evaluate the diagnostic performance of current MRI-based morphological and size criteria (specifically the 2016 ESGAR consensus criteria) for malignancy in mesorectal nodal structures, using a precise node-by-node anatomical matching with histopathology as the gold standard.
+
+**Methods**
+*   **Study Design:** Prospective cohort study (RECTOPET) with meticulous anatomical matching.
+*   **Patient Population:** 46 patients with rectal cancer. 27 had primary surgery (PS group) and 19 received neoadjuvant treatment (NT group).
+*   **Analysis:**
+    *   **Anatomical Matching:** Mesorectal nodal structures seen on baseline MRI were anatomically matched with their corresponding structures in the resected specimen, which were identified by pathology as lymph nodes, tumour deposits (TDs), or extramural venous invasion (EMVI).
+    *   **Criteria Evaluated:** For each matched structure, the following were assessed on MRI: short-axis diameter, irregular margin, round shape, and heterogeneous signal. The combined 2016 ESGAR consensus criteria were also applied.
+    *   **Reference Standard:** Histopathological status of the matched structure.
+*   **Statistical Analysis:** Mixed-effects logistic regression models to account for clustering of nodes within patients.
+
+**Key Results (beyond Abstract)**
+*   **Nodal Structure Identity:**
+    *   A total of 458 matched nodal structures were analyzed.
+    *   A significant finding was that **44% of malignant structures initially assessed as lymph nodes on MRI were histopathologically proven to be either TDs or nodular EMVI**. This highlights a major confounder in MRI nodal staging.
+
+*   **Performance of Individual MRI Criteria (Univariable Analysis):**
+    *   **Short-axis diameter ≥ 5 mm** was the strongest predictor of malignancy (OR 21.43, p < 0.001).
+    *   **Heterogeneous signal** (OR 9.02, p = 0.024) and **irregular margin** (OR 6.46, p = 0.013) were also significantly associated with malignancy.
+    *   **Round shape** was not a statistically significant predictor (p = 0.123).
+
+*   **Performance of Combined ESGAR Criteria:**
+    *   Applying the full ESGAR consensus criteria resulted in an **OR of 8.23 (p = 0.002)** for malignancy.
+    *   The diagnostic performance metrics for the ESGAR criteria were:
+        *   **Sensitivity:** 54% (Low)
+        *   **Specificity:** 85% (High)
+        *   **Positive Likelihood Ratio (+LR):** 3.52
+        *   **Negative Likelihood Ratio (-LR):** 0.54
+    *   In a multivariable model including all individual criteria, **only short-axis size ≥ 5 mm remained a significant independent predictor** (OR 12.32, p = 0.006).
+
+*   **Subgroup Analysis (Early/Intermediate Disease):**
+    *   When analysis was restricted to patients with less advanced disease, the diagnostic performance of the criteria did not improve, indicating the challenge is not limited to advanced tumors.
+
+**Conclusion**
+This study, using a rigorous node-by-node matching methodology, confirms that current MRI criteria for lymph node staging are challenging and have limitations. While the ESGAR consensus criteria show a statistically significant association with malignancy, their diagnostic performance is suboptimal, characterized by **low sensitivity (54%) and only moderate specificity (85%)**. Size (≥ 5 mm) is the most powerful single predictor. A critical finding is that a large proportion (44%) of what radiologists call malignant lymph nodes are actually tumour deposits or EMVI, which carry a different prognosis and are not true nodal metastases. This fundamental misclassification underscores a major limitation of current staging. The study concludes that while morphological and size criteria have some value, they may not be accurate enough for reliable clinical decision-making, and the ESGAR criteria should be used with caution.

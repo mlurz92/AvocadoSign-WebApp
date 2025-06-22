@@ -1,0 +1,43 @@
+**Stelzner S, Ruppert R, Kube R, et al. Selection of patients with rectal cancer for neoadjuvant therapy using pre-therapeutic MRI – Results from OCUM trial. Eur J Radiol. 2022;147:110113. DOI: 10.1016/j.ejrad.2021.110113**
+
+**Study Aim**
+To evaluate the accuracy of pre-therapeutic MRI staging (cT, cN, and mrMRF) and to determine the risk of over- and undertreatment by comparing MRI findings with histopathology in patients who underwent primary surgery as part of the OCUM trial. This paper is a more focused analysis of the primary surgery cohort from the same OCUM trial as the Kreis et al. (2020) paper.
+
+**Methods**
+*   **Study Design:** Analysis of a subgroup from the prospective, multicenter OCUM trial.
+*   **Patient Population:** 609 patients with rectal cancer who underwent primary surgery without prior neoadjuvant therapy. This group consists of patients deemed low-risk by MRI and patients who deviated from the protocol (i.e., should have received nCRT but had surgery instead).
+*   **MRI Criteria:** Standardized MRI protocol was used.
+    *   **T-category:** Based on depth of invasion. T3 was subclassified into T3ab (≤5 mm) and T>3b (>5 mm).
+    *   **N-category:** Based on morphological criteria (irregular border, inhomogeneous signal).
+    *   **mrMRF (mesorectal fascia):** Judged as involved if the tumor-to-fascia distance was ≤ 1 mm.
+*   **Reference Standard:** Histopathological assessment of the resected TME specimen (pT, pN, pCRM).
+*   **Analysis:** Accuracy, sensitivity, specificity, PPV, and NPV were calculated for cT, cN, clinical stage, and mrMRF. Over- and understaging rates were determined.
+
+**Key Results (beyond Abstract)**
+*   **Accuracy of T-Category Staging:**
+    *   Overall correct T-category prediction: **63.5%** (386/608).
+    *   **Overstaging was more common (22.9%) than understaging (13.5%).**
+    *   **cT2 Staging:** MRI correctly identified pT2 tumors in 57.5% of cases. However, it **understaged 30.4%** of cT2 tumors which were actually pT3 or pT4.
+    *   **cT3 Staging:** MRI correctly identified pT3 tumors in 70.7% of cases but **overstaged 26.9%** of cT3 tumors which were actually pT1 or pT2.
+    *   The accuracy was significantly different between participating centers, highlighting variability in interpretation.
+
+*   **Accuracy of N-Category Staging:**
+    *   Overall accuracy for lymph node involvement was poor: **56.5%** (344/609).
+    *   **Sensitivity** for detecting any nodal metastasis (pN1/pN2) was **61.9%**.
+    *   **Specificity** for predicting a negative nodal status (pN0) was only **53.5%**. This means almost half of the patients predicted to be node-negative were actually node-positive.
+    *   The diagnosis was particularly poor for pN1, being correct in only 26.4% of cases.
+
+*   **Accuracy of Clinical Stage:**
+    *   Overall correct stage prediction (I, II, or III) was **47.3%**.
+    *   Overstaging occurred in 34.5% of patients, while understaging occurred in 18.2%.
+    *   A significant proportion of patients were misclassified: 22.2% of patients with clinical stage II and 28.1% with clinical stage III were found to be pathological stage I.
+
+*   **Accuracy of mrMRF Status:**
+    *   In stark contrast to T and N staging, the prediction of a tumor-free margin was highly reliable.
+    *   **Accuracy** for predicting a tumor-free CRM (using a >1 mm cut-off) was **86.5%**.
+    *   The **Negative Predictive Value (NPV)** was exceptionally high at **98.1%** (514/524). This means if MRI predicted the mrMRF to be clear, it was correct in 98.1% of cases.
+    *   The rate of **false-negative mrMRF was only 1.7%** (9/524), indicating a very low risk of undertreatment (i.e., wrongly omitting nCRT).
+    *   The NPV was consistently high across low-, medium-, and high-volume centers.
+
+**Conclusion**
+Pre-therapeutic MRI is **unreliable for accurate T and N staging**, with poor accuracy and high rates of over- and understaging. Decisions for neoadjuvant therapy based solely on cT and cN categories carry a substantial risk of both overtreatment (giving unnecessary toxic therapy) and undertreatment. In contrast, **MRI is highly accurate and reliable in predicting the status of the mesorectal fascia (mrMRF)**. The high NPV of mrMRF assessment means it can be used to safely select patients for primary surgery, minimizing the risk of a positive resection margin. Therefore, the decision for neoadjuvant therapy should be prioritized based on the **mrMRF status**, not on the less reliable cT and cN categories.

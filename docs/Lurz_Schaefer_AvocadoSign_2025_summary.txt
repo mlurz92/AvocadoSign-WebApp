@@ -1,0 +1,44 @@
+**Lurz M, Schäfer AO. The Avocado Sign: A novel imaging marker for nodal staging in rectal cancer. Eur Radiol. 2025. DOI: 10.1007/s00330-025-11462-y**
+
+**Study Aim**
+To evaluate the diagnostic performance of a novel contrast-enhancement-based MRI marker, termed the "Avocado Sign," for predicting mesorectal lymph node involvement in rectal cancer.
+
+**Methods**
+*   **Study Design:** Retrospective, single-institution study.
+*   **The Avocado Sign:** Defined as a **hypointense core within an otherwise homogeneously hyperintense lymph node** on contrast-enhanced T1-weighted fat-saturated images. The appearance is likened to the kernel (core) of an avocado.
+*   **Patient Population:** 106 patients with confirmed rectal cancer. The cohort was split into two subgroups for analysis:
+    *   **Surgery Alone Subgroup (n=29):** Treatment-naïve patients. The Avocado Sign was assessed on baseline staging MRI.
+    *   **Neoadjuvant Subgroup (n=77):** Patients who received standard neoadjuvant chemoradiotherapy. The Avocado Sign was assessed on post-treatment, pre-surgical restaging MRI.
+*   **Image Analysis:** Two radiologists independently assessed all visible mesorectal lymph nodes for the presence of the Avocado Sign. Nodal status for a patient was deemed positive if the sign was present in at least one node.
+*   **Reference Standard:** Histopathological examination of resected specimens.
+*   **Statistical Analysis:** Calculation of diagnostic metrics (sensitivity, specificity, PPV, NPV, accuracy). Interobserver agreement was assessed with Cohen's kappa. ROC analysis was performed.
+
+**Key Results (beyond Abstract)**
+*   **Overall Diagnostic Performance (n=106):**
+    *   The Avocado Sign demonstrated very high diagnostic accuracy across the entire cohort.
+    *   **Sensitivity:** 88.7%
+    *   **Specificity:** 84.9%
+    *   **PPV:** 85.5%
+    *   **NPV:** 88.2%
+    *   **Accuracy:** 86.8%
+    *   The **AUC was 0.87**, indicating excellent performance.
+
+*   **Subgroup Performance:**
+    *   **Surgery Alone Subgroup (Treatment-Naïve):** The performance was exceptionally high.
+        *   **Sensitivity:** 100%
+        *   **Specificity:** 83.3%
+        *   **NPV:** 100%
+        *   **AUC:** 0.92
+    *   **Neoadjuvant Subgroup (Post-Treatment):** The performance remained excellent even after therapy.
+        *   **Sensitivity:** 84.2%
+        *   **Specificity:** 85.4%
+        *   **AUC:** 0.85
+    *   There were no statistically significant differences in diagnostic performance between the two subgroups (p=0.34), showing the sign is robust both pre- and post-treatment.
+
+*   **Interobserver Agreement:**
+    *   The agreement between the two radiologists in identifying the Avocado Sign was **almost perfect (Cohen's kappa = 0.92)**. This indicates the sign is highly reproducible and not subjective.
+
+*   **Hypothesis:** The authors hypothesize that the hypointense core of the Avocado Sign reflects the presence of nodal tumor deposits, which disrupt the normal enhancing lymphoid tissue, while the hyperintense rim represents the remaining compressed normal nodal tissue.
+
+**Conclusion**
+The Avocado Sign is a novel, promising, and highly accurate imaging marker for mesorectal lymph node staging in rectal cancer. It demonstrated high sensitivity and specificity as a **standalone marker**, independent of traditional T2-based morphological criteria like size or border irregularity. Its performance was excellent in both treatment-naïve patients (at baseline staging) and in patients after neoadjuvant therapy (at restaging). Crucially, the sign is straightforward to apply and shows almost perfect interobserver reproducibility. The Avocado Sign has the potential to significantly refine and simplify MRI nodal staging by incorporating a simple contrast-enhanced T1-weighted sequence, potentially leading to more accurate treatment decisions. Further validation in larger, prospective multicenter studies is warranted.

@@ -1,4 +1,4 @@
-const patientDataRaw = [
+window.patientDataRaw = [
   {
     id: 1,
     lastName: "John",
@@ -3032,9 +3032,9 @@ const patientDataRaw = [
   },
   {
     id: 54,
-    lastName: "Halfter",
-    firstName: "Karin",
-    birthDate: "1958-01-06",
+    lastName: "Halfder",
+    firstName: "Karina",
+    birthDate: "1958-02-06",
     sex: "f",
     therapy: "neoadjuvantTherapy",
     examDate: "2015-12-04",
@@ -3079,9 +3079,9 @@ const patientDataRaw = [
   },
   {
     id: 55,
-    lastName: "Ackermann",
-    firstName: "Heinz",
-    birthDate: "1950-04-02",
+    lastName: "Ackerman",
+    firstName: "Heiko",
+    birthDate: "1950-02-02",
     sex: "m",
     therapy: "neoadjuvantTherapy",
     examDate: "2016-08-25",
@@ -3140,9 +3140,9 @@ const patientDataRaw = [
   },
   {
     id: 56,
-    lastName: "Börner",
-    firstName: "Joachim",
-    birthDate: "1949-12-02",
+    lastName: "Börmer",
+    firstName: "Joachen",
+    birthDate: "1949-11-02",
     sex: "m",
     therapy: "neoadjuvantTherapy",
     examDate: "2016-11-23",
@@ -3645,7 +3645,7 @@ const patientDataRaw = [
     id: 63,
     lastName: "Hühnerbein",
     firstName: "Thomas",
-    birthDate: "1952-11-11",
+    birthDate: "1952-10-11",
     sex: "m",
     therapy: "surgeryAlone",
     examDate: "2017-10-18",
@@ -4427,8 +4427,8 @@ const patientDataRaw = [
   {
     id: 77,
     lastName: "Weber",
-    firstName: "Michael",
-    birthDate: "1962-06-25",
+    firstName: "Michel",
+    birthDate: "1962-09-25",
     sex: "m",
     therapy: "neoadjuvantTherapy",
     examDate: "2019-04-24",
@@ -5777,8 +5777,8 @@ const patientDataRaw = [
   },
   {
     id: 106,
-    lastName: "Hühnerbein",
-    firstName: "Thomas",
+    lastName: "Hühnerpein",
+    firstName: "Tom",
     birthDate: "1952-11-11",
     sex: "m",
     therapy: "surgeryAlone",

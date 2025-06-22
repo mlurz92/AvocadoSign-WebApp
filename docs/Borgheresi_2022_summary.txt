@@ -1,0 +1,31 @@
+**Borgheresi A, De Muzio F, Agostini A, et al. Lymph Nodes Evaluation in Rectal Cancer: Where Do We Stand and Future Perspective. J Clin Med. 2022;11(9):2599. DOI: 10.3390/jcm11092599**
+
+**Study Aim**
+To provide a comprehensive narrative review of the current status and future perspectives of imaging techniques for lymph node (LN) evaluation in rectal cancer, covering routine, advanced, and experimental modalities.
+
+**Key Concepts and Evidence (Review Article)**
+
+*   **Limitations of Standard Morphological MRI:**
+    *   The review reiterates the known limitations of standard MRI: low accuracy due to the unreliability of size criteria (many metastatic LNs are small) and the subjectivity of morphological features (irregular border, heterogeneous signal).
+    *   It cites the 2016 ESGAR guidelines, which recommend a combination of size and morphology, but acknowledges the lack of robust validation and consensus, especially for lateral pelvic nodes.
+    *   A key issue is the inability to differentiate LNs from **Tumor Deposits (TDs)**, which are now recognized as a separate entity (N1c) with a worse prognosis.
+
+*   **Advanced MRI Techniques:**
+    *   **Diffusion-Weighted Imaging (DWI):** Improves the detection of LNs compared to T2W images alone due to their high cellularity. However, its qualitative assessment for malignancy is challenging due to the risk of over-staging (reactive nodes also restrict diffusion). Quantitative ADC map analysis has shown conflicting results and lacks standardized, reproducible thresholds.
+    *   **IVIM and DKI:** These more advanced DWI models offer potential by separating perfusion from true diffusion, but the results are contradictory and the techniques are complex and not yet ready for routine clinical use.
+    *   **Dynamic Contrast-Enhanced (DCE) MRI:** Can assess tissue perfusion. The typical pattern for malignant LNs is peripheral rim enhancement with a necrotic core. While some studies show promise, the analysis is complex, reproducibility is an issue, and it is not a standard part of routine protocols.
+
+*   **PET/CT and PET/MRI:**
+    *   **PET/CT:** Has high specificity but low sensitivity for LNs, as it misses small or non-FDG-avid metastases. Its poor spatial resolution is a major limitation for small mesorectal nodes. Combining nodal MTV with SUVmax has been shown to improve prediction.
+    *   **PET/MRI:** A promising hybrid technique that combines the metabolic data of PET with the superior soft-tissue contrast of MRI. It can improve the detection and characterization of small LNs compared to either modality alone.
+
+*   **Experimental Techniques and Future Directions:**
+    *   **Ultrasmall Superparamagnetic Iron Oxide (USPIO):** An experimental LN-specific contrast agent. USPIOs are taken up by macrophages in benign LNs, causing a signal drop on T2*W images. Malignant LNs, lacking macrophages, retain their signal. Early studies were very promising, but later studies with higher resolution MRI showed more limited results and the agent is not clinically available.
+    *   **Radiomics:** Involves high-throughput extraction of quantitative features from images to create predictive models. Preliminary studies show that radiomics models (often combining features from the primary tumor and LNs) can outperform standard visual assessment. However, reproducibility across different scanners and protocols remains a major hurdle ("the main drawback of radiomics").
+
+*   **Reporting and Guidelines:**
+    *   The review highlights the differences between European (ESGAR) and North American (SAR) guidelines, particularly in the restaging setting, where ESGAR recommends a ≥5 mm size cut-off for malignancy, while SAR considers nodal downsizing as a sign of response.
+    *   The importance of **structured reporting** is emphasized for clear communication and consistent evaluation of key features.
+
+**Conclusion**
+The evaluation of lymph nodes in rectal cancer remains a significant clinical challenge. Current standard-of-care MRI with morphological criteria has known limitations in accuracy. While advanced techniques like DWI, DCE-MRI, and PET/MRI show promise for improving diagnostic performance, they are hampered by issues of complexity, lack of standardization, and/or limited validation. Experimental approaches like radiomics are promising but are still far from routine clinical application. The future of accurate nodal staging likely lies not in a single "best" technique, but in the **integration of multiple imaging parameters** (from different sequences or modalities) with clinical and pathological data, likely facilitated by AI and machine learning tools, to create more robust and personalized risk-stratification models.

@@ -1,0 +1,34 @@
+**Beets-Tan RGH, Lambregts DMJ, Maas M, et al. Magnetic resonance imaging for clinical management of rectal cancer: updated recommendations from the 2016 European Society of Gastrointestinal and Abdominal Radiology (ESGAR) consensus meeting. Eur Radiol. 2018;28(4):1465-1475. DOI: 10.1007/s00330-017-5026-2**
+
+**Study Aim**
+To provide updated, evidence-based, and expert consensus recommendations on the use of MRI for the clinical management of rectal cancer, covering primary staging, restaging after neoadjuvant therapy, and assessment of recurrence.
+
+**Key Concepts and Recommendations (Consensus Paper)**
+
+*   **Primary Staging:**
+    *   **MRI Protocol:** A standardized protocol is essential. The core should be high-resolution T2-weighted (T2W) imaging in planes orthogonal to the tumor. DWI is recommended as an adjunct for tumor detection and characterization. The use of intravenous contrast is generally not recommended for routine primary staging.
+    *   **T-Staging:** MRI is highly accurate for T-staging. The paper details the specific criteria for each T-stage.
+    *   **Mesorectal Fascia (MRF) / CRM:** This is a critical prognostic factor. The shortest distance from the tumor to the MRF must be reported. A distance of ≤ 1 mm is defined as MRF involvement (threatened or involved CRM).
+    *   **Extramural Venous Invasion (EMVI):** Should be reported as it is a poor prognostic factor. It is defined as tumor signal within vessels beyond the muscularis propria.
+
+*   **Lymph Node (LN) Staging (Primary Staging):**
+    *   This is acknowledged as the "weakest link" in MRI staging.
+    *   **Size alone is insufficient.**
+    *   **The ESGAR consensus recommends a combined approach using both size and morphological criteria:**
+        *   **Size Criteria:**
+            *   Nodes with a short-axis diameter **< 5 mm** are considered benign unless they have overtly malignant features.
+            *   Nodes with a short-axis diameter **≥ 9 mm** are considered malignant.
+            *   Nodes with a short-axis diameter of **5–8 mm** are considered equivocal and require morphological assessment.
+        *   **Morphological Criteria:**
+            *   **Irregular border:** Spiculated or indistinct margins.
+            *   **Heterogeneous signal intensity:** Mixed signal on T2W images, often with a mottled appearance.
+            *   **Round shape:** A round rather than oval or kidney shape is suspicious.
+    *   **Combined Rule for Equivocal Nodes (5-8 mm):** A node in this size range is considered malignant if it displays **at least two** of the three suspicious morphological features (irregular border, heterogeneous signal, round shape).
+    *   **Small Nodes with Malignant Features:** A node < 5 mm is considered malignant if it displays **all three** suspicious morphological features.
+
+*   **Restaging After Neoadjuvant Therapy:**
+    *   The goal is to assess tumor response (mrTRG) and predict pathologic complete response (pCR).
+    *   **Nodal Restaging:** This is challenging due to post-treatment changes. The consensus states that a residual node with a short-axis diameter **≥ 5 mm** should be considered suspicious for residual metastasis. Morphological criteria are less reliable in the post-treatment setting.
+
+**Conclusion**
+This paper provides a comprehensive, standardized framework for the use of MRI in rectal cancer. For primary nodal staging, it formalizes the **ESGAR consensus criteria**, which advocate for a multi-parametric approach combining nodal size and morphology, moving away from a simple size cut-off. It acknowledges the limitations of nodal staging but provides a structured method to improve consistency and accuracy. For restaging, it suggests a more straightforward size-based criterion (≥ 5 mm) for suspicious nodes, recognizing the difficulty of interpreting morphology after therapy. These guidelines are intended to standardize reporting and improve clinical decision-making across institutions.

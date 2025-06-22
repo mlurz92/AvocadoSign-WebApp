@@ -3,24 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avocado Sign vs. T2 Criteria Analysis v3.0.0</title>
+    <title>Avocado Sign vs. T2 Criteria Analysis v4.2.0-radiology-optimized</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A5%91%3C/text%3E%3C/svg%3E">
+
+    <!-- External Libraries moved to HEAD with defer for reliable loading before app execution -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" defer></script>
+    <script src="https://unpkg.com/tippy.js@6" defer></script>
 </head>
 <body>
     <header class="fixed-top shadow-sm">
         <div class="container-fluid">
              <h1 class="app-title">Nodal Staging: Avocado Sign vs. T2</h1>
-             <div class="header-meta ms-md-auto me-md-3">
-                <span data-tippy-content="Currently selected analysis cohort">Cohort: <strong id="header-cohort">--</strong></span>
-                <span data-tippy-content="Number of patients in the current cohort">Patients: <strong id="header-patient-count">--</strong></span>
-                <span data-tippy-content="Percentage of N+ patients (Pathology)">N-Status: <strong id="header-status-n">--</strong></span>
-                <span data-tippy-content="Percentage of T2+ patients (Applied Criteria)">T2-Status: <strong id="header-status-t2">--</strong></span>
-                <span data-tippy-content="Percentage of AS+ patients (Prediction)">AS-Status: <strong id="header-status-as">--</strong></span>
-            </div>
-            <div class="d-flex align-items-center">
+             <div class="d-flex align-items-center ms-auto">
                 <button class="btn btn-sm btn-outline-secondary me-2" id="btn-quick-guide" data-tippy-content="Show Quick Guide">
                     <i class="fas fa-question-circle"></i>
                 </button>
@@ -39,9 +38,8 @@
                 <li class="nav-item" role="presentation"><button class="nav-link" id="data-tab" data-bs-toggle="tab" data-bs-target="#data-pane" type="button" role="tab"><i class="fas fa-database fa-fw me-1"></i>Data</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="analysis-tab" data-bs-toggle="tab" data-bs-target="#analysis-pane" type="button" role="tab"><i class="fas fa-tasks fa-fw me-1"></i>Analysis</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link" id="statistics-tab" data-bs-toggle="tab" data-bs-target="#statistics-pane" type="button" role="tab"><i class="fas fa-chart-bar fa-fw me-1"></i>Statistics</button></li>
-                <li class="nav-item" role="presentation"><button class="nav-link" id="presentation-tab" data-bs-toggle="tab" data-bs-target="#presentation-pane" type="button" role="tab"><i class="fas fa-slideshare fa-fw me-1"></i>Presentation</button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" id="comparison-tab" data-bs-toggle="tab" data-bs-target="#comparison-pane" type="button" role="tab"><i class="fas fa-chart-line fa-fw me-1"></i>Comparison</button></li>
                 <li class="nav-item" role="presentation"><button class="nav-link active" id="publication-tab" data-bs-toggle="tab" data-bs-target="#publication-pane" type="button" role="tab"><i class="fas fa-feather-alt fa-fw me-1"></i>Publication</button></li>
-                <li class="nav-item" role="presentation"><button class="nav-link" id="export-tab" data-bs-toggle="tab" data-bs-target="#export-pane" type="button" role="tab"><i class="fas fa-download fa-fw me-1"></i>Export</button></li>
             </ul>
         </div>
     </nav>
@@ -50,10 +48,9 @@
         <div class="tab-content" id="main-tab-content">
             <section class="tab-pane fade" id="data-pane" role="tabpanel" aria-labelledby="data-tab" tabindex="0"><p class="text-center p-5 text-muted">Loading Patient Data...</p></section>
             <section class="tab-pane fade" id="analysis-pane" role="tabpanel" aria-labelledby="analysis-tab" tabindex="0"><p class="text-center p-5 text-muted">Loading Analysis Tools...</p></section>
-            <section class="tab-pane fade" id="statistics-pane" role="tabpanel" aria-labelledby="statistics-tab" tabindex="0"><p class="text-center p-5 p-5 text-muted">Loading Statistics...</p></section>
-            <section class="tab-pane fade" id="presentation-pane" role="tabpanel" aria-labelledby="presentation-tab" tabindex="0"><p class="text-center p-5 text-muted">Loading Presentation View...</p></section>
+            <section class="tab-pane fade" id="statistics-pane" role="tabpanel" aria-labelledby="statistics-tab" tabindex="0"><p class="text-center p-5 text-muted">Loading Statistics...</p></section>
+            <section class="tab-pane fade" id="comparison-pane" role="tabpanel" aria-labelledby="comparison-tab" tabindex="0"><p class="text-center p-5 text-muted">Loading Comparison View...</p></section>
             <section class="tab-pane fade show active" id="publication-pane" role="tabpanel" aria-labelledby="publication-tab" tabindex="0"><p class="text-center p-5 text-muted">Loading Publication Tools...</p></section>
-            <section class="tab-pane fade" id="export-pane" role="tabpanel" aria-labelledby="export-tab" tabindex="0"><p class="text-center p-5 text-muted">Loading Export Options...</p></section>
         </div>
     </main>
 
@@ -64,18 +61,53 @@
         <div class="modal-content modal-glass">
           <div class="modal-header"><h5 class="modal-title" id="bruteForceModalLabel">Brute-Force Optimization Results</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
           <div class="modal-body" id="brute-force-modal-body"><p class="text-center text-muted">Results will be loaded here...</p></div>
-          <div class="modal-footer"><button type="button" class="btn btn-outline-primary btn-sm" id="export-bruteforce-modal-txt" disabled><i class="fas fa-file-alt me-1"></i> Export Report (.txt)</button><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button></div>
+          <div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button></div>
         </div>
       </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
-    <script src="https://unpkg.com/tippy.js@6"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <div class="modal fade" id="quick-guide-modal" tabindex="-1" aria-labelledby="quickGuideModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="quickGuideModalLabel"><i class="fas fa-question-circle me-2"></i>Quick Guide</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Global Controls & Analysis Context</h6>
+                    <p class="small">Use the buttons in the top header to select the patient <strong>Global Cohort</strong> for general exploration in the Data and Analysis tabs. For specific, methodologically valid comparisons (e.g., in the Comparison tab), the application automatically activates an <strong>Analysis Context</strong>. This locks the cohort to the appropriate group for the selected comparison (e.g., 'Surgery alone' for ESGAR criteria) and temporarily disables the global cohort buttons to ensure scientific rigor.</p>
+                    <hr>
+                    <h6>Tabs Overview</h6>
+                    <dl class="row small">
+                        <dt class="col-sm-3"><i class="fas fa-database fa-fw me-1"></i>Data</dt>
+                        <dd class="col-sm-9">View and sort the raw patient data based on the selected Global Cohort. Click on a row to expand and see individual T2 lymph node features.</dd>
 
+                        <dt class="col-sm-3"><i class="fas fa-tasks fa-fw me-1"></i>Analysis</dt>
+                        <dd class="col-sm-9">Interactively define T2 malignancy criteria and see their real-time impact on diagnostic performance for the selected Global Cohort. Run the <strong>Brute-Force Optimization</strong> to find the mathematically best criteria for a selected metric.</dd>
+
+                        <dt class="col-sm-3"><i class="fas fa-chart-bar fa-fw me-1"></i>Statistics</dt>
+                        <dd class="col-sm-9">Get a comprehensive statistical breakdown. In 'Single View', it uses the Global Cohort. In 'Comparison View', you can select two cohorts for a direct comparison.</dd>
+
+                        <dt class="col-sm-3"><i class="fas fa-chart-line fa-fw me-1"></i>Comparison</dt>
+                        <dd class="col-sm-9">Visually compare the performance of the Avocado Sign against either your currently applied T2 criteria or established criteria from the literature. This tab uses the <strong>Analysis Context</strong> to ensure all comparisons are performed on the correct, methodologically sound patient cohort.</dd>
+
+                        <dt class="col-sm-3"><i class="fas fa-feather-alt fa-fw me-1"></i>Publication</dt>
+                        <dd class="col-sm-9">The primary module for generating a manuscript draft. It automatically assembles text, tables, and figures formatted according to *Radiology* journal guidelines, incorporating the latest analysis results.</dd>
+                    </dl>
+                    <hr>
+                    <p class="small text-muted"><strong>Disclaimer:</strong> This is a research tool only. Do not use for clinical diagnosis or treatment decisions.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hidden container for off-screen chart rendering during export -->
+    <div id="hidden-chart-export-container" style="position: absolute; left: -9999px; top: -9999px; width: 1px; height: 1px; overflow: hidden;"></div>
+
+    <!-- Application Scripts -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
     <script src="data/data.js"></script>
@@ -86,23 +118,42 @@
 
     <script src="js/services/statistics_service.js"></script>
     <script src="js/services/brute_force_manager.js"></script>
-    <script src="js/services/export_service.js"></script>
     
-    <script src="js/ui/ui_manager.js"></script>
+    <script src="js/services/publication_service/publication_helpers.js"></script>
+    <script src="js/services/publication_service/title_page_generator.js"></script>
+    <script src="js/services/publication_service/abstract_generator.js"></script>
+    <script src="js/services/publication_service/introduction_generator.js"></script>
+    <script src="js/services/publication_service/methods_generator.js"></script>
+    <script src="js/services/publication_service/results_generator.js"></script>
+    <script src="js/services/publication_service/discussion_generator.js"></script>
+    <script src="js/services/publication_service/references_generator.js"></script>
+    <script src="js/services/publication_service/stard_generator.js"></script>
+    <script src="js/services/publication_service.js"></script>
+    
+    <script src="js/ui/components/ui_components.js"></script>
     <script src="js/ui/components/table_renderer.js"></script>
     <script src="js/ui/components/chart_renderer.js"></script>
-    <script src="js/ui/components/ui_components.js"></script>
+    <script src="js/ui/components/flowchart_renderer.js"></script>
     
     <script src="js/ui/tabs/data_tab.js"></script>
     <script src="js/ui/tabs/analysis_tab.js"></script>
     <script src="js/ui/tabs/statistics_tab.js"></script>
-    <script src="js/ui/tabs/presentation_tab.js"></script>
+    <script src="js/ui/tabs/comparison_tab.js"></script>
     <script src="js/ui/tabs/publication_tab.js"></script>
-    <script src="js/ui/tabs/export_tab.js"></script>
 
+    <script src="js/ui/ui_manager.js"></script>
+    
     <script src="js/app/state.js"></script>
-    <script src="js/ui/event_manager.js"></script>
     <script src="js/app/main.js"></script>
+    
+    <script src="js/ui/event_manager.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const app = new App();
+            app.init();
+        });
+    </script>
 
 </body>
 </html>
