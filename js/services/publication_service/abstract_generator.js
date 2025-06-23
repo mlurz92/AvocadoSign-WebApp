@@ -23,11 +23,11 @@ window.abstractGenerator = (() => {
         const demographicsString = `${nOverall} patients (mean age, ${meanAgeFormatted} years ± ${ageSDFormatted} [standard deviation]; ${overallStats?.descriptive?.sex?.m ?? 'N/A'} men)`;
 
         const resultsSectionHTML = `
-            <p>A total of ${demographicsString} were evaluated, of whom ${nPositive} of ${nOverall} (${helpers.formatValueForPublication(nPositive / nOverall, 0, true)}%) were N-positive at histopathology. The Avocado Sign demonstrated a sensitivity of ${helpers.formatMetricForPublication(overallStats?.performanceAS?.sens, 'sens')} and a specificity of ${helpers.formatMetricForPublication(overallStats?.performanceAS?.spec, 'spec')}, with an AUC of ${helpers.formatMetricForPublication(overallStats?.performanceAS?.auc, 'auc')}. Its performance was superior to established literature-based T2w criteria. Furthermore, its diagnostic accuracy was not inferior to a cohort-optimized T2w criteria set derived from a brute-force analysis ${bfComparisonText}.</p>
+            <p>A total of ${demographicsString} were evaluated, of whom ${nPositive} of ${nOverall} (${helpers.formatMetricForPublication({value: nPositive / nOverall}, 'acc', true)}) had N-positive disease at histopathology. The Avocado Sign demonstrated a sensitivity of ${helpers.formatMetricForPublication(overallStats?.performanceAS?.sens, 'sens', true)} and a specificity of ${helpers.formatMetricForPublication(overallStats?.performanceAS?.spec, 'spec', true)}, with an AUC of ${helpers.formatMetricForPublication(overallStats?.performanceAS?.auc, 'auc', true)}. Its performance was superior to established literature-based T2w criteria. Furthermore, its diagnostic accuracy was comparable to that of a cohort-optimized T2w criteria set derived from a brute-force analysis ${bfComparisonText}.</p>
         `;
         
         const conclusionText = `
-            <p>The Avocado Sign is an accurate and reproducible MRI marker for predicting lymph node status in rectal cancer, demonstrating superior performance to established T2-weighted criteria and comparable performance to a cohort-optimized benchmark, suggesting it could simplify and improve current staging protocols.</p>
+            <p>The Avocado Sign is an accurate and reproducible MRI marker for predicting lymph node status in rectal cancer, demonstrating performance superior to established T2-weighted criteria and comparable to a cohort-optimized benchmark, suggesting it could simplify and improve current staging protocols.</p>
         `;
 
         const abstractContentHTML = `
@@ -39,7 +39,7 @@ window.abstractGenerator = (() => {
                 <p>To evaluate the diagnostic performance of the Avocado Sign, a novel contrast-enhanced MRI marker, and to compare it with both established literature-based and cohort-optimized T2w morphological criteria for predicting N-status.</p>
                 
                 <h3>Materials and Methods</h3>
-                <p>This secondary analysis of a retrospective, single-institution study received institutional review board approval with a waiver of informed consent. Data from ${nOverall} consecutive patients with histologically confirmed rectal cancer who underwent 3.0-T MRI between January 2020 and November 2023 were analyzed. Two blinded radiologists performed a new evaluation of the Avocado Sign on contrast-enhanced T1-weighted images and morphological features on T2w images. Histopathologic examination of the surgical specimen served as the reference standard. Diagnostic performance was assessed using the area under the receiver operating characteristic curve (AUC), and methods were compared using the DeLong test.</p>
+                <p>This secondary analysis of a retrospective, single-institution study received institutional review board approval. Data from ${nOverall} consecutive patients with histologically confirmed rectal cancer who underwent 3.0-T MRI between January 2020 and November 2023 were analyzed. Two blinded radiologists performed a new evaluation of the Avocado Sign on contrast-enhanced T1-weighted images and morphological features on T2w images. Histopathologic examination of the surgical specimen served as the reference standard. Diagnostic performance was assessed using the area under the receiver operating characteristic curve (AUC), and methods were compared using the DeLong test.</p>
                 
                 <h3>Results</h3>
                 ${resultsSectionHTML}

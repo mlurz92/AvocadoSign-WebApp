@@ -1,5 +1,71 @@
 window.studyT2CriteriaManager = (() => {
 
+    const literatureCriteriaSets = [
+        {
+            id: 'Rutegard_2025',
+            name: 'ESGAR 2016 (in Rutegård et al. 2025)',
+            displayShortName: 'ESGAR 2016',
+            logic: 'KOMBINIERT',
+            applicableCohort: 'surgeryAlone',
+            criteria: {
+                size: { active: true }, // Placeholder, logic is custom
+                shape: { active: true, value: 'round' },
+                border: { active: true, value: 'irregular' },
+                homogeneity: { active: true, value: 'heterogeneous' },
+                signal: { active: false }
+            },
+            studyInfo: {
+                refKey: 'Rutegard_2025',
+                patientCohort: 'Surgery Alone (n=46)',
+                investigationType: 'Prospective, Node-by-Node',
+                focus: 'Validation of combined ESGAR 2016 criteria',
+                keyCriteriaSummary: '≥9mm OR (5–8mm AND ≥2 features) OR (<5mm AND 3 features)'
+            },
+            description: 'ESGAR 2016 consensus criteria: A lymph node is considered malignant if it has a short-axis diameter of ≥9 mm, OR if it has a diameter of 5–8 mm and at least two suspicious morphological features (round shape, irregular border, or heterogeneous signal), OR if it has a diameter of <5 mm and all three suspicious features.'
+        },
+        {
+            id: 'Koh_2008',
+            name: 'Koh et al. (2008)',
+            displayShortName: 'Koh 2008',
+            logic: 'OR',
+            applicableCohort: 'Overall',
+            criteria: {
+                size: { active: false },
+                shape: { active: false },
+                border: { active: true, value: 'irregular' },
+                homogeneity: { active: true, value: 'heterogeneous' },
+                signal: { active: false }
+            },
+            studyInfo: {
+                refKey: 'Koh_2008',
+                patientCohort: 'Overall (n=25)',
+                investigationType: 'Prospective, Pre- and Post-nCRT',
+                keyCriteriaSummary: 'Irregular Border OR Heterogeneous Signal'
+            }
+        },
+        {
+            id: 'Barbaro_2024',
+            name: 'Barbaro et al. (2024)',
+            displayShortName: 'Barbaro 2024',
+            logic: 'OR',
+            applicableCohort: 'neoadjuvantTherapy',
+            criteria: {
+                size: { active: true, threshold: 2.2, condition: '>' },
+                shape: { active: false },
+                border: { active: false },
+                homogeneity: { active: false },
+                signal: { active: false }
+            },
+            studyInfo: {
+                refKey: 'Barbaro_2024',
+                patientCohort: 'Neoadjuvant Therapy (n=191)',
+                investigationType: 'Retrospective, Post-nCRT',
+                focus: 'Size criteria for predicting ypN0',
+                keyCriteriaSummary: 'A node is considered malignant if short-axis diameter > 2.2 mm.'
+            }
+        }
+    ];
+
     function formatCriteriaForDisplay(criteria, logic = null, shortFormat = false) {
         if (!criteria || typeof criteria !== 'object') return 'N/A';
         const parts = [];
@@ -48,11 +114,11 @@ window.studyT2CriteriaManager = (() => {
 
         const effectiveLogic = logic || criteria.logic || 'OR';
         if (effectiveLogic === 'KOMBINIERT') {
-             const studySet = window.PUBLICATION_CONFIG.literatureCriteriaSets.find(s => s.logic === 'KOMBINIERT');
+             const studySet = literatureCriteriaSets.find(s => s.logic === 'KOMBINIERT');
              if (studySet?.studyInfo?.keyCriteriaSummary) {
                  return shortFormat ? (studySet.displayShortName || studySet.name) : studySet.studyInfo.keyCriteriaSummary;
              }
-             return 'Combined ESGAR Logic (see original publication for details)';
+             return 'Combined ESGAR Logic';
         }
         
         sortedActiveKeys.forEach(key => {
@@ -67,12 +133,12 @@ window.studyT2CriteriaManager = (() => {
     }
 
     function getAllStudyCriteriaSets() {
-        return cloneDeep(window.PUBLICATION_CONFIG.literatureCriteriaSets);
+        return cloneDeep(literatureCriteriaSets);
     }
 
     function getStudyCriteriaSetById(id) {
         if (typeof id !== 'string') return null;
-        const foundSet = window.PUBLICATION_CONFIG.literatureCriteriaSets.find(set => set.id === id);
+        const foundSet = literatureCriteriaSets.find(set => set.id === id);
         return foundSet ? cloneDeep(foundSet) : null;
     }
 
@@ -85,20 +151,20 @@ window.studyT2CriteriaManager = (() => {
 
         const nodeSize = (typeof lymphNode.size === 'number' && !isNaN(lymphNode.size)) ? lymphNode.size : -1;
         
-        const hasRoundShape = (lymphNode.shape === 'round');
-        const hasIrregularBorder = (lymphNode.border === 'irregular');
-        const hasHeterogeneousHomogeneity = (lymphNode.homogeneity === 'heterogeneous');
+        const hasRoundShape = (lymphNode.shape === criteria.shape.value);
+        const hasIrregularBorder = (lymphNode.border === criteria.border.value);
+        const hasHeterogeneousHomogeneity = (lymphNode.homogeneity === criteria.homogeneity.value);
 
         let morphologyCount = 0;
         if (hasRoundShape) morphologyCount++;
         if (hasIrregularBorder) morphologyCount++;
         if (hasHeterogeneousHomogeneity) morphologyCount++;
 
-        checkResult.size = (criteria.size?.active && nodeSize >= (criteria.size.threshold || 9.0));
-        checkResult.shape = (criteria.shape?.active && hasRoundShape);
-        checkResult.border = (criteria.border?.active && hasIrregularBorder);
-        checkResult.homogeneity = (criteria.homogeneity?.active && hasHeterogeneousHomogeneity);
-        checkResult.signal = (criteria.signal?.active && lymphNode.signal === criteria.signal.value);
+        checkResult.size = (nodeSize >= 9.0);
+        checkResult.shape = hasRoundShape;
+        checkResult.border = hasIrregularBorder;
+        checkResult.homogeneity = hasHeterogeneousHomogeneity;
+        checkResult.signal = null; // Signal not part of ESGAR criteria
         checkResult.esgarMorphologyCount = morphologyCount;
 
         if (nodeSize >= 9.0) {

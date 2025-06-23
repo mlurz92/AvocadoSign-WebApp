@@ -38,7 +38,7 @@ window.publicationService = (() => {
         });
 
         const validAbbreviations = Object.entries(counts)
-            .filter(([abbr, count]) => count >= 5)
+            .filter(([abbr, count]) => count >= 5 && potentialAbbreviations[abbr])
             .sort((a, b) => b[1] - a[1])
             .slice(0, 10)
             .map(([abbr]) => `<li><strong>${abbr}</strong> = ${potentialAbbreviations[abbr]}</li>`)
@@ -93,48 +93,32 @@ window.publicationService = (() => {
             return '<div class="alert alert-warning">Statistical data or common configuration is missing for publication generation.</div>';
         }
 
-        let titlePageHTML = generateSectionHTML('title_main', allCohortStats, commonData);
-        let mainContentHTML = '';
-        let introToDiscussionHTML = '';
-
+        let mainBodyHTML = '';
         window.PUBLICATION_CONFIG.sections.forEach(section => {
-            if (section.id === 'references_main' || section.id === 'title_main' || section.id === 'stard_checklist' || section.id === 'abstract_main') {
+            if (['title_main', 'references_main', 'stard_checklist'].includes(section.id)) {
                 return;
             }
-            const sectionHTML = generateSectionHTML(section.id, allCohortStats, commonData);
-            introToDiscussionHTML += sectionHTML;
+            const sectionLabel = window.APP_CONFIG.UI_TEXTS.publicationTab.sectionLabels[section.labelKey] || section.labelKey;
+            mainBodyHTML += `<section id="${section.id}"><h2>${sectionLabel}</h2>`;
+            mainBodyHTML += generateSectionHTML(section.id, allCohortStats, commonData);
+            mainBodyHTML += `</section>`;
         });
         
-        const abbreviationsHTML = _generateAbbreviationsHTML(introToDiscussionHTML);
-        
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = titlePageHTML;
-        const titlePageElement = tempDiv.querySelector('#title_main');
-        if (titlePageElement) {
-            const summaryElement = titlePageElement.querySelector('p > strong');
-            if (summaryElement && summaryElement.parentElement) {
-                summaryElement.parentElement.insertAdjacentHTML('afterend', abbreviationsHTML);
-            } else {
-                 titlePageElement.innerHTML += abbreviationsHTML;
+        const abbreviationsHTML = _generateAbbreviationsHTML(mainBodyHTML);
+        let titlePageHTML = generateSectionHTML('title_main', allCohortStats, commonData);
+
+        if (abbreviationsHTML) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = titlePageHTML;
+            const keyResultsList = tempDiv.querySelector('h4+ul');
+            if (keyResultsList) {
+                keyResultsList.insertAdjacentHTML('afterend', abbreviationsHTML);
+                titlePageHTML = tempDiv.innerHTML;
             }
         }
-        titlePageHTML = tempDiv.innerHTML;
-
-        window.PUBLICATION_CONFIG.sections.forEach(section => {
-            if (section.id === 'references_main' || section.id === 'title_main' || section.id === 'stard_checklist') {
-                return;
-            }
-
-            const sectionLabel = window.APP_CONFIG.UI_TEXTS.publicationTab.sectionLabels[section.labelKey] || section.labelKey;
-            
-            mainContentHTML += `<section id="${section.id}">`;
-            mainContentHTML += `<h2>${sectionLabel}</h2>`;
-            mainContentHTML += generateSectionHTML(section.id, allCohortStats, commonData);
-            mainContentHTML += `</section>`;
-        });
-
+        
         const allReferences = commonData?.references || {};
-        const { processedHtml, referencesHtml } = window.referencesGenerator.processAndNumberReferences(mainContentHTML, allReferences);
+        const { processedHtml, referencesHtml } = window.referencesGenerator.processAndNumberReferences(mainBodyHTML, allReferences);
         
         const stardHtml = generateSectionHTML('stard_checklist', allCohortStats, commonData);
 

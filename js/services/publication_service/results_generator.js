@@ -15,7 +15,7 @@ window.resultsGenerator = (() => {
 
         const text = `
             <h3 id="ergebnisse_patientencharakteristika">Patient Characteristics</h3>
-            <p>The study cohort comprised ${helpers.formatValueForPublication(nOverall, 0)} patients (mean age, ${helpers.formatValueForPublication(overallStats?.descriptive?.age?.mean, 1)} years ± ${helpers.formatValueForPublication(overallStats?.descriptive?.age?.sd, 1)} [standard deviation]; ${overallStats?.descriptive?.sex?.m} men). The process of patient enrollment is detailed in the study flowchart (Fig 1). Of the included patients, ${helpers.formatValueForPublication(nSurgeryAlone, 0)} (${helpers.formatValueForPublication(nSurgeryAlone / nOverall, 0, true)}%) underwent primary surgery, and ${helpers.formatValueForPublication(nNeoadjuvantTherapy, 0)} (${helpers.formatValueForPublication(nNeoadjuvantTherapy / nOverall, 0, true)}%) received neoadjuvant chemoradiotherapy. Overall, ${helpers.formatValueForPublication(nPositive, 0)} of ${nOverall} patients (${helpers.formatValueForPublication(nPositive / nOverall, 0, true)}%) had histopathologically confirmed lymph node metastases (N-positive). There were no significant differences in age, sex distribution, or the prevalence of N-positive status between the primary surgery and neoadjuvant therapy subgroups. Detailed patient characteristics for the overall cohort and by treatment subgroup are provided in Table 1.</p>
+            <p>The study cohort comprised ${helpers.formatValueForPublication(nOverall, 0)} patients (mean age, ${helpers.formatValueForPublication(overallStats?.descriptive?.age?.mean, 1)} years ± ${helpers.formatValueForPublication(overallStats?.descriptive?.age?.sd, 1)} [standard deviation]; ${overallStats?.descriptive?.sex?.m} men). The process of patient enrollment is detailed in the study flowchart (Fig 1). Of the included patients, ${helpers.formatValueForPublication(nSurgeryAlone, 0)} (${helpers.formatMetricForPublication({value: nSurgeryAlone / nOverall}, 'acc', true)}) underwent primary surgery, and ${helpers.formatValueForPublication(nNeoadjuvantTherapy, 0)} (${helpers.formatMetricForPublication({value: nNeoadjuvantTherapy / nOverall}, 'acc', true)}) received neoadjuvant chemoradiotherapy. Overall, ${helpers.formatValueForPublication(nPositive, 0)} of ${nOverall} patients (${helpers.formatMetricForPublication({value: nPositive / nOverall}, 'acc', true)}) had histopathologically confirmed lymph node metastases (N-positive). There were no significant differences in age, sex distribution, or the prevalence of N-positive status between the primary surgery and neoadjuvant therapy subgroups. Detailed patient characteristics for the overall cohort and by treatment subgroup are provided in Table 1.</p>
         `;
 
         const figurePlaceholder = `
@@ -49,7 +49,7 @@ window.resultsGenerator = (() => {
         `;
         
         const getAgeRow = (statsObj, type) => {
-            if (!statsObj?.age) return 'N/A';
+            if (!statsObj?.age || isNaN(statsObj.age.mean)) return 'N/A';
             if (type === 'mean') return `${helpers.formatValueForPublication(statsObj.age.mean, 1)} ± ${helpers.formatValueForPublication(statsObj.age.sd, 1)}`;
             if (type === 'median') return `${helpers.formatValueForPublication(statsObj.age.median, 0)} (${helpers.formatValueForPublication(statsObj.age.q1, 0)}–${helpers.formatValueForPublication(statsObj.age.q3, 0)})`;
             return 'N/A';
@@ -57,7 +57,7 @@ window.resultsGenerator = (() => {
 
         const getCountRow = (count, total) => {
             if(total === 0 || count === undefined || count === null) return '0 (N/A)';
-            return `${helpers.formatValueForPublication(count, 0)} (${helpers.formatValueForPublication(count / total, 0, true)}%)`;
+            return `${helpers.formatValueForPublication(count, 0)} (${helpers.formatMetricForPublication({value: count / total}, 'acc', true)})`;
         };
         
         const tableConfig = {
@@ -95,7 +95,7 @@ window.resultsGenerator = (() => {
         const text = `
             <h3 id="ergebnisse_vergleich_as_vs_t2">Diagnostic Performance and Comparison</h3>
             <p>The Avocado Sign demonstrated robust diagnostic performance across all patient subgroups, as detailed in Table 3. For the entire cohort (n=${commonData.nOverall}), the AUC was ${helpers.formatMetricForPublication(overallStats?.performanceAS?.auc, 'auc')}. The interobserver agreement for the sign was previously reported as almost perfect for this cohort (Cohen’s kappa = ${helpers.formatValueForPublication(overallStats?.interobserverKappa, 2, false, true)}${(overallStats?.interobserverKappaCI && isFinite(overallStats?.interobserverKappaCI.lower) && isFinite(overallStats?.interobserverKappaCI.upper)) ? `; 95% CI: ${helpers.formatValueForPublication(overallStats.interobserverKappaCI.lower, 2, false, true)}, ${helpers.formatValueForPublication(overallStats.interobserverKappaCI.upper, 2, false, true)}` : ''}) ${helpers.getReference('Lurz_Schaefer_2025')}.</p>
-            <p>When compared with established literature-based T2w criteria within their respective, methodologically appropriate cohorts, the Avocado Sign consistently showed superior diagnostic performance (Table 4). In the surgery-alone cohort, the AUC of the Avocado Sign was significantly higher than that of the ESGAR 2016 criteria. Similarly, its performance surpassed that of other literature-based criteria in their corresponding cohorts. Furthermore, the performance of the Avocado Sign was not inferior to a cohort-optimized T2w criteria set derived from a brute-force analysis ${bfComparisonText}, which represents a data-driven benchmark for conventional morphology in our cohort.</p>
+            <p>When compared with established literature-based T2w criteria within their respective, methodologically appropriate cohorts, the Avocado Sign consistently showed superior diagnostic performance (Table 4). In the surgery-alone cohort, the AUC of the Avocado Sign was significantly higher than that of the ESGAR 2016 criteria. Similarly, its performance surpassed that of other literature-based criteria in their corresponding cohorts. Furthermore, the performance of the Avocado Sign was comparable to that of a cohort-optimized T2w criteria set derived from a brute-force analysis ${bfComparisonText}, which represents a data-driven benchmark for conventional morphology in our cohort.</p>
         `;
 
         const table3Config = {
@@ -125,7 +125,7 @@ window.resultsGenerator = (() => {
         const table4Config = {
             id: 'table-results-literature-comparison',
             caption: 'Table 4: Comparison of Avocado Sign vs Literature-Based T2w Criteria in Applicable Cohorts',
-            headers: ['Cohort', 'Criteria Set', 'AUC (95% CI)', 'Sensitivity', 'Specificity', '<em>P</em> value (vs AS)'],
+            headers: ['Cohort (n)', 'Criteria Set', 'AUC (95% CI)', 'Sensitivity', 'Specificity', '<em>P</em> value (vs AS)'],
             rows: [],
             notes: 'Performance metrics are calculated within the specified treatment subgroup. The P value (DeLong test) indicates the statistical significance of the difference in AUC compared to the Avocado Sign (AS) within that same cohort.'
         };
@@ -140,15 +140,13 @@ window.resultsGenerator = (() => {
             const comp = cohortStats.comparisonASvsT2Literature?.[litSetId];
             if (!asPerf || !t2Perf || !comp) return;
 
-            const pValueTooltip = getInterpretationTooltip('pValue', { ...comp.delong, value: comp.delong.pValue, testName: 'DeLong' }, { comparisonName: 'AUC', method1: 'AS', method2: litSet.name });
-
             table4Config.rows.push([
                 `<strong>${getCohortDisplayName(cohortId)}</strong> (n=${cohortStats.descriptive.patientCount})`,
                 '   Avocado Sign',
                 helpers.formatMetricForPublication(asPerf.auc, 'auc'),
                 helpers.formatMetricForPublication(asPerf.sens, 'sens', true),
                 helpers.formatMetricForPublication(asPerf.spec, 'spec', true),
-                '–'
+                '—'
             ]);
             table4Config.rows.push([
                 '',
@@ -156,7 +154,7 @@ window.resultsGenerator = (() => {
                 helpers.formatMetricForPublication(t2Perf.auc, 'auc'),
                 helpers.formatMetricForPublication(t2Perf.sens, 'sens', true),
                 helpers.formatMetricForPublication(t2Perf.spec, 'spec', true),
-                `<span data-tippy-content="${pValueTooltip}">${helpers.formatPValueForPublication(comp.delong.pValue)}</span>`
+                helpers.formatPValueForPublication(comp.delong.pValue)
             ]);
         };
         

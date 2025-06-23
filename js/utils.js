@@ -221,16 +221,22 @@ function getPValueText(pValue, italicizeP = true) {
     if (p < 0.001) return `${prefix} < .001`;
     if (p > 0.99) return `${prefix} > .99`;
     
+    // Radiology Style: If P value < .01, then use three digits.
     if (p < 0.01) {
         return `${prefix} = .${p.toFixed(3).substring(2)}`;
     }
     
+    // Radiology Style: For values close to .05, you may provide a third digit (e.g., .046).
+    // This rule prevents rounding a significant result to a non-significant one.
     const pRoundedTo2 = parseFloat(p.toFixed(2));
     if (p < 0.05 && pRoundedTo2 >= 0.05) {
          return `${prefix} = .${p.toFixed(3).substring(2)}`;
     }
 
+    // Radiology Style: Use two digits for P values (unless other rules apply).
     let formattedP = pRoundedTo2.toFixed(2);
+    
+    // Radiology Style: Do not include leading zeros for P values.
     if (formattedP.startsWith("0.")) {
         formattedP = formattedP.substring(1);
     } else if (formattedP === "1.00") {

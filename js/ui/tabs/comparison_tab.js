@@ -99,8 +99,8 @@ window.comparisonTab = (() => {
             metrics.forEach(key => {
                 const isRate = !(key === 'f1' || key === 'auc' || key === 'balAcc'); 
                 const digits = (key === 'auc' || key === 'f1' || key === 'balAcc') ? 3 : 1;
-                const valAS = formatCI(performanceAS[key]?.value, performanceAS[key]?.ci?.lower, performanceAS[key]?.ci?.upper, digits, isRate, '--');
-                const valT2 = formatCI(performanceT2[key]?.value, performanceT2[key]?.ci?.lower, performanceT2[key]?.ci?.upper, digits, isRate, '--');
+                const valAS = formatCI(performanceAS[key]?.value, performanceAS[key]?.ci?.lower, performanceAS[key]?.ci?.upper, digits, isRate, na_stat);
+                const valT2 = formatCI(performanceT2[key]?.value, performanceT2[key]?.ci?.lower, performanceT2[key]?.ci?.upper, digits, isRate, na_stat);
                 comparisonTableHTML += `<tr><td data-tippy-content="${getDefinitionTooltip(key)}">${metricNames[key]}</td><td data-tippy-content="${getInterpretationTooltip(key, performanceAS[key])}">${valAS}</td><td data-tippy-content="${getInterpretationTooltip(key, performanceT2[key])}">${valT2}</td></tr>`;
             });
             comparisonTableHTML += `</tbody></table></div>`;

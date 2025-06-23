@@ -146,7 +146,8 @@ window.statisticsTab = (() => {
 
         results.forEach(r => {
             const cohortInfo = (r.cohort !== getCohortDisplayName(globalCoh)) ? ` (${r.cohort}, n=${r.n})` : ``;
-            const pValueTooltip = r.pValue ? getInterpretationTooltip('pValue', {value: r.pValue, testName: 'DeLong'}, {comparisonName: 'AUC', method1: 'AS', method2: r.name}) : 'Comparison not applicable';
+            const pValueTooltip = (r.pValue !== undefined) ? getInterpretationTooltip('pValue', {value: r.pValue, testName: 'DeLong'}, {comparisonName: 'AUC', method1: 'AS', method2: r.name}) : 'Comparison not applicable';
+            const pValueCellContent = (r.pValue !== undefined) ? `${getPValueText(r.pValue, false)} ${getStatisticalSignificanceSymbol(r.pValue)}` : na_stat;
 
             tableHtml += `<tr>
                 <td>${r.name}${cohortInfo}</td>
@@ -156,7 +157,7 @@ window.statisticsTab = (() => {
                 <td>${formatPercent(r.npv?.value, 1, na_stat)}</td>
                 <td>${formatPercent(r.acc?.value, 1, na_stat)}</td>
                 <td>${formatNumber(r.auc?.value, 3, na_stat, true)}</td>
-                <td data-tippy-content="${pValueTooltip}">${r.pValue ? `${getPValueText(r.pValue, false)} ${getStatisticalSignificanceSymbol(r.pValue)}` : na_stat}</td>
+                <td data-tippy-content="${pValueTooltip}">${pValueCellContent}</td>
             </tr>`;
         });
 
@@ -179,7 +180,15 @@ window.statisticsTab = (() => {
 
         const datasetsExist = cohortIdsToShow.some(cid => allCohortStats[cid] && allCohortStats[cid].descriptive.patientCount > 0);
         if (!datasetsExist) {
-            return '<div class="col-12"><div class="alert alert-warning">No data available for the selected statistics cohort(s).</div></div>';
+            const emptyStateHTML = `
+                <div class="d-flex justify-content-end mb-3">
+                    <div class="btn-group btn-group-sm">
+                        <button id="statistics-toggle-single" class="btn btn-outline-primary ${layout === 'einzel' ? 'active' : ''}">Single View</button>
+                        <button id="statistics-toggle-comparison" class="btn btn-outline-primary ${layout === 'vergleich' ? 'active' : ''}">Comparison View</button>
+                    </div>
+                </div>
+                <div class="alert alert-warning">No data available for the selected statistics cohort(s).</div>`;
+            return emptyStateHTML;
         }
         
         const outerRow = document.createElement('div');
@@ -299,7 +308,7 @@ window.statisticsTab = (() => {
              
              let compContent = '<p class="text-muted small p-2">Not enough data for cohort comparison.</p>';
              
-             if(interComp.as && interComp.t2Applied) {
+             if(interComp.as && interComp.t2Applied && c1Stats && c2Stats) {
                  compContent = `<div class="table-responsive"><table class="table table-sm table-striped small mb-0">
                     <thead><tr>
                         <th>Metric</th>
@@ -308,9 +317,9 @@ window.statisticsTab = (() => {
                         <th data-tippy-content="P-value from Welch's t-test or Fisher's Exact Test for independent samples.">p-Value (unpaired)</th>
                     </tr></thead>
                     <tbody>
-                        <tr><td>Age (Mean ± SD)</td><td>${formatNumber(c1Stats.descriptive.age.mean, 1)} ± ${formatNumber(c1Stats.descriptive.age.sd, 1)}</td><td>${formatNumber(c2Stats.descriptive.age.mean, 1)} ± ${formatNumber(c2Stats.descriptive.age.sd, 1)}</td><td>${getPValueText(interDemoComp.age.pValue, false)}</td></tr>
-                        <tr><td>Sex (m / f)</td><td>${c1Stats.descriptive.sex.m} / ${c1Stats.descriptive.sex.f}</td><td>${c2Stats.descriptive.sex.m} / ${c2Stats.descriptive.sex.f}</td><td>${getPValueText(interDemoComp.sex.pValue, false)}</td></tr>
-                        <tr><td>N-Status (+ / -)</td><td>${c1Stats.descriptive.nStatus.plus} / ${c1Stats.descriptive.nStatus.minus}</td><td>${c2Stats.descriptive.nStatus.plus} / ${c2Stats.descriptive.nStatus.minus}</td><td>${getPValueText(interDemoComp.nStatus.pValue, false)}</td></tr>
+                        <tr><td>Age (Mean ± SD)</td><td>${formatNumber(c1Stats.descriptive.age.mean, 1)} ± ${formatNumber(c1Stats.descriptive.age.sd, 1)}</td><td>${formatNumber(c2Stats.descriptive.age.mean, 1)} ± ${formatNumber(c2Stats.descriptive.age.sd, 1)}</td><td>${getPValueText(interDemoComp?.age?.pValue, false)}</td></tr>
+                        <tr><td>Sex (m / f)</td><td>${c1Stats.descriptive.sex.m} / ${c1Stats.descriptive.sex.f}</td><td>${c2Stats.descriptive.sex.m} / ${c2Stats.descriptive.sex.f}</td><td>${getPValueText(interDemoComp?.sex?.pValue, false)}</td></tr>
+                        <tr><td>N-Status (+ / -)</td><td>${c1Stats.descriptive.nStatus.plus} / ${c1Stats.descriptive.nStatus.minus}</td><td>${c2Stats.descriptive.nStatus.plus} / ${c2Stats.descriptive.nStatus.minus}</td><td>${getPValueText(interDemoComp?.nStatus?.pValue, false)}</td></tr>
                         <tr class="table-group-divider"><td colspan="4"></td></tr>
                         <tr><td>AUC (Avocado Sign)</td><td>${formatNumber(c1Stats.performanceAS.auc.value, 3, na_stat, true)}</td><td>${formatNumber(c2Stats.performanceAS.auc.value, 3, na_stat, true)}</td><td>${getPValueText(interComp.as.pValue, false)}</td></tr>
                         <tr><td>AUC (${formattedAppliedT2Short})</td><td>${formatNumber(c1Stats.performanceT2Applied.auc.value, 3, na_stat, true)}</td><td>${formatNumber(c2Stats.performanceT2Applied.auc.value, 3, na_stat, true)}</td><td>${getPValueText(interComp.t2Applied.pValue, false)}</td></tr>

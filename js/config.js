@@ -10,7 +10,7 @@ window.DEFAULT_T2_CRITERIA = Object.freeze({
 window.APP_CONFIG = Object.freeze({
     APP_NAME: "Nodal Staging: Avocado Sign vs. T2 Criteria",
     APP_VERSION: "4.2.0-radiology-optimized",
-    NA_PLACEHOLDER: '--',
+    NA_PLACEHOLDER: '—',
     COHORTS: Object.freeze({
         OVERALL: { id: 'Overall', therapyValue: null, displayName: 'Overall' },
         SURGERY_ALONE: { id: 'surgeryAlone', therapyValue: 'surgeryAlone', displayName: 'Surgery alone' },
@@ -122,7 +122,7 @@ window.APP_CONFIG = Object.freeze({
         Lurz_Schaefer_2025: { id: 6, text: "Lurz M, Schäfer AO. The Avocado Sign: A novel imaging marker for nodal staging in rectal cancer. Eur Radiol. 2025. doi:10.1007/s00330-025-11462-y" },
         Koh_2008: { id: 7, text: "Koh DM, Chau I, Tait D, Wotherspoon A, Cunningham D, Brown G. Evaluating mesorectal lymph nodes in rectal cancer before and after neoadjuvant chemoradiation using thin-section T2-weighted magnetic resonance imaging. Int J Radiat Oncol Biol Phys. 2008;71:456–461. doi:10.1016/j.ijrobp.2007.10.016" },
         Barbaro_2024: { id: 8, text: "Barbaro B, Carafa MRP, Minordi LM, et al. Magnetic resonance imaging for assessment of rectal cancer nodes after chemoradiotherapy: a single center experience. Radiother Oncol. 2024;193:110124. doi:10.1016/j.radonc.2024.110124" },
-        Rutegard_2025: { id: 9, text: "Rutegård M, Båtsman M, Blomqvist L, et al. Evaluation of MRI characterisation of histopathologically matched lymph nodes and other mesorectal nodal structures in rectal cancer. Eur Radiol. 2025;35:49-60. doi:10.1007/s00330-025-11361-2" },
+        Rutegard_2025: { id: 9, text: "Rutegård M, Båtsman M, Blomqvist L, et al. Evaluation of MRI characterisation of histopathologically matched lymph nodes and other mesorectal nodal structures in rectal cancer. Eur Radiol. 2025;35(1):49-60. doi:10.1007/s00330-025-11361-2" },
         Horvat_2023: { id: 10, text: "Horvat N, El Homsi M, Miranda J, Mazaheri Y, Gollub MJ, Paroder V. Rectal MRI interpretation after neoadjuvant therapy. J Magn Reson Imaging. 2023;57:353–369. doi:10.1002/jmri.28426" },
         Hao_2025: { id: 11, text: "Hao Y, Zheng J, Li W, et al. Ultra-high b-value DWI in rectal cancer: image quality assessment and regional lymph node prediction based on radiomics. Eur Radiol. 2025;35:49–60. doi:10.1007/s00330-024-10958-3" },
         Kim_2019: { id: 12, text: "Kim SH, Song BI, Kim BW, et al. Predictive value of [18F]FDG PET/CT for lymph node metastasis in rectal cancer. Sci Rep. 2019;9:4979. doi:10.1038/s41598-019-41422-8" },
@@ -367,71 +367,6 @@ window.PUBLICATION_CONFIG = Object.freeze({
         { id: 'discussion_main', labelKey: 'discussion_main', countType: 'word', limit: 800, subSections: [] },
         { id: 'references_main', labelKey: 'references_main', countType: 'item', limit: 35, subSections: [] },
         { id: 'stard_checklist', labelKey: 'stard_checklist', subSections: [] }
-    ],
-    literatureCriteriaSets: [
-        {
-            id: 'Koh_2008',
-            name: 'Koh et al. (2008)',
-            displayShortName: 'Koh 2008',
-            logic: 'OR',
-            applicableCohort: 'Overall',
-            criteria: {
-                size: { active: false },
-                shape: { active: false },
-                border: { active: true, value: 'irregular' },
-                homogeneity: { active: true, value: 'heterogeneous' },
-                signal: { active: false }
-            },
-            studyInfo: {
-                refKey: 'Koh_2008',
-                patientCohort: 'Overall (n=25)',
-                investigationType: 'Prospective, Pre- and Post-nCRT',
-                keyCriteriaSummary: 'Irregular Border OR Heterogeneous Signal'
-            }
-        },
-        {
-            id: 'Barbaro_2024',
-            name: 'Barbaro et al. (2024)',
-            displayShortName: 'Barbaro 2024',
-            logic: 'OR',
-            applicableCohort: 'neoadjuvantTherapy',
-            criteria: {
-                size: { active: true, threshold: 2.2, condition: '>' },
-                shape: { active: false },
-                border: { active: false },
-                homogeneity: { active: false },
-                signal: { active: false }
-            },
-            studyInfo: {
-                refKey: 'Barbaro_2024',
-                patientCohort: 'Neoadjuvant Therapy (n=191)',
-                investigationType: 'Retrospective, Post-nCRT',
-                focus: 'Size criteria for predicting ypN0',
-                keyCriteriaSummary: 'A node is considered malignant if short-axis diameter > 2.2 mm (inverse of optimal ypN0 cut-off).'
-            }
-        },
-        {
-            id: 'Rutegard_2025',
-            name: 'ESGAR 2016 (Rutegård et al.)',
-            displayShortName: 'ESGAR 2016',
-            logic: 'KOMBINIERT',
-            applicableCohort: 'surgeryAlone',
-            criteria: {
-                size: { active: true, threshold: 9.0, condition: '>=' },
-                shape: { active: true, value: 'round' },
-                border: { active: true, value: 'irregular' },
-                homogeneity: { active: true, value: 'heterogeneous' },
-                signal: { active: false }
-            },
-            studyInfo: {
-                refKey: 'Rutegard_2025',
-                patientCohort: 'Surgery Alone (n=46)',
-                investigationType: 'Prospective, Node-by-Node',
-                focus: 'Validation of combined ESGAR 2016 criteria',
-                keyCriteriaSummary: '≥9mm OR (5–8mm AND ≥2 features) OR (<5mm AND 3 features)'
-            },
-            description: 'ESGAR 2016 consensus criteria: A lymph node is considered malignant if it has a short-axis diameter of ≥9 mm, OR if it has a diameter of 5–8 mm and at least two suspicious morphological features (round shape, irregular border, or heterogeneous signal), OR if it has a diameter of <5 mm and all three suspicious features.'
-        }
     ]
 });
 
