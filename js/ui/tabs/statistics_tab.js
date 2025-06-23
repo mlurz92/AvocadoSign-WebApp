@@ -198,7 +198,7 @@ window.statisticsTab = (() => {
                 outerRow.appendChild(col);
                 const innerContainer = col.querySelector(`#${innerRowId}`);
 
-                innerContainer.innerHTML += window.uiComponents.createStatisticsCard(`descriptive-stats-${i}`, 'Descriptive Statistics', createDescriptiveStatsContentHTML(stats, i, cohortId), true, null, cohortId);
+                innerContainer.innerHTML += window.uiComponents.createStatisticsCard(`descriptive-stats-${i}`, 'Descriptive Statistics', createDescriptiveStatsContentHTML(stats, i, cohortId), true, 'descriptiveStatistics', cohortId);
 
                 const fCI_p_stat = (m, k) => { const d = (k === 'auc' || k ==='f1' || k==='youden' || k === 'balAcc') ? 3 : 1; const p = !(k === 'auc'||k==='f1'||k==='youden' || k === 'balAcc'); return formatCI(m?.value, m?.ci?.lower, m?.ci?.upper, d, p, na_stat); };
                 
@@ -280,7 +280,7 @@ window.statisticsTab = (() => {
                 innerContainer.innerHTML += window.uiComponents.createStatisticsCard(`comparison-as-t2-${i}`, `Statistical Comparison: AS vs. ${formattedAppliedT2Short}`, createCompTableHTML(stats.comparisonASvsT2Applied), false, null, cohortId);
                 innerContainer.innerHTML += window.uiComponents.createStatisticsCard(`associations-${i}`, 'Association with N-Status', createAssocTableHTML(stats.associationsApplied, appliedCriteria), false, null, cohortId);
                 if (cohortId === 'surgeryAlone') {
-                    innerContainer.innerHTML += window.uiComponents.createStatisticsCard(`added-value-${i}`, 'Added Diagnostic Value of AS (vs. ESGAR 2016)', addedValueContent, false, null, cohortId);
+                    innerContainer.innerHTML += window.uiComponents.createStatisticsCard(`added-value-${i}`, 'Added Diagnostic Value of AS (vs. ESGAR 2016)', addedValueContent, false, 'addedValue', cohortId);
                 }
 
             } else {

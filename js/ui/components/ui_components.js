@@ -108,8 +108,8 @@ window.uiComponents = (() => {
 
     function createStatisticsCard(id, title, content = '', addPadding = true, tooltipKey = null, cohortId = '') {
         let cardTooltipHtml = `data-tippy-content="${title}"`;
-        if (tooltipKey && window.APP_CONFIG.UI_TEXTS.tooltips[tooltipKey] && window.APP_CONFIG.UI_TEXTS.tooltips[tooltipKey].cardTitle) {
-            let tooltipTemplate = window.APP_CONFIG.UI_TEXTS.tooltips[tooltipKey].cardTitle;
+        if (tooltipKey && window.APP_CONFIG.UI_TEXTS.tooltips.descriptiveStatistics && window.APP_CONFIG.UI_TEXTS.tooltips.descriptiveStatistics[tooltipKey] && window.APP_CONFIG.UI_TEXTS.tooltips.descriptiveStatistics[tooltipKey].cardTitle) {
+            let tooltipTemplate = window.APP_CONFIG.UI_TEXTS.tooltips.descriptiveStatistics[tooltipKey].cardTitle;
             let cohortName = cohortId ? getCohortDisplayName(cohortId) : 'the current cohort';
             let finalTooltip = tooltipTemplate.replace('[COHORT]', `<strong>${cohortName}</strong>`);
             cardTooltipHtml = `data-tippy-content="${finalTooltip}"`;

@@ -38,20 +38,19 @@ window.APP_CONFIG = Object.freeze({
         { value: 'NPV', label: 'NPV' }
     ]),
     STORAGE_KEYS: Object.freeze({
-        APPLIED_CRITERIA: 'appliedT2Criteria_v4.2_detailed',
-        APPLIED_LOGIC: 'appliedT2Logic_v4.2_detailed',
-        BRUTE_FORCE_RESULTS: 'bruteForceResults_v3.2_detailed',
-        CURRENT_COHORT: 'currentCohort_v4.3_unified',
-        PUBLICATION_SECTION: 'currentPublicationSection_v4.4_detailed',
-        PUBLICATION_BRUTE_FORCE_METRIC: 'currentPublicationBfMetric_v4.4_detailed',
-        PUBLICATION_LANG: 'publicationLang_v4.4_detailed',
-        STATS_LAYOUT: 'currentStatsLayout_v4.2_detailed',
-        STATS_COHORT1: 'currentStatsCohort1_v4.3_unified',
-        STATS_COHORT2: 'currentStatsCohort2_v4.3_unified',
-        COMPARISON_VIEW: 'currentComparisonView_v4.2_detailed',
-        COMPARISON_STUDY_ID: 'currentComparisonStudyId_v4.2_detailed',
-        CHART_COLOR_SCHEME: 'chartColorScheme_v4.2_detailed',
-        FIRST_APP_START: 'appFirstStart_v4.2.0'
+        APPLIED_CRITERIA: 'avocadoSign_appliedT2Criteria_v4.4',
+        APPLIED_LOGIC: 'avocadoSign_appliedT2Logic_v4.4',
+        BRUTE_FORCE_RESULTS: 'avocadoSign_bruteForceResults_v4.4',
+        CURRENT_COHORT: 'avocadoSign_currentCohort_v4.4',
+        PUBLICATION_SECTION: 'avocadoSign_publicationSection_v4.4',
+        PUBLICATION_BRUTE_FORCE_METRIC: 'avocadoSign_publicationBfMetric_v4.4',
+        PUBLICATION_LANG: 'avocadoSign_publicationLang_v4.4',
+        STATS_LAYOUT: 'avocadoSign_statsLayout_v4.4',
+        STATS_COHORT1: 'avocadoSign_statsCohort1_v4.4',
+        STATS_COHORT2: 'avocadoSign_statsCohort2_v4.4',
+        COMPARISON_VIEW: 'avocadoSign_comparisonView_v4.4',
+        COMPARISON_STUDY_ID: 'avocadoSign_comparisonStudyId_v4.4',
+        FIRST_APP_START: 'avocadoSign_appFirstStart_v4.2.0'
     }),
     PATHS: Object.freeze({
         BRUTE_FORCE_WORKER: 'workers/brute_force_worker.js'
@@ -287,7 +286,8 @@ window.APP_CONFIG = Object.freeze({
                 'status-n': { description: 'Distribution of final histopathological N-Status in the [COHORT] cohort.' },
                 'status-as': { description: 'Distribution of Avocado Sign status in the [COHORT] cohort.' },
                 'status-t2': { description: 'Distribution of T2-weighted criteria status in the [COHORT] cohort.' },
-                'criteriaComparisonTable': { cardTitle: 'Comparison of diagnostic performance between the Avocado Sign and various T2-weighted criteria sets for the [COHORT] cohort. P-values represent the statistical comparison of each set\'s AUC against the Avocado Sign\'s AUC.' }
+                'criteriaComparisonTable': { cardTitle: 'Comparison of diagnostic performance between the Avocado Sign and various T2-weighted criteria sets for the [COHORT] cohort. P-values represent the statistical comparison of each set\'s AUC against the Avocado Sign\'s AUC.' },
+                'addedValue': { cardTitle: 'Added Diagnostic Value of AS (vs. ESGAR 2016)' }
             },
             t2Logic: { description: "Logical operator for active T2 criteria: <strong>AND</strong> (A lymph node is positive only if ALL active criteria are met). <strong>OR</strong> (A lymph node is positive if AT LEAST ONE active criterion is met). The choice affects the T2 status calculation." },
             t2Size: { description: "Size criterion (short axis): Lymph nodes with a diameter <strong>greater than or equal to (≥)</strong> the set threshold are considered suspicious. Adjustable range: [MIN] - [MAX] mm (step: [STEP] mm). Enable/disable with checkbox." },

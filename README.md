@@ -56,6 +56,7 @@ The application follows a modular architecture that separates data logic, servic
 ├── data/
 │   └── data.js
 ├── docs/
+│   ├── ACR_Appropriateness_Criteria_2021_summary.txt
 │   ├── Al-Sukhni_2012_summary.txt
 │   ├── Application_Guide.md
 │   ├── Barbaro_2024_summary.txt
@@ -65,6 +66,7 @@ The application follows a modular architecture that separates data logic, servic
 │   ├── Garcia-Aguilar_2022_summary.txt
 │   ├── Hao_2025_summary.txt
 │   ├── Heijnen_2016_summary.txt
+│   ├── Horvat_2019_summary.txt
 │   ├── Horvat_2023_summary.txt
 │   ├── Kim_2019_summary.txt
 │   ├── Koh_2008_summary.txt
