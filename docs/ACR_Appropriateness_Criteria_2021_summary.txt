@@ -1,0 +1,43 @@
+**ACR Appropriateness Criteria® Staging of Colorectal Cancer: 2021 Update. J Am Coll Radiol. 2022;19(5):S208-S222. DOI: 10.1016/j.jacr.2022.02.012**
+
+**Study Aim**
+To provide evidence-based guidelines, developed by a multidisciplinary expert panel, on the appropriateness of various imaging procedures for the initial staging and post-neoadjuvant therapy restaging of colorectal cancer.
+
+**Methodology**
+*   **Guideline Development:** The American College of Radiology (ACR) Appropriateness Criteria are developed using the RAND/UCLA Appropriateness Method. A multidisciplinary expert panel reviews current medical literature and rates the appropriateness of imaging procedures for specific clinical scenarios.
+*   **Appropriateness Rating:** Procedures are rated on a 9-point scale and categorized as:
+    *   **Usually Appropriate (Rating 7–9):** Favorable risk-benefit ratio.
+    *   **May Be Appropriate (Rating 4–6):** Equivocal risk-benefit ratio; may be an alternative to a more appropriate procedure.
+    *   **Usually Not Appropriate (Rating 1–3):** Unfavorable risk-benefit ratio.
+*   **Clinical Variants Covered:**
+    1.  Rectal Cancer: Initial Locoregional Staging.
+    2.  Rectal Cancer: Post-neoadjuvant Therapy Staging.
+    3.  Colorectal Cancer: Staging for Distant Metastases.
+
+**Key Recommendations (beyond Abstract)**
+
+*   **Variant 1: Rectal Cancer - Initial Locoregional Staging**
+    *   **Usually Appropriate:**
+        *   **MRI pelvis without and with IV contrast.**
+        *   **MRI pelvis without IV contrast.**
+        *   **US pelvis transrectal (Endorectal Ultrasound - EUS).**
+    *   **Rationale:** MRI is the preferred modality for its ability to depict the rectal wall layers, the mesorectal fascia (MRF), and assess for lymph node involvement and EMVI, which are crucial for determining the need for neoadjuvant therapy. EUS is considered an alternative, particularly for assessing the depth of invasion of early-stage (T1/T2) tumors, but it has a limited field of view and cannot assess the MRF or lateral nodes. Contrast-enhanced MRI is rated equally to non-contrast, as the added value of contrast for initial staging is debated.
+    *   **May Be Appropriate:** CT abdomen and pelvis with IV contrast, CT colonography, FDG-PET/CT. These are not primary tools for *locoregional* staging but may be used for simultaneous evaluation of distant disease.
+
+*   **Variant 2: Rectal Cancer - Post-neoadjuvant Therapy Staging**
+    *   **Usually Appropriate:**
+        *   **MRI pelvis without and with IV contrast.**
+        *   **MRI pelvis without IV contrast.**
+    *   **Rationale:** MRI is the primary tool to assess treatment response, looking for tumor shrinkage, development of fibrotic scar (T2 dark scar), and resolution of DWI restriction. This information guides subsequent surgical planning or consideration of organ-sparing approaches.
+    *   **May Be Appropriate (Disagreement):** **US pelvis transrectal.** The panel was divided on the utility of EUS for restaging, as post-treatment changes like fibrosis and inflammation make interpretation difficult.
+    *   **May Be Appropriate:** CT abdomen and pelvis with IV contrast, FDG-PET/CT. These are useful for reassessing distant disease but less so for detailed local response. PET/CT can help identify residual metabolic activity.
+
+*   **Variant 3: Staging for Distant Metastases (Colon & Rectal Cancer)**
+    *   **Usually Appropriate:**
+        *   **CT chest with IV contrast AND MRI abdomen with IV contrast.**
+        *   **CT chest, abdomen, pelvis with IV contrast.**
+    *   **Rationale:** The primary goal is to detect liver and lung metastases. Contrast-enhanced CT of the chest, abdomen, and pelvis is the most common and effective single modality. MRI of the abdomen is more sensitive than CT for detecting and characterizing liver lesions, especially in the setting of fatty liver. Therefore, a combination of chest CT and abdominal MRI is also a top-tier option.
+    *   **May Be Appropriate:** FDG-PET/CT. Useful for evaluating equivocal findings on CT/MRI or for identifying occult disease, but generally considered a problem-solving tool rather than a first-line staging modality for distant disease.
+
+**Conclusion**
+The ACR Appropriateness Criteria provide clear, evidence-based guidance for imaging colorectal cancer. For **initial locoregional staging of rectal cancer, high-resolution pelvic MRI is the "Usually Appropriate"** and preferred modality. For **post-neoadjuvant restaging, pelvic MRI is again the "Usually Appropriate"** modality to assess treatment response. For **staging of distant metastases** for both colon and rectal cancer, **contrast-enhanced CT of the chest, abdomen, and pelvis** is the standard, with abdominal MRI being an excellent alternative or adjunct for liver evaluation. These guidelines help standardize care, ensuring patients receive the most appropriate imaging for their specific clinical scenario while considering factors like diagnostic yield and radiation exposure.

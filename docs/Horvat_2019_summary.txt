@@ -1,0 +1,40 @@
+**Horvat N, Rocha CCT, Oliveira BC, Petkovska I, Gollub MJ. MRI of Rectal Cancer: Tumor Staging, Imaging Techniques, and Management. RadioGraphics. 2019;39(2):367-387. DOI: 10.1148/rg.2019180114**
+
+**Study Aim**
+To provide a comprehensive, educational review and pictorial essay on the role of MRI in the staging and management of rectal cancer, outlining optimal imaging techniques, key anatomical landmarks, and a structured approach to interpretation for radiologists.
+
+**Methodology and Key Content (Review Article)**
+
+*   **Optimal MRI Protocol:**
+    *   Emphasizes the necessity of **high-resolution T2-weighted Fast Spin-Echo (FSE) imaging without fat suppression** as the cornerstone of the rectal MRI protocol.
+    *   **Critical Planes:**
+        *   **Oblique Axial:** Perpendicular to the tumor, essential for assessing T-stage and the circumferential resection margin (CRM).
+        *   **Oblique Coronal:** Parallel to the anal canal, crucial for evaluating low rectal tumors and their relationship to the sphincter complex.
+        *   **Sagittal:** For assessing the tumor's craniocaudal extent and relationship to landmarks like the peritoneal reflection.
+    *   **"Maybes":** Discusses optional sequences. DWI is highlighted as having growing importance, especially for restaging. Endorectal filling is noted as controversial.
+    *   **"Don'ts":** The use of an endorectal coil is not endorsed due to patient discomfort and cost. T2-weighted imaging with fat saturation is not routinely recommended.
+
+*   **Key Anatomic Landmarks and Staging Criteria (The "RECTAL CANCER" Mnemonic):**
+    *   The article proposes a mnemonic to guide a systematic report. A key part of this is the detailed description of anatomical landmarks and their clinical relevance.
+    *   **Mesorectal Fascia (MRF):** Visualized as a thin, low-signal-intensity line. The distance of the tumor to the MRF is the CRM, a critical prognostic factor.
+    *   **Anterior Peritoneal Reflection:** A key landmark separating the intraperitoneal (non-CRM) from the extraperitoneal (CRM) portions of the rectum. Tumor invasion through this is T4a.
+    *   **Sphincter Complex:** Detailed assessment of the internal sphincter, external sphincter, and levator ani is vital for low rectal cancers to determine the feasibility of sphincter-sparing surgery.
+    *   **Lymph Node Staging:** The review describes the proposed criteria combining size and morphology (irregular borders, heterogeneous signal, round shape) as superior to size alone, acknowledging that accuracy remains a challenge.
+
+*   **Structured Reporting Template:**
+    *   The article provides a detailed, exemplary primary staging MRI report template. This template systematically covers all essential information:
+        *   Tumor location (distance from anal verge, o'clock position) and morphology (e.g., mucinous).
+        *   T-category.
+        *   CRM status (distance to MRF).
+        *   EMVI status.
+        *   N-category (number and location of suspicious nodes).
+        *   Invasion of sphincter complex or adjacent organs.
+        *   A concise, clinically relevant impression/conclusion.
+
+*   **Restaging After Neoadjuvant Therapy:**
+    *   Discusses the challenges of differentiating fibrosis from residual tumor.
+    *   Introduces the concept of **Tumor Regression Grade (TRG)** on MRI as a way to quantify response.
+    *   Highlights that for post-CRT nodal assessment, **size criteria become more reliable** than at primary staging, and features like a >70% size reduction or a residual size < 2.5 mm are good predictors of negative nodes.
+
+**Conclusion**
+This *RadioGraphics* article serves as a foundational educational resource for radiologists. It provides a highly visual and structured guide to performing and interpreting high-quality rectal cancer MRI. The main takeaway is the importance of a **systematic approach** that goes beyond a simple TNM stage. A clinically valuable report must detail the tumor's relationship to critical anatomical structures—the **mesorectal fascia, peritoneal reflection, and sphincter complex**—and comment on key prognostic factors like **EMVI**. By providing detailed protocol recommendations, anatomical illustrations, and a structured reporting template, the article equips radiologists to produce accurate, reproducible, and clinically impactful reports that are essential for modern multidisciplinary rectal cancer management.
